@@ -120,6 +120,13 @@ Both Claude and agent-compatible workflows get:
 - `threejs-capacitor-ios`
 - `fal-ai-image`
 
+## Beginner-friendly videos
+
+- 3D — Here's How I Use Agent Skills 3D Game Dev (Full Tutorial)
+  - https://youtu.be/ak0QkJjwK9U
+- 2D — Vibe Coding 2D Games with Agent Skills (Full Tutorial)
+  - https://youtu.be/QPZCMd5REP8
+
 Important note:
 - Pirate 3D iOS is not bundled as a project
 - but the reusable Capacitor/iOS workflow skill is included for future builds

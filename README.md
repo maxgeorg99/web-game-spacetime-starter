@@ -15,6 +15,7 @@
 - 4 standalone game starter projects
 - 1 bonus isometric sprite workflow repo
 - 6 unified skills mirrored across both `.claude/skills/` and `.agents/skills/`
+- beginner-friendly full tutorial videos for both 2D and 3D workflows
 - preserved per-project folder structures so each starter still works the way it was built
 - one clean root repo for exploring 2D, 3D, testing, tilemaps, and iOS-export workflows
 
@@ -53,6 +54,13 @@ Notes:
 - `oakwoods` requires the external Oak Woods art pack. See that project’s README for asset setup.
 - Pirate 3D iOS is intentionally not included as a project in this pack.
 - The reusable `threejs-capacitor-ios` skill is included at the root for builders who want the iOS export workflow.
+
+## Beginner-friendly videos
+
+- 3D — Here's How I Use Agent Skills 3D Game Dev (Full Tutorial)
+  - https://youtu.be/ak0QkJjwK9U
+- 2D — Vibe Coding 2D Games with Agent Skills (Full Tutorial)
+  - https://youtu.be/QPZCMd5REP8
 
 ---
 
