@@ -122,6 +122,10 @@ Both Claude and agent-compatible workflows get:
 - `threejs-capacitor-ios`
 - `fal-ai-image`
 - `retro-diffusion`
+- `spacetimedb-concepts` — core SpacetimeDB architecture and patterns
+- `spacetimedb-rust` — Rust server module development (tables, reducers, scheduled ticks)
+- `spacetimedb-typescript` — TypeScript client SDK (subscriptions, React hooks, bindings)
+- `ralph-loop-gamedev` — multi-agent orchestrator (Implementation + Review + Playwright loop)
 
 ## Beginner-friendly videos
 
