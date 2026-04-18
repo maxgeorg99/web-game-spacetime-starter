@@ -1,0 +1,111 @@
+{
+  "images": [
+    { "key": "class_fighter",  "path": "assets/sprites/characters/classes/class_fighter_1.png",  "type": "image" },
+    { "key": "class_mage",     "path": "assets/sprites/characters/classes/class_mage_1.png",     "type": "image" },
+    { "key": "class_paladin",  "path": "assets/sprites/characters/classes/class_paladin_1.png",  "type": "image" },
+    { "key": "class_rogue",    "path": "assets/sprites/characters/classes/class_rogue_1.png",    "type": "image" },
+    { "key": "class_priest",   "path": "assets/sprites/characters/classes/class_priest_1.png",   "type": "image" },
+    { "key": "class_valkyrie", "path": "assets/sprites/characters/classes/class_valkyrie_1.png", "type": "image" },
+
+    { "key": "bar_base",       "path": "assets/sprites/ui/bars/BigBar_Base.png",                      "type": "image" },
+    { "key": "bar_fill",       "path": "assets/sprites/ui/bars/BigBar_Fill.png",                      "type": "image" },
+    { "key": "paper_regular",  "path": "assets/sprites/ui/papers/RegularPaper.png",                   "type": "image" },
+    { "key": "paper_special",  "path": "assets/sprites/ui/papers/SpecialPaper.png",                   "type": "image" },
+    { "key": "title_bg",       "path": "assets/sprites/ui/screens/title_bg.png",                      "type": "image" },
+    { "key": "victory_screen", "path": "assets/sprites/ui/screens/victory_screen.png",                "type": "image" },
+    { "key": "loss_screen",    "path": "assets/sprites/ui/screens/loss_screen.png",                   "type": "image" },
+    { "key": "fight_bg",       "path": "assets/sprites/environment/fight_background.png",             "type": "image" },
+    { "key": "cursor",         "path": "assets/sprites/ui/cursors/Cursor_01.png",                     "type": "image" },
+    { "key": "btn_small_blue", "path": "assets/sprites/ui/buttons/SmallBlueSquareButton_Regular.png", "type": "image" },
+
+    { "key": "grass",           "path": "assets/sprites/environment/grass.png",               "type": "image" },
+    { "key": "water_bg",       "path": "assets/sprites/terrain/Water Background color.png",  "type": "image" },
+    { "key": "rock1",           "path": "assets/sprites/environment/Rock1.png",               "type": "image" },
+    { "key": "rock2",           "path": "assets/sprites/environment/Rock2.png",               "type": "image" },
+    { "key": "rock3",           "path": "assets/sprites/environment/Rock3.png",               "type": "image" },
+    { "key": "rock4",           "path": "assets/sprites/environment/Rock4.png",               "type": "image" },
+
+    { "key": "fire_spell",      "path": "assets/sprites/ui/icons/spells/fire_spell.png",      "type": "image" },
+    { "key": "ice_spell",       "path": "assets/sprites/ui/icons/spells/ice_spell.png",       "type": "image" },
+    { "key": "lightning_spell", "path": "assets/sprites/ui/icons/spells/lightning_spell.png", "type": "image" },
+    { "key": "healing_spell",   "path": "assets/sprites/ui/icons/spells/healing_spell.png",   "type": "image" },
+    { "key": "poison_dagger",   "path": "assets/sprites/ui/icons/spells/poison_dagger.png",   "type": "image" },
+    { "key": "fortify_spell",   "path": "assets/sprites/ui/icons/spells/fortify_spell.png",   "type": "image" }
+  ],
+
+  "spritesheets": [
+    { "key": "fighter_idle",   "path": "assets/sprites/characters/units/Red_Warrior_Warrior_Idle.png",    "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "fighter_run",    "path": "assets/sprites/characters/units/Red_Warrior_Warrior_Run.png",     "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "fighter_attack", "path": "assets/sprites/characters/units/Red_Warrior_Warrior_Attack1.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "fighter_death",  "path": "assets/sprites/characters/units/Red_Warrior_Warrior_Death.png",   "type": "spritesheet", "frameWidth": 128, "frameHeight": 128 },
+
+    { "key": "mage_attack", "path": "assets/sprites/characters/units/Blue_Mage_Mage_Attack.png", "type": "spritesheet", "frameWidth": 128, "frameHeight": 128 },
+    { "key": "mage_death",  "path": "assets/sprites/characters/units/Blue_Mage_Mage_Death.png",  "type": "spritesheet", "frameWidth": 128, "frameHeight": 128 },
+    { "key": "mage_run",    "path": "assets/sprites/characters/units/Blue_Mage_Mage_Run.png",    "type": "spritesheet", "frameWidth": 128, "frameHeight": 128 },
+
+    { "key": "paladin_run",    "path": "assets/sprites/characters/units/Yellow_Knight_Knight_Run.png",    "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "paladin_attack", "path": "assets/sprites/characters/units/Yellow_Knight_Knight_Attack.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "paladin_death",  "path": "assets/sprites/characters/units/Yellow_Knight_Knight_Death.png",  "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+
+    { "key": "rogue_idle", "path": "assets/sprites/characters/units/Black_Pawn_Pawn_Idle.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "rogue_run",  "path": "assets/sprites/characters/units/Black_Pawn_Pawn_Run.png",  "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+
+    { "key": "priest_idle",  "path": "assets/sprites/characters/units/Blue_Monk_Idle.png",  "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "priest_run",   "path": "assets/sprites/characters/units/Blue_Monk_Run.png",   "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "priest_heal",  "path": "assets/sprites/characters/units/Blue_Monk_Heal.png",  "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "priest_death", "path": "assets/sprites/characters/units/Blue_Monk_Death.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+
+    { "key": "valkyrie_idle",   "path": "assets/sprites/characters/units/Red_Archer_Archer_Idle.png",  "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "valkyrie_run",    "path": "assets/sprites/characters/units/Red_Archer_Archer_Run.png",   "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "valkyrie_attack", "path": "assets/sprites/characters/units/Red_Archer_Archer_Shoot.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "valkyrie_death",  "path": "assets/sprites/characters/units/Red_Archer_Archer_Death.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+
+    { "key": "water_foam", "path": "assets/sprites/terrain/Water Foam.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+
+    { "key": "tree1", "path": "assets/sprites/environment/Tree1.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 256 },
+    { "key": "tree2", "path": "assets/sprites/environment/Tree2.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 256 },
+    { "key": "tree3", "path": "assets/sprites/environment/Tree3.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "tree4", "path": "assets/sprites/environment/Tree4.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+
+    { "key": "gnome_idle",   "path": "assets/sprites/enemies/Gnome_Gnome_Idle.png",   "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "gnome_attack", "path": "assets/sprites/enemies/Gnome_Gnome_Attack.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "gnome_death",  "path": "assets/sprites/enemies/Gnome_Gnome_Death.png",  "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "gnome_run",    "path": "assets/sprites/enemies/Gnome_Gnome_Run.png",    "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+
+    { "key": "bear_idle",   "path": "assets/sprites/enemies/Bear_Bear_Idle.png",   "type": "spritesheet", "frameWidth": 256, "frameHeight": 256 },
+    { "key": "bear_attack", "path": "assets/sprites/enemies/Bear_Bear_Attack.png", "type": "spritesheet", "frameWidth": 256, "frameHeight": 256 },
+    { "key": "bear_death",  "path": "assets/sprites/enemies/Bear_Bear_Death.png",  "type": "spritesheet", "frameWidth": 256, "frameHeight": 256 },
+    { "key": "bear_run",    "path": "assets/sprites/enemies/Bear_Bear_Run.png",    "type": "spritesheet", "frameWidth": 256, "frameHeight": 256 },
+
+    { "key": "skeleton_mage_idle",   "path": "assets/sprites/enemies/Skeleton_Mage_SkeletonMage_Idle.png",   "type": "spritesheet", "frameWidth": 128, "frameHeight": 128 },
+    { "key": "skeleton_mage_attack", "path": "assets/sprites/enemies/Skeleton_Mage_SkeletonMage_Attack.png", "type": "spritesheet", "frameWidth": 128, "frameHeight": 128 },
+    { "key": "skeleton_mage_death",  "path": "assets/sprites/enemies/Skeleton_Mage_SkeletonMage_Death.png",  "type": "spritesheet", "frameWidth": 128, "frameHeight": 128 },
+
+    { "key": "demon_idle",   "path": "assets/sprites/enemies/Demon_Demon_Idle.png",   "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "demon_attack", "path": "assets/sprites/enemies/Demon_Demon_Attack.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "demon_death",  "path": "assets/sprites/enemies/Demon_Demon_Death.png",  "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "demon_run",    "path": "assets/sprites/enemies/Demon_Demon_Run.png",    "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+
+    { "key": "minotaur_idle",   "path": "assets/sprites/enemies/Minotaur_Minotaur_Idle.png",   "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "minotaur_attack", "path": "assets/sprites/enemies/Minotaur_Minotaur_Attack.png", "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "minotaur_death",  "path": "assets/sprites/enemies/Minotaur_Minotaur_Death.png",  "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "minotaur_walk",   "path": "assets/sprites/enemies/Minotaur_Minotaur_Walk.png",   "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 },
+    { "key": "minotaur_guard",  "path": "assets/sprites/enemies/Minotaur_Minotaur_Guard.png",  "type": "spritesheet", "frameWidth": 192, "frameHeight": 192 }
+  ],
+
+  "audio": [
+    { "key": "music_title",      "path": "assets/sounds/music/title.mp3",            "type": "audio" },
+    { "key": "music_main",       "path": "assets/sounds/music/main.mp3",             "type": "audio" },
+    { "key": "music_battle",     "path": "assets/sounds/music/medieval_soundtrack.mp3", "type": "audio" },
+    { "key": "music_boss",       "path": "assets/sounds/music/boss.mp3",             "type": "audio" },
+    { "key": "music_victory",    "path": "assets/sounds/music/win_sting.mp3",        "type": "audio" },
+    { "key": "music_game_over",  "path": "assets/sounds/music/game_over_sting.mp3",  "type": "audio" },
+
+    { "key": "sfx_attack_physical", "path": "assets/sounds/sfx/combat/Assasin.mp3",    "type": "audio" },
+    { "key": "sfx_attack_axe",      "path": "assets/sounds/sfx/combat/axe.mp3",        "type": "audio" },
+    { "key": "sfx_attack_magic",    "path": "assets/sounds/sfx/combat/Magic Bolt.mp3", "type": "audio" },
+    { "key": "sfx_menu_click",      "path": "assets/sounds/sfx/ui/click.mp3",          "type": "audio" },
+    { "key": "sfx_level_up",        "path": "assets/sounds/sfx/ui/level_up.mp3",       "type": "audio" },
+    { "key": "sfx_unit_death",      "path": "assets/sounds/sfx/monsters/unit_death.mp3", "type": "audio" }
+  ]
+}
