@@ -4,13 +4,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "npm --prefix server run dev",
+    "dev:all": "concurrently -n server,client -c cyan,magenta \"npm:dev:server\" \"npm:dev\"",
     "build": "vite build",
+    "build:server": "npm --prefix server run build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "colyseus.js": "^0.16.22",
     "phaser": "^3.90.0"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
   }

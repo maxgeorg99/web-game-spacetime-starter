@@ -24,4 +24,6 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [BootScene, GameScene],
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).__game = game;

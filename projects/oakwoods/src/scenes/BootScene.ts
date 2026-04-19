@@ -1,5 +1,21 @@
 import Phaser from "phaser";
 
+export interface EnemyAnimationDef {
+  suffix: string;
+  path: string;
+  endFrame: number;
+  frameRate: number;
+  repeat: number;
+}
+
+export interface EnemyDef {
+  id: string;
+  keyPrefix: string;
+  frameWidth: number;
+  frameHeight: number;
+  animations: EnemyAnimationDef[];
+}
+
 interface AssetManifest {
   meta: {
     basePath: string;
@@ -22,6 +38,7 @@ interface AssetManifest {
         repeat: number;
       }>;
     };
+    enemies?: EnemyDef[];
   };
   tilesets: {
     main: {
@@ -102,6 +119,17 @@ export class BootScene extends Phaser.Scene {
     // Tileset image
     const tileset = manifest.tilesets.main;
     this.load.image(tileset.key, `${basePath}/${tileset.path}`);
+
+    // Enemy spritesheets — one sheet per animation suffix
+    for (const enemy of manifest.spritesheets.enemies ?? []) {
+      for (const anim of enemy.animations) {
+        const key = `${enemy.keyPrefix}-${anim.suffix}`;
+        this.load.spritesheet(key, `${basePath}/${anim.path}`, {
+          frameWidth: enemy.frameWidth,
+          frameHeight: enemy.frameHeight,
+        });
+      }
+    }
 
     // Store manifest in registry for other scenes
     this.registry.set("oakwoods-manifest", manifest);

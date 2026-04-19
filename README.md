@@ -2,12 +2,6 @@
 
 > A curated bundle of real AI-assisted game starter repos + unified Claude Code / agent skills to help you ship something playable fast.
 
-<a href="https://vibegamedev.com?utm_source=github&utm_medium=readme&utm_campaign=vibejam-starter-pack">
-  <img src="assets/vgd.png" width="720" alt="VibeGameDev.com — AI game dev resources" />
-</a>
-
-> Want more game-dev-first AI workflows, starter projects, and build resources? → [vibegamedev.com](https://vibegamedev.com?utm_source=github&utm_medium=readme&utm_campaign=vibejam-starter-pack)
-
 ---
 
 ## What this pack gives you

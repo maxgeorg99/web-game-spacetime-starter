@@ -5,12 +5,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev      # Start Vite dev server (http://localhost:5173)
-npm run build    # Build production bundle to dist/
-npm run preview  # Preview production build locally
+npm run dev         # Start Vite client only (http://localhost:5173)
+npm run dev:server  # Start Colyseus server only (ws://localhost:2567)
+npm run dev:all     # Run both concurrently (for multiplayer)
+npm run build       # Build production client bundle to dist/
+npm run build:server # Compile server to server/lib/
+npm run preview     # Preview production build locally
 ```
 
 No test or lint commands are configured.
+
+## Multiplayer (Colyseus)
+
+This project is session-multiplayer via a local Colyseus server in `server/`.
+
+- **Server**: `server/src/index.ts` boots a `WebSocketTransport` on port 2567 and defines the `oakwoods` room (`server/src/rooms/OakWoodsRoom.ts`).
+- **State**: `server/src/schemas/GameState.ts` — one `PlayerState` per connected client (`x`, `y`, `facing`, `animState`, `hp`).
+- **Authority model**: Each client runs Phaser physics for its own player and streams position + animation state at ~20Hz via `"input"` messages. The server owns the canonical `players` MapSchema; remote avatars are rendered from state with linear interpolation. Enemies remain client-side (each client fights their own instance).
+- **Client**: `src/network/ColyseusClient.ts` wraps `colyseus.js`. Endpoint defaults to `ws://<hostname>:2567` and can be overridden with the `VITE_COLYSEUS_URL` env var.
+- **Schema callbacks**: colyseus.js 0.16 requires `getStateCallbacks(room)` — use the returned `$` proxy, e.g. `$(room.state).players.onAdd(...)` and `$(player).listen("x", ...)`.
+
+If the server is unreachable the client falls back to solo play and the HUD shows `offline (solo)`.
 
 ## Assets (Not Included)
 
