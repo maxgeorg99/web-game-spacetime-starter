@@ -116,9 +116,14 @@ export class BootScene extends Phaser.Scene {
       frameHeight: char.frameHeight,
     });
 
-    // Tileset image
+    // Tileset image (used by Phaser tilemap) + as a spritesheet so we can
+    // pick individual 24x24 tiles for tileSprite backgrounds.
     const tileset = manifest.tilesets.main;
     this.load.image(tileset.key, `${basePath}/${tileset.path}`);
+    this.load.spritesheet(`${tileset.key}-sheet`, `${basePath}/${tileset.path}`, {
+      frameWidth: 24,
+      frameHeight: 24,
+    });
 
     // Enemy spritesheets — one sheet per animation suffix
     for (const enemy of manifest.spritesheets.enemies ?? []) {

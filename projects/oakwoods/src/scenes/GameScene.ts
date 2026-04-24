@@ -115,26 +115,33 @@ export class GameScene extends Phaser.Scene {
     const worldWidth = 500 * 24;
     const viewportH = 180;
     const floorH = viewportH - BASE_BACK_Y + 40; // 120 — covers y=100..220
-    this.add.rectangle(0, BASE_BACK_Y, worldWidth, floorH, 0x3a2a1a, 0.92)
+    // Tiled stone floor using a single frame from the Oak Woods tileset
+    // (504×360, 21×15 grid of 24×24 tiles). Frame 222 = col 12, row 10 —
+    // stone-topped platform slice (grey cobbles + dirt body), fully opaque
+    // and reads as a stone path when tiled.
+    const FLOOR_FRAME = 222;
+    this.add
+      .tileSprite(0, BASE_BACK_Y, worldWidth, floorH, "oakwoods-tileset-sheet", FLOOR_FRAME)
       .setOrigin(0, 0)
       .setDepth(1);
-    // Darker near the back row (shadow under the trees), lighter toward the front.
-    this.add.rectangle(0, BASE_BACK_Y, worldWidth, 14, 0x000000, 0.45)
+    // Shadow row under the back ridge (reads as shade from the trees).
+    this.add.rectangle(0, BASE_BACK_Y, worldWidth, 14, 0x000000, 0.55)
       .setOrigin(0, 0)
       .setDepth(1.1);
-    // Thin highlight at the front edge of the walkable band so players
-    // can read where the playable depth ends.
-    this.add.rectangle(0, BASE_FRONT_Y - 1, worldWidth, 2, 0x8a6a3a, 0.6)
+    // Warm tan highlight at the front edge of the walkable band.
+    this.add.rectangle(0, BASE_FRONT_Y - 1, worldWidth, 2, 0xc49a5a, 0.75)
       .setOrigin(0, 0)
       .setDepth(1.2);
 
     // Back-edge grass ridge: tile across the whole width just above the back
     // row so it reads as "the forest floor meets the walkable area here".
     // Tilemap is positioned at y=16; row 3 top lives at y = 16 + 3*24 = 88.
+    // Tint warm autumn-yellow to match the Oak Woods parallax palette.
     const ridgeRow = 3;
     for (let x = 0; x < 500; x++) {
       this.map.putTileAt(0, x, ridgeRow, true, "ground");
     }
+    this.groundLayer.setTint(0xd8a84a);
 
     // === BACK-EDGE DECORATIONS (z=0) ===
     // Anchor the tall scenery to the back row so characters walk in front of it.
@@ -154,16 +161,24 @@ export class GameScene extends Phaser.Scene {
     placeBack(350, "oakwoods-rock2");
     placeBack(550, "oakwoods-rock3");
 
-    // Front-edge grass tufts to give the walkable area a grounded feel.
+    // Front-edge grass tufts — tinted warm yellow to match the autumn palette.
     const frontY = BASE_FRONT_Y;
+    const grassTint = 0xe6b64a;
     const placeFront = (x: number, key: string) =>
-      this.add.image(x, frontY, key).setOrigin(0.5, 1).setDepth(frontY + 0.1);
+      this.add
+        .image(x, frontY, key)
+        .setOrigin(0.5, 1)
+        .setDepth(frontY + 0.1)
+        .setTint(grassTint);
     placeFront(70, "oakwoods-grass1");
     placeFront(120, "oakwoods-grass2");
     placeFront(200, "oakwoods-grass3");
     placeFront(280, "oakwoods-grass1");
     placeFront(380, "oakwoods-grass2");
     placeFront(450, "oakwoods-grass3");
+    placeFront(520, "oakwoods-grass1");
+    placeFront(600, "oakwoods-grass2");
+    placeFront(680, "oakwoods-grass3");
 
     // === PLAYER CHARACTER ===
     // Beat 'em up plane: no gravity, no ground collider. The player walks
