@@ -38,9 +38,6 @@ export class GameScene extends Phaser.Scene {
   private bgLayer2!: Phaser.GameObjects.TileSprite;
   private bgLayer3!: Phaser.GameObjects.TileSprite;
 
-  // Track how far ground has been generated
-  private groundGeneratedToX: number = 0;
-
   // Attack state (local animation only; server resolves damage)
   private isAttacking: boolean = false;
   private readonly PLAYER_MAX_HP = 100;
@@ -88,6 +85,9 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0, 0).setScrollFactor(0);
 
     // === GROUND TILEMAP ===
+    // The tilemap is kept around because scene infrastructure (e.g. the back-edge
+    // grass ridge below) reuses it. We no longer collide against it; the
+    // character walks freely on the XZ plane.
     this.map = this.make.tilemap({
       tileWidth: 24,
       tileHeight: 24,
@@ -105,31 +105,65 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     this.groundLayer = layer;
+    this.groundLayer.setDepth(0.5); // just above parallax, below floor + characters
 
-    const initialGround = 140;
-    for (let x = 0; x < initialGround; x++) {
-      this.map.putTileAt(0, x, 7, true, "ground");
+    // === WALKABLE FLOOR (2.5D arena) ===
+    // Opaque dirt-tone band that masks the baked-in ground line from the
+    // parallax layers and makes the walkable XZ plane visually explicit.
+    // Extends past the front edge down to the screen bottom so no parallax
+    // bleeds underneath the arena floor.
+    const worldWidth = 500 * 24;
+    const viewportH = 180;
+    const floorH = viewportH - BASE_BACK_Y + 40; // 120 — covers y=100..220
+    this.add.rectangle(0, BASE_BACK_Y, worldWidth, floorH, 0x3a2a1a, 0.92)
+      .setOrigin(0, 0)
+      .setDepth(1);
+    // Darker near the back row (shadow under the trees), lighter toward the front.
+    this.add.rectangle(0, BASE_BACK_Y, worldWidth, 14, 0x000000, 0.45)
+      .setOrigin(0, 0)
+      .setDepth(1.1);
+    // Thin highlight at the front edge of the walkable band so players
+    // can read where the playable depth ends.
+    this.add.rectangle(0, BASE_FRONT_Y - 1, worldWidth, 2, 0x8a6a3a, 0.6)
+      .setOrigin(0, 0)
+      .setDepth(1.2);
+
+    // Back-edge grass ridge: tile across the whole width just above the back
+    // row so it reads as "the forest floor meets the walkable area here".
+    // Tilemap is positioned at y=16; row 3 top lives at y = 16 + 3*24 = 88.
+    const ridgeRow = 3;
+    for (let x = 0; x < 500; x++) {
+      this.map.putTileAt(0, x, ridgeRow, true, "ground");
     }
-    this.groundGeneratedToX = initialGround;
-    this.groundLayer.setCollisionByExclusion([-1]);
 
-    // === DECORATIONS ===
-    const groundY = 184;
-    this.add.image(250, groundY, "oakwoods-shop").setOrigin(0.5, 1);
-    this.add.image(50, groundY, "oakwoods-lamp").setOrigin(0.5, 1);
-    this.add.image(180, groundY, "oakwoods-lamp").setOrigin(0.5, 1);
-    this.add.image(320, groundY, "oakwoods-sign").setOrigin(0.5, 1);
-    this.add.image(400, groundY, "oakwoods-fence1").setOrigin(0.5, 1);
-    this.add.image(470, groundY, "oakwoods-fence2").setOrigin(0.5, 1);
-    this.add.image(140, groundY, "oakwoods-rock1").setOrigin(0.5, 1);
-    this.add.image(350, groundY, "oakwoods-rock2").setOrigin(0.5, 1);
-    this.add.image(550, groundY, "oakwoods-rock3").setOrigin(0.5, 1);
-    this.add.image(70, groundY, "oakwoods-grass1").setOrigin(0.5, 1);
-    this.add.image(120, groundY, "oakwoods-grass2").setOrigin(0.5, 1);
-    this.add.image(200, groundY, "oakwoods-grass3").setOrigin(0.5, 1);
-    this.add.image(280, groundY, "oakwoods-grass1").setOrigin(0.5, 1);
-    this.add.image(380, groundY, "oakwoods-grass2").setOrigin(0.5, 1);
-    this.add.image(450, groundY, "oakwoods-grass3").setOrigin(0.5, 1);
+    // === BACK-EDGE DECORATIONS (z=0) ===
+    // Anchor the tall scenery to the back row so characters walk in front of it.
+    // Origin (0.5, 1) keeps the bottom of each sprite at BASE_BACK_Y.
+    const backY = BASE_BACK_Y;
+    const backDepth = 1.5; // above floor, below walking characters (depth = sprite.y)
+    const placeBack = (x: number, key: string) =>
+      this.add.image(x, backY, key).setOrigin(0.5, 1).setDepth(backDepth);
+    placeBack(250, "oakwoods-shop");
+    placeBack(50, "oakwoods-lamp");
+    placeBack(180, "oakwoods-lamp");
+    placeBack(320, "oakwoods-sign");
+    placeBack(400, "oakwoods-fence1");
+    placeBack(470, "oakwoods-fence2");
+    placeBack(600, "oakwoods-fence1");
+    placeBack(140, "oakwoods-rock1");
+    placeBack(350, "oakwoods-rock2");
+    placeBack(550, "oakwoods-rock3");
+
+    // Front-edge grass tufts to give the walkable area a grounded feel.
+    const frontY = BASE_FRONT_Y;
+    const placeFront = (x: number, key: string) =>
+      this.add.image(x, frontY, key).setOrigin(0.5, 1).setDepth(frontY + 0.1);
+    placeFront(70, "oakwoods-grass1");
+    placeFront(120, "oakwoods-grass2");
+    placeFront(200, "oakwoods-grass3");
+    placeFront(280, "oakwoods-grass1");
+    placeFront(380, "oakwoods-grass2");
+    placeFront(450, "oakwoods-grass3");
 
     // === PLAYER CHARACTER ===
     // Beat 'em up plane: no gravity, no ground collider. The player walks
@@ -558,20 +592,6 @@ export class GameScene extends Phaser.Scene {
     this.bgLayer1.tilePositionX = camX * 0.1;
     this.bgLayer2.tilePositionX = camX * 0.3;
     this.bgLayer3.tilePositionX = camX * 0.5;
-
-    // === INFINITE GROUND GENERATION ===
-    const playerTileX = Math.floor(this.player.x / 24);
-    const generateAhead = 20;
-    if (playerTileX + generateAhead > this.groundGeneratedToX) {
-      const tilesToGenerate = (playerTileX + generateAhead) - this.groundGeneratedToX;
-      for (let i = 0; i < tilesToGenerate; i++) {
-        const x = this.groundGeneratedToX + i;
-        if (x < 500) {
-          this.map.putTileAt(0, x, 7, true, "ground");
-        }
-      }
-      this.groundGeneratedToX = Math.min(playerTileX + generateAhead, 500);
-    }
 
     // === MULTIPLAYER SYNC ===
     this.interpolateRemotes();

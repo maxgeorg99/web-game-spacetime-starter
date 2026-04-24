@@ -24,3 +24,4 @@
 - **Iter 1** (2026-04-24): Phase 1.1 — Step 3 deferred per user request; advancing to combat (Phase 2.1)
 - **Iter 2** (2026-04-24): Phase 2.1 — Step 1 ✓ (enemy z field, XZ AI chase, Z-aware hitboxes, client depth sort)
 - **Iter 2** (2026-04-24): Phase 2.1 — Step 2 ✓ (xzDistance + isInMeleeReach helpers, 11 new tests)
+- **Iter 3** (2026-04-24): Interlude — arena floor overlay + back-edge grass ridge + decoration re-anchor to z=0 (partial Phase 1.3 visuals)
