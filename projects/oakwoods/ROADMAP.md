@@ -24,7 +24,7 @@ Goal: Characters move 8-directional on an XZ ground plane. No gravity. Depth sor
 - Sprite rendered at screen position `(worldX, baseY - z)` where `baseY` is the ground plane anchor.
 - Remove the "jump" / "fall" animation states; only idle / run / attack / death.
 - Server clamps Z to `[0, 100]` (stage depth).
-- Status: Not started
+- Status: Done (2026-04-24) — Playwright verification deferred.
 
 ### 1.2: Depth Sorting
 - All entities (players, enemies, decorations) have a `depth` set to their Z value so nearer sprites render above farther ones.
@@ -48,7 +48,7 @@ Goal: Server-authoritative combat with combo attacks and Z-aware hitboxes.
 ### 2.1: Z-Aware Attack Resolution
 - Server `resolvePlayerAttacks` and enemy `applyEnemyHit` use both X **and** Z overlap (not only Y) so attacks only connect to targets on the same depth band (±20 Z).
 - Enemy AI chase and patrol uses XZ distance too (move enemy's Z toward nearest player's Z).
-- Status: Not started
+- Status: Done (2026-04-24) — Playwright verification deferred.
 
 ### 2.2: Light Combo (3-hit chain)
 - Pressing X within 400ms of previous attack chains to hit 2, then hit 3.

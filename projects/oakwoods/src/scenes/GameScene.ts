@@ -585,11 +585,16 @@ export class GameScene extends Phaser.Scene {
       avatar.sprite.y = Phaser.Math.Linear(avatar.sprite.y, avatar.targetY, lerp);
       avatar.label.x = avatar.sprite.x;
       avatar.label.y = avatar.sprite.y - 30;
+      avatar.sprite.setDepth(avatar.sprite.y);
+      avatar.label.setDepth(avatar.sprite.y + 0.5);
     }
     for (const enemy of this.remoteEnemies.values()) {
       enemy.sprite.x = Phaser.Math.Linear(enemy.sprite.x, enemy.targetX, lerp);
       enemy.sprite.y = Phaser.Math.Linear(enemy.sprite.y, enemy.targetY, lerp);
+      enemy.sprite.setDepth(enemy.sprite.y);
     }
+    // Local player depth-sorts with everyone else by their on-screen y.
+    this.player.setDepth(this.player.y);
   }
 
   private maybeSendLocalState(moving: boolean): void {

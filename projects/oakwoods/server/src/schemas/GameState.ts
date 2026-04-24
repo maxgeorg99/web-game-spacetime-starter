@@ -18,6 +18,8 @@ export class EnemyState extends Schema {
   @type("string") enemyType: string = "";
   @type("float32") x: number = 0;
   @type("float32") y: number = 0;
+  // Depth on the XZ plane. Screen y = BASE_BACK_Y + z.
+  @type("float32") z: number = 30;
   @type("uint8") facing: number = 0;
   @type("string") animState: string = "idle";
   @type("int16") hp: number = 0;

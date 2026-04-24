@@ -8,7 +8,15 @@ import {
   PATROL_RANGE,
   EnemyStats,
 } from "../enemyConfig";
-import { BASE_BACK_Y, Z_MAX, clampZ, zToY } from "../shared/xzPlane";
+import {
+  BASE_BACK_Y,
+  Z_MAX,
+  Z_ATTACK_TOLERANCE,
+  clampZ,
+  isInMeleeReach,
+  xzDistance,
+  zToY,
+} from "../shared/xzPlane";
 
 const PLAYER_MAX_HP = 100;
 const PLAYER_ATTACK_DAMAGE = 12;
@@ -24,6 +32,7 @@ interface EnemyRuntime {
   patrolMin: number;
   patrolMax: number;
   vx: number;
+  vz: number;
   attackStartedAt: number;
   attackDealtThisSwing: boolean;
   lastAttackAt: number;
@@ -129,16 +138,20 @@ export class OakWoodsRoom extends Room<GameState> {
   // ───────────────────────── enemy spawning ─────────────────────────
 
   private spawnEnemies() {
+    // Rotate spawn depth across waves so agents/players need to manage Z.
+    const zSlots = [Z_MAX * 0.25, Z_MAX * 0.55, Z_MAX * 0.85];
     for (let i = 0; i < ENEMY_SPAWN_PLAN.length; i++) {
       const [col, type] = ENEMY_SPAWN_PLAN[i];
       const stats = ENEMY_STATS[type];
       if (!stats) continue;
       const id = `e${i}`;
       const x = col * TILE_SIZE + TILE_SIZE / 2;
+      const z = clampZ(zSlots[i % zSlots.length]);
       const enemy = new EnemyState();
       enemy.enemyType = type;
       enemy.x = x;
-      enemy.y = GROUND_TOP_Y;
+      enemy.z = z;
+      enemy.y = zToY(z);
       enemy.hp = stats.maxHp;
       enemy.maxHp = stats.maxHp;
       enemy.animState = "idle";
@@ -151,6 +164,7 @@ export class OakWoodsRoom extends Room<GameState> {
         patrolMin: x - PATROL_RANGE,
         patrolMax: x + PATROL_RANGE,
         vx: 0,
+        vz: 0,
         attackStartedAt: 0,
         attackDealtThisSwing: false,
         lastAttackAt: 0,
@@ -158,6 +172,9 @@ export class OakWoodsRoom extends Room<GameState> {
         invulnUntil: 0,
       });
     }
+    // Keep the import "GROUND_TOP_Y" available to side-step unused-import warnings
+    // while the old y-based ground logic is decommissioned.
+    void GROUND_TOP_Y;
   }
 
   private respawnAllEnemies() {
@@ -193,9 +210,10 @@ export class OakWoodsRoom extends Room<GameState> {
       }
 
       const target = this.pickTarget(enemy, rt);
-      const adx = target ? Math.abs(target.x - enemy.x) : Infinity;
-      const ady = target ? Math.abs(target.y - enemy.y) : Infinity;
       const dx = target ? target.x - enemy.x : 0;
+      const dz = target ? target.z - enemy.z : 0;
+      const adx = target ? Math.abs(dx) : Infinity;
+      const adz = target ? Math.abs(dz) : Infinity;
 
       if (rt.aiState === "chase" || rt.aiState === "attack") {
         rt.facing = dx >= 0 ? 1 : -1;
@@ -204,13 +222,14 @@ export class OakWoodsRoom extends Room<GameState> {
 
       switch (rt.aiState) {
         case "patrol": {
-          if (target && adx < rt.stats.aggroRange && ady < 60) {
+          if (target && adx < rt.stats.aggroRange && adz < rt.stats.aggroRange) {
             rt.aiState = "chase";
             break;
           }
           if (enemy.x <= rt.patrolMin) rt.facing = 1;
           else if (enemy.x >= rt.patrolMax) rt.facing = -1;
           rt.vx = rt.facing * rt.stats.patrolSpeed;
+          rt.vz = 0;
           enemy.animState = "run";
           break;
         }
@@ -219,8 +238,10 @@ export class OakWoodsRoom extends Room<GameState> {
             rt.aiState = "patrol";
             break;
           }
-          if (adx <= rt.stats.attackRange && ady < 32) {
+          // Lined up on Z AND within X reach → attack.
+          if (adx <= rt.stats.attackRange && adz <= Z_ATTACK_TOLERANCE) {
             rt.vx = 0;
+            rt.vz = 0;
             if (now - rt.lastAttackAt >= rt.stats.attackCooldownMs) {
               rt.aiState = "attack";
               rt.attackStartedAt = now;
@@ -232,12 +253,17 @@ export class OakWoodsRoom extends Room<GameState> {
             }
             break;
           }
-          rt.vx = rt.facing * rt.stats.chaseSpeed;
+          // Otherwise, move toward the player on both axes. Direction is
+          // the unit vector of (dx, dz) so the enemy doesn't exceed chaseSpeed.
+          const mag = Math.hypot(dx, dz) || 1;
+          rt.vx = (dx / mag) * rt.stats.chaseSpeed;
+          rt.vz = (dz / mag) * rt.stats.chaseSpeed;
           enemy.animState = "run";
           break;
         }
         case "attack": {
           rt.vx = 0;
+          rt.vz = 0;
           const elapsed = now - rt.attackStartedAt;
           if (
             !rt.attackDealtThisSwing &&
@@ -255,6 +281,7 @@ export class OakWoodsRoom extends Room<GameState> {
         }
         case "hit": {
           rt.vx *= 0.85; // quick decay
+          rt.vz *= 0.85;
           if (now >= rt.hitUntil) {
             rt.aiState = target ? "chase" : "patrol";
           }
@@ -263,6 +290,8 @@ export class OakWoodsRoom extends Room<GameState> {
       }
 
       enemy.x += rt.vx * dt;
+      enemy.z = clampZ(enemy.z + rt.vz * dt);
+      enemy.y = zToY(enemy.z);
       // Keep enemies within a reasonable x range (ground layer extends to 500 tiles).
       if (enemy.x < 0) enemy.x = 0;
       if (enemy.x > 499 * TILE_SIZE) enemy.x = 499 * TILE_SIZE;
@@ -271,12 +300,12 @@ export class OakWoodsRoom extends Room<GameState> {
 
   private pickTarget(enemy: EnemyState, _rt: EnemyRuntime): PlayerState | null {
     let best: PlayerState | null = null;
-    let bestDx = Infinity;
+    let bestDist = Infinity;
     for (const player of this.state.players.values()) {
       if (player.hp <= 0) continue;
-      const adx = Math.abs(player.x - enemy.x);
-      if (adx < bestDx) {
-        bestDx = adx;
+      const d = xzDistance(player.x, player.z, enemy.x, enemy.z);
+      if (d < bestDist) {
+        bestDist = d;
         best = player;
       }
     }
@@ -287,11 +316,16 @@ export class OakWoodsRoom extends Room<GameState> {
     const range = rt.stats.attackRange + 6;
     for (const player of this.state.players.values()) {
       if (player.hp <= 0) continue;
-      const adx = Math.abs(player.x - enemy.x);
-      const ady = Math.abs(player.y - enemy.y);
-      // Only hit in front of the enemy.
-      const inFront = rt.facing === 1 ? (player.x - enemy.x) >= -4 : (enemy.x - player.x) >= -4;
-      if (inFront && adx <= range && ady < 34) {
+      if (
+        isInMeleeReach(
+          enemy.x,
+          enemy.z,
+          player.x,
+          player.z,
+          rt.facing,
+          range,
+        )
+      ) {
         this.damagePlayer(player, rt.stats.touchDamage);
       }
     }
@@ -316,28 +350,23 @@ export class OakWoodsRoom extends Room<GameState> {
       if (rt.attackDealtThisSwing) continue;
       if (now > rt.attackValidUntil) continue;
 
-      // Apply damage to enemies in attack hitbox.
-      const facing = rt.attackFacing;
-      const leftEdge = facing === 1 ? player.x : player.x - PLAYER_ATTACK_RANGE;
-      const rightEdge = leftEdge + PLAYER_ATTACK_RANGE;
-      const topEdge = player.y - 40;
-      const bottomEdge = player.y + 6;
-
       for (const [, enemy] of this.state.enemies) {
         const rte = this.enemyRuntime.get(this.enemyIdOf(enemy)!);
         if (!rte || rte.aiState === "dead") continue;
         if (now < rte.invulnUntil) continue;
-        // Use enemy bounding box (approximate as 28x40 centered on feet).
-        const halfW = 16;
-        const eLeft = enemy.x - halfW;
-        const eRight = enemy.x + halfW;
-        const eTop = enemy.y - 40;
-        const eBottom = enemy.y + 4;
-        const overlap =
-          eRight >= leftEdge && eLeft <= rightEdge && eBottom >= topEdge && eTop <= bottomEdge;
-        if (!overlap) continue;
 
-        this.damageEnemy(enemy, rte, PLAYER_ATTACK_DAMAGE, player.x);
+        if (
+          isInMeleeReach(
+            player.x,
+            player.z,
+            enemy.x,
+            enemy.z,
+            rt.attackFacing,
+            PLAYER_ATTACK_RANGE,
+          )
+        ) {
+          this.damageEnemy(enemy, rte, PLAYER_ATTACK_DAMAGE, player.x);
+        }
       }
       rt.attackDealtThisSwing = true;
     }
