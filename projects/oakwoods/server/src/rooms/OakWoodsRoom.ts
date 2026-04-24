@@ -8,6 +8,7 @@ import {
   PATROL_RANGE,
   EnemyStats,
 } from "../enemyConfig";
+import { BASE_BACK_Y, Z_MAX, clampZ, zToY } from "../shared/xzPlane";
 
 const PLAYER_MAX_HP = 100;
 const PLAYER_ATTACK_DAMAGE = 12;
@@ -15,20 +16,6 @@ const PLAYER_ATTACK_RANGE = 28;
 const PLAYER_ATTACK_WINDOW_MS = 300;
 const PLAYER_INVULN_MS = 600;
 const ENEMY_INVULN_MS = 220;
-
-// Walkable XZ plane (beat 'em up).
-// z = 0 ⇒ back row (farthest from camera).
-// z = Z_MAX ⇒ front row (closest to camera).
-// On-screen y = BASE_BACK_Y + z.
-const BASE_BACK_Y = 100;
-const Z_MAX = 60;
-
-export function clampZ(z: number): number {
-  if (!Number.isFinite(z)) return 0;
-  if (z < 0) return 0;
-  if (z > Z_MAX) return Z_MAX;
-  return z;
-}
 
 interface EnemyRuntime {
   stats: EnemyStats;
@@ -72,10 +59,10 @@ export class OakWoodsRoom extends Room<GameState> {
       // Prefer z (XZ-plane input). Fall back to y for legacy clients.
       if (typeof payload.z === "number") {
         player.z = clampZ(payload.z);
-        player.y = BASE_BACK_Y + player.z;
+        player.y = zToY(player.z);
       } else if (typeof payload.y === "number") {
         player.z = clampZ(payload.y - BASE_BACK_Y);
-        player.y = BASE_BACK_Y + player.z;
+        player.y = zToY(player.z);
       }
       if (typeof payload.facing === "number") player.facing = payload.facing & 0xff;
       if (typeof payload.animState === "string") player.animState = payload.animState;
@@ -99,7 +86,7 @@ export class OakWoodsRoom extends Room<GameState> {
       player.hp = PLAYER_MAX_HP;
       player.x = 100;
       player.z = Z_MAX / 2;
-      player.y = BASE_BACK_Y + player.z;
+      player.y = zToY(player.z);
       player.animState = "idle";
       player.invulnUntil = Date.now() + 1500;
     });
@@ -116,7 +103,7 @@ export class OakWoodsRoom extends Room<GameState> {
     player.name = (options.name ?? `P${this.state.players.size + 1}`).slice(0, 16);
     player.x = 100;
     player.z = Z_MAX / 2;
-    player.y = BASE_BACK_Y + player.z;
+    player.y = zToY(player.z);
     player.hp = PLAYER_MAX_HP;
     player.invulnUntil = Date.now() + 1500; // short join invuln
     player.updatedAt = Date.now() >>> 0;

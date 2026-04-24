@@ -3,12 +3,12 @@
 ## Current Phase
 
 **Phase:** 1.1 — XZ-Plane Player Movement
-**Status:** not_started
+**Status:** in_progress
 
 ### Steps
 
-- [ ] Step 1: Implementation
-- [ ] Step 2: Code review + test writing
+- [x] Step 1: Implementation
+- [x] Step 2: Code review + test writing
 - [ ] Step 3: Playwright verification
 
 ## Completed Phases
@@ -19,4 +19,5 @@
 
 ## Iteration Log
 
-_(Appended by the orchestrator after each step)_
+- **Iter 1** (2026-04-24): Phase 1.1 — Step 1 ✓ (XZ movement, z schema, gravity off)
+- **Iter 1** (2026-04-24): Phase 1.1 — Step 2 ✓ (extract xzPlane module, vitest + 9 tests)
