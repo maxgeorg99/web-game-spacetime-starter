@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Current Direction
+
+This project is being transformed from a side-scrolling Phaser platformer into a **Castle Crashers-style 4-player 2.5D beat 'em up**. Work is orchestrated via a Ralph Loop:
+
+- **`ROADMAP.md`** — phased spec (what to build).
+- **`PHASE_TRACKER.md`** — current phase + step checkboxes + bug queue.
+- **`PROMPT.md`** — orchestrator instructions.
+- **`docs/verification/`** — Playwright reports + screenshots.
+
+Key pivot from the original platformer: remove gravity/jumping → XZ-plane movement (walk into/out of screen), replace infinite scroll → arena-locked waves, max 4 players with character select, server-authoritative combo combat. See `ROADMAP.md` for the full plan.
+
 ## Commands
 
 ```bash

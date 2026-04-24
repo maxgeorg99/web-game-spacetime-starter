@@ -1,0 +1,20 @@
+{
+  "name": "oakwoods-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node lib/index.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@colyseus/schema": "^3.0.0",
+    "colyseus": "^0.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3"
+  }
+}

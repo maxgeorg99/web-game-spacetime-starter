@@ -11,6 +11,12 @@ interface RemoteAvatar {
   facing: number;
 }
 
+// Walkable XZ plane bounds — keep in sync with BASE_BACK_Y / Z_MAX on the server.
+const BASE_BACK_Y = 100;
+const Z_MAX = 60;
+const BASE_FRONT_Y = BASE_BACK_Y + Z_MAX; // 160
+const MOVE_SPEED = 100;
+
 interface RemoteEnemy {
   sprite: Phaser.GameObjects.Sprite;
   type: string;
@@ -126,18 +132,18 @@ export class GameScene extends Phaser.Scene {
     this.add.image(450, groundY, "oakwoods-grass3").setOrigin(0.5, 1);
 
     // === PLAYER CHARACTER ===
-    this.player = this.physics.add.sprite(100, 120, "oakwoods-char-blue", 0);
+    // Beat 'em up plane: no gravity, no ground collider. The player walks
+    // on an XZ plane where screen-y ∈ [BASE_BACK_Y, BASE_FRONT_Y] represents
+    // z ∈ [0, Z_MAX] (0 = back row, Z_MAX = front row).
+    this.player = this.physics.add.sprite(100, BASE_BACK_Y + Z_MAX / 2, "oakwoods-char-blue", 0);
     this.player.setBounce(0);
     this.player.body?.setSize(20, 38);
     this.player.body?.setOffset(18, 16);
-    this.physics.add.collider(this.player, this.groundLayer);
 
     // === CAMERA ===
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.cameras.main.setDeadzone(50, 50);
     this.physics.world.setBounds(0, 0, 500 * 24, 180);
-    this.player.setCollideWorldBounds(true);
-    this.player.body?.setBoundsRectangle(new Phaser.Geom.Rectangle(0, 0, 999999, 180));
 
     // === ANIMATIONS ===
     this.createPlayerAnimations();
@@ -405,12 +411,12 @@ export class GameScene extends Phaser.Scene {
     this.updateHud();
     if (newHp < prevHp && newHp > 0) {
       this.flashSprite(this.player);
-      // Small local knockback so damage is felt kinetically.
+      // XZ-plane knockback: push away from the attacker horizontally.
       const body = this.player.body as Phaser.Physics.Arcade.Body | null;
       if (body) {
         const facing = this.player.flipX ? 1 : -1;
         this.player.setVelocityX(facing * 120);
-        this.player.setVelocityY(-140);
+        this.player.setVelocityY(0);
       }
       this.cameras.main.shake(80, 0.003);
     }
@@ -493,53 +499,58 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    const speed = 100;
-    const jumpVelocity = -250;
-    const onGround = this.player.body?.blocked.down;
-    const velocityY = this.player.body?.velocity.y ?? 0;
-    const isMovingHorizontally = this.cursors.left.isDown || this.cursors.right.isDown;
-
-    // Block input when dead.
+    // === 8-WAY XZ MOVEMENT ===
     const inputLocked = this.gameOver || this.playerHp <= 0;
 
-    if (!inputLocked) {
-      if (this.cursors.left.isDown) {
-        this.player.setVelocityX(-speed);
-        this.player.setFlipX(true);
-      } else if (this.cursors.right.isDown) {
-        this.player.setVelocityX(speed);
-        this.player.setFlipX(false);
-      } else if (!this.isAttacking) {
-        this.player.setVelocityX(0);
-      }
+    let ix = 0;
+    let iy = 0;
+    if (!inputLocked && !this.isAttacking) {
+      if (this.cursors.left.isDown) ix -= 1;
+      if (this.cursors.right.isDown) ix += 1;
+      if (this.cursors.up.isDown) iy -= 1;
+      if (this.cursors.down.isDown) iy += 1;
+    }
 
-      if (this.cursors.up.isDown && onGround && !this.isAttacking) {
-        this.player.setVelocityY(jumpVelocity);
-      }
+    const len = Math.hypot(ix, iy);
+    if (len > 0) {
+      this.player.setVelocity((ix / len) * MOVE_SPEED, (iy / len) * MOVE_SPEED);
+    } else {
+      this.player.setVelocity(0, 0);
+    }
 
-      if (
-        Phaser.Input.Keyboard.JustDown(this.attackKey) &&
-        onGround &&
-        !this.isAttacking
-      ) {
-        this.isAttacking = true;
-        this.player.setVelocityX(0);
-        this.player.anims.play("char-blue-attack", true);
-        this.net?.sendAttack({
-          x: this.player.x,
-          y: this.player.y,
-          facing: this.player.flipX ? 1 : 0,
-        });
-      }
+    // Only horizontal motion flips the sprite — up/down preserves facing.
+    if (ix < 0) this.player.setFlipX(true);
+    else if (ix > 0) this.player.setFlipX(false);
+
+    // Clamp depth to the walkable band.
+    if (this.player.y < BASE_BACK_Y) {
+      this.player.y = BASE_BACK_Y;
+      this.player.setVelocityY(0);
+    } else if (this.player.y > BASE_FRONT_Y) {
+      this.player.y = BASE_FRONT_Y;
+      this.player.setVelocityY(0);
+    }
+
+    if (
+      !inputLocked &&
+      Phaser.Input.Keyboard.JustDown(this.attackKey) &&
+      !this.isAttacking
+    ) {
+      this.isAttacking = true;
+      this.player.setVelocity(0, 0);
+      this.player.anims.play("char-blue-attack", true);
+      this.net?.sendAttack({
+        x: this.player.x,
+        y: this.player.y,
+        facing: this.player.flipX ? 1 : 0,
+      });
     }
 
     // === ANIMATION STATE MACHINE ===
+    // 2.5D beat 'em up has only idle / run / attack / death — no jump/fall.
+    const isMoving = ix !== 0 || iy !== 0;
     if (!this.isAttacking && !inputLocked) {
-      if (!onGround) {
-        this.player.anims.play(velocityY < 0 ? "char-blue-jump" : "char-blue-fall", true);
-      } else {
-        this.player.anims.play(isMovingHorizontally ? "char-blue-run" : "char-blue-idle", true);
-      }
+      this.player.anims.play(isMoving ? "char-blue-run" : "char-blue-idle", true);
     }
 
     // === PARALLAX SCROLLING ===
@@ -564,7 +575,7 @@ export class GameScene extends Phaser.Scene {
 
     // === MULTIPLAYER SYNC ===
     this.interpolateRemotes();
-    this.maybeSendLocalState(onGround ?? false, isMovingHorizontally, velocityY);
+    this.maybeSendLocalState(isMoving);
   }
 
   private interpolateRemotes(): void {
@@ -581,7 +592,7 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private maybeSendLocalState(onGround: boolean, moving: boolean, velocityY: number): void {
+  private maybeSendLocalState(moving: boolean): void {
     if (!this.net) return;
     const now = this.time.now;
     if (now - this.lastInputSentAt < 50) return;
@@ -589,7 +600,6 @@ export class GameScene extends Phaser.Scene {
     let animState: string;
     if (this.playerHp <= 0) animState = "death";
     else if (this.isAttacking) animState = "attack";
-    else if (!onGround) animState = velocityY < 0 ? "jump" : "fall";
     else if (moving) animState = "run";
     else animState = "idle";
 
@@ -602,9 +612,11 @@ export class GameScene extends Phaser.Scene {
       snap.animState !== animState;
     if (!moved) return;
 
+    const z = Math.max(0, Math.min(Z_MAX, this.player.y - BASE_BACK_Y));
     this.net.sendInput({
       x: this.player.x,
       y: this.player.y,
+      z,
       facing,
       animState,
     });
