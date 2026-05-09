@@ -19,12 +19,18 @@ export class HandUI {
     baseY: number;
   }> = [];
 
-  constructor(scene: Phaser.Scene) {
+  private onPlayCard: ((card: Card) => void) | null = null;
+
+  constructor(
+    scene: Phaser.Scene,
+    onPlayCard?: (card: Card) => void,
+  ) {
     this.scene = scene;
     this.container = scene.add.container(0, 0);
+    this.onPlayCard = onPlayCard ?? null;
   }
 
-  show(cards: Card[]): void {
+  show(cards: Card[], canAfford: boolean[]): void {
     this.clear();
     const { width, height } = this.scene.scale;
     const totalWidth = cards.length * (CARD_WIDTH + 8);
@@ -34,9 +40,11 @@ export class HandUI {
     for (let i = 0; i < cards.length; i++) {
       const card = cards[i];
       const x = startX + i * (CARD_WIDTH + 8);
+      const affordable = canAfford[i];
 
       const bg = this.scene.add.image(0, 0, card.art);
       bg.setDisplaySize(CARD_WIDTH, CARD_HEIGHT);
+      if (!affordable) bg.setAlpha(0.4);
 
       const costIcon = this.scene.add.image(
         -CARD_WIDTH / 2 + 18,
@@ -100,6 +108,12 @@ export class HandUI {
       cardContainer.on("pointerout", () => {
         cardContainer.y = baseY;
       });
+
+      if (affordable && this.onPlayCard) {
+        cardContainer.on("pointerdown", () => {
+          this.onPlayCard!(card);
+        });
+      }
 
       this.cardObjects.push({
         card,
