@@ -1,15 +1,20 @@
 import Phaser from "phaser";
 import { ManifestEntry } from "../types";
 import { registerAnimations } from "../cards/AnimationFactory";
+import { getStarterDeck } from "../cards/cards";
 import { PlayerState } from "../state/PlayerState";
 import { EnemyState } from "../state/EnemyState";
+import { DeckState } from "../state/DeckState";
 import { HpBar } from "../ui/HpBar";
+import { HandUI } from "../ui/HandUI";
 
 export class CombatScene extends Phaser.Scene {
   private player!: PlayerState;
   private playerHpBar!: HpBar;
   private enemy!: EnemyState;
   private enemyHpBar!: HpBar;
+  private deck!: DeckState;
+  private handUI!: HandUI;
 
   constructor() {
     super("CombatScene");
@@ -40,5 +45,11 @@ export class CombatScene extends Phaser.Scene {
     this.enemyHpBar.setText(`HP: ${this.enemy.hp}/${this.enemy.maxHp}`);
     this.enemyHpBar.setPercent(this.enemy.hpPercent);
     this.enemyHpBar.setDepth(10);
+
+    this.deck = new DeckState(getStarterDeck());
+    this.deck.draw(5);
+
+    this.handUI = new HandUI(this);
+    this.handUI.show(this.deck.hand);
   }
 }

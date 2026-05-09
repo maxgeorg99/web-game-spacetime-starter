@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 2.4 — Deck / hand / discard**
+**Phase 2.5 — Hand UI (read-only)**
 
 ### Steps
 
@@ -28,3 +28,4 @@
 - **Iter 4** (2026-05-09): Phase 2.1 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 5** (2026-05-09): Phase 2.2 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 6** (2026-05-09): Phase 2.3 — Step 1 ✓, Step 2 ✓, Step 3 ✓
+- **Iter 7** (2026-05-09): Phase 2.4 — Step 1 ✓, Step 2 ✓, Step 3 ✓
