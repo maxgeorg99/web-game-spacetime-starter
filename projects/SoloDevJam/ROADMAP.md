@@ -33,7 +33,7 @@ through a series of levels; pick a new card after every win.
 - Plays `music-title` on enter
 - **Verify in browser:** title visible, click Start → combat scene shown
 
-### 1.4 — Animation registration
+### 1.4 — Animation registration _(Done)_
 - `AnimationFactory` helper that registers Phaser animations from manifest entries
 - All 5 character spritesheets (`demon`, `skull`, `bear`, `centaur`, `cerberus`) get all 4 animations registered
 - Unit test: factory emits the expected animation keys
