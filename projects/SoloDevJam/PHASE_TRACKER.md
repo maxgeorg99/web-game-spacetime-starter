@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 3.1 — Heal cards**
+**Phase 3.2 — Block cards**
 
 ### Steps
 
@@ -40,6 +40,7 @@
 - **Iter 8** (2026-05-09): Phase 2.5 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 9** (2026-05-09): Phase 2.6 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 10** (2026-05-09): Phase 2.7-2.8 — Step 1 ✓, Step 2 ✓, Step 3 ✓
+- **Iter 11** (2026-05-09): Phase 3.1 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 5** (2026-05-09): Phase 2.2 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 6** (2026-05-09): Phase 2.3 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 7** (2026-05-09): Phase 2.4 — Step 1 ✓, Step 2 ✓, Step 3 ✓

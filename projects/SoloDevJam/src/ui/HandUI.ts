@@ -13,6 +13,7 @@ export class HandUI {
     bg: Phaser.GameObjects.Image;
     costIcon: Phaser.GameObjects.Image;
     costText: Phaser.GameObjects.Text;
+    artIcon: Phaser.GameObjects.Image;
     nameText: Phaser.GameObjects.Text;
     valueText: Phaser.GameObjects.Text;
     container: Phaser.GameObjects.Container;
@@ -21,10 +22,7 @@ export class HandUI {
 
   private onPlayCard: ((card: Card) => void) | null = null;
 
-  constructor(
-    scene: Phaser.Scene,
-    onPlayCard?: (card: Card) => void,
-  ) {
+  constructor(scene: Phaser.Scene, onPlayCard?: (card: Card) => void) {
     this.scene = scene;
     this.container = scene.add.container(0, 0);
     this.onPlayCard = onPlayCard ?? null;
@@ -42,7 +40,7 @@ export class HandUI {
       const x = startX + i * (CARD_WIDTH + 8);
       const affordable = canAfford[i];
 
-      const bg = this.scene.add.image(0, 0, card.art);
+      const bg = this.scene.add.image(0, 0, "card-blank");
       bg.setDisplaySize(CARD_WIDTH, CARD_HEIGHT);
       if (!affordable) bg.setAlpha(0.4);
 
@@ -63,6 +61,10 @@ export class HandUI {
           strokeThickness: 2,
         })
         .setOrigin(0.5);
+
+      const artIcon = this.scene.add.image(0, -4, card.art);
+      artIcon.setDisplaySize(56, 56);
+      artIcon.setOrigin(0.5);
 
       const nameText = this.scene.add
         .text(0, -CARD_HEIGHT / 2 + 20, card.name, {
@@ -94,6 +96,7 @@ export class HandUI {
         bg,
         costIcon,
         costText,
+        artIcon,
         nameText,
         valueText,
       ]);
@@ -120,6 +123,7 @@ export class HandUI {
         bg,
         costIcon,
         costText,
+        artIcon,
         nameText,
         valueText,
         container: cardContainer,

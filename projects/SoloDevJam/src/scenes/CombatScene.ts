@@ -39,7 +39,9 @@ export class CombatScene extends Phaser.Scene {
     this.demon = this.add.sprite(width * 0.25, height * 0.5, "char-demon-idle");
     this.demon.play("char-demon-idle");
 
-    this.skull = this.add.sprite(width * 0.75, height * 0.5, "enemy-skull-idle");
+    this.skull = this.add
+      .sprite(width * 0.75, height * 0.5, "enemy-skull-idle")
+      .setFlipX(true);
     this.skull.play("enemy-skull-idle");
 
     this.playerHpBar = new HpBar(this, width * 0.1, height * 0.9, 200, 24);
@@ -64,7 +66,9 @@ export class CombatScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .setDepth(20);
 
-    this.endTurnBtn.on("pointerover", () => this.endTurnBtn.setColor("#ffffff"));
+    this.endTurnBtn.on("pointerover", () =>
+      this.endTurnBtn.setColor("#ffffff"),
+    );
     this.endTurnBtn.on("pointerout", () => this.endTurnBtn.setColor("#888888"));
     this.endTurnBtn.on("pointerdown", () => this.endPlayerTurn());
 
@@ -182,10 +186,7 @@ export class CombatScene extends Phaser.Scene {
     });
   }
 
-  private flashSprite(
-    sprite: Phaser.GameObjects.Sprite,
-    color: number,
-  ): void {
+  private flashSprite(sprite: Phaser.GameObjects.Sprite, color: number): void {
     sprite.setTint(color);
     this.time.delayedCall(150, () => sprite.clearTint());
   }
