@@ -18,7 +18,7 @@ through a series of levels; pick a new card after every win.
 - `npm run dev` serves a working scene at http://localhost:5173
 - `npm run build`, `npm run typecheck`, `npm run test` all pass
 
-### 1.2 — Asset manifest + BootScene
+### 1.2 — Asset manifest + BootScene _(Done)_
 - `BootScene` reads `public/assets/assets.json`
 - Queues all spritesheets, images, and audio defined in the manifest
 - Shows a progress bar while loading

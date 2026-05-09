@@ -1,1 +1,1 @@
-{"root":["./src/main.ts","./src/scenes/BootScene.ts","./src/scenes/TitleScene.ts","./src/state/__tests__/manifest.test.ts"],"version":"5.9.3"}
+{"root":["./src/main.ts","./src/scenes/BootScene.ts","./src/scenes/CombatScene.ts","./src/scenes/TitleScene.ts","./src/state/__tests__/manifest.test.ts"],"version":"5.9.3"}
