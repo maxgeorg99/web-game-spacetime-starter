@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 2.5 — Hand UI (read-only)**
+**Phase 2.8 — Win / lose**
 
 ### Steps
 

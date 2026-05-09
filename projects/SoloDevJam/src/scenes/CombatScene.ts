@@ -170,26 +170,21 @@ export class CombatScene extends Phaser.Scene {
   private onVictory(): void {
     this.handUI.clear();
     this.skull.play("enemy-skull-death");
-    this.add
-      .text(this.scale.width / 2, this.scale.height / 2, "VICTORY", {
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "48px",
-        color: "#e0c060",
-      })
-      .setOrigin(0.5)
-      .setDepth(50);
+    this.time.delayedCall(800, () => this.showEndScreen("screen-victory"));
   }
 
   private onDefeat(): void {
     this.handUI.clear();
     this.demon.play("char-demon-death");
-    this.add
-      .text(this.scale.width / 2, this.scale.height / 2, "DEFEATED", {
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "48px",
-        color: "#ff4040",
-      })
-      .setOrigin(0.5)
-      .setDepth(50);
+    this.time.delayedCall(1200, () => this.showEndScreen("screen-loss"));
+  }
+
+  private showEndScreen(key: string): void {
+    const { width, height } = this.scale;
+    const bg = this.add.image(width / 2, height / 2, key);
+    bg.setDisplaySize(width, height);
+    bg.setDepth(50);
+    bg.setInteractive();
+    bg.on("pointerdown", () => this.scene.start("TitleScene"));
   }
 }
