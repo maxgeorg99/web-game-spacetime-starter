@@ -38,6 +38,10 @@ export class TitleScene extends Phaser.Scene {
     startText.setInteractive({ useHandCursor: true });
     startText.on("pointerover", () => startText.setColor("#e0c060"));
     startText.on("pointerout", () => startText.setColor("#ffffff"));
-    startText.on("pointerdown", () => this.scene.start("CombatScene"));
+    startText.on("pointerdown", () => {
+      if (this.scene.isActive("CombatScene")) {
+        this.scene.start("CombatScene");
+      }
+    });
   }
 }

@@ -1,5 +1,25 @@
 import Phaser from "phaser";
 
+interface ManifestSpritesheet {
+  id: string;
+  keyPrefix: string;
+  frameWidth: number;
+  frameHeight: number;
+  animations: Array<{
+    suffix: string;
+    path: string;
+    endFrame: number;
+    frameRate: number;
+    repeat: number;
+  }>;
+}
+
+interface ManifestEntry {
+  spritesheets: ManifestSpritesheet[];
+  images: Array<{ key: string; path: string }>;
+  audio: Array<{ key: string; path: string }>;
+}
+
 let baseBar: Phaser.GameObjects.Image;
 let fillBar: Phaser.GameObjects.Image;
 let loadingText: Phaser.GameObjects.Text;
@@ -16,24 +36,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
-    const manifest = this.cache.json.get("assets") as {
-      spritesheets: Array<{
-        id: string;
-        keyPrefix: string;
-        frameWidth: number;
-        frameHeight: number;
-        animations: Array<{
-          suffix: string;
-          path: string;
-          endFrame: number;
-          frameRate: number;
-          repeat: number;
-        }>;
-      }>;
-      images: Array<{ key: string; path: string }>;
-      audio: Array<{ key: string; path: string }>;
-    };
-
+    const manifest = this.cache.json.get("assets") as ManifestEntry;
     this.registry.set("assets", manifest);
 
     const { width, height } = this.scale;
@@ -51,33 +54,28 @@ export class BootScene extends Phaser.Scene {
 
     fillBar.setDisplaySize(0, fillBar.displayHeight);
 
-    this.load.on("progress", (value: number) => {
+    const onProgress = (value: number) => {
       fillBar.setDisplaySize(baseBar.displayWidth * value, fillBar.displayHeight);
       loadingText.setText(`Loading... ${Math.round(value * 100)}%`);
-    });
+    };
 
-    this.load.on("complete", () => {
+    const onComplete = () => {
+      this.load.off("progress", onProgress);
+      this.load.off("complete", onComplete);
       loadingText.destroy();
       baseBar.destroy();
       fillBar.destroy();
       this.scene.start("TitleScene");
-    });
+    };
+
+    this.load.on("progress", onProgress);
+    this.load.on("complete", onComplete);
 
     this.queueManifestAssets(manifest);
     this.load.start();
   }
 
-  private queueManifestAssets(manifest: {
-    spritesheets: Array<{
-      id: string;
-      keyPrefix: string;
-      frameWidth: number;
-      frameHeight: number;
-      animations: Array<{ suffix: string; path: string; endFrame: number }>;
-    }>;
-    images: Array<{ key: string; path: string }>;
-    audio: Array<{ key: string; path: string }>;
-  }): void {
+  private queueManifestAssets(manifest: ManifestEntry): void {
     for (const sheet of manifest.spritesheets) {
       for (const anim of sheet.animations) {
         const key = `${sheet.keyPrefix}-${anim.suffix}`;
