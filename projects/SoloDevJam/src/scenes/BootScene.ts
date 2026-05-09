@@ -1,19 +1,100 @@
 import Phaser from "phaser";
 
+let baseBar: Phaser.GameObjects.Image;
+let fillBar: Phaser.GameObjects.Image;
+let loadingText: Phaser.GameObjects.Text;
+
 export class BootScene extends Phaser.Scene {
   constructor() {
     super("BootScene");
   }
 
+  preload(): void {
+    this.load.json("assets", "assets/assets.json");
+    this.load.image("bar-big-base", "assets/ui/bars/bigbar_base.png");
+    this.load.image("bar-big-fill", "assets/ui/bars/bigbar_fill.png");
+  }
+
   create(): void {
+    const manifest = this.cache.json.get("assets") as {
+      spritesheets: Array<{
+        id: string;
+        keyPrefix: string;
+        frameWidth: number;
+        frameHeight: number;
+        animations: Array<{
+          suffix: string;
+          path: string;
+          endFrame: number;
+          frameRate: number;
+          repeat: number;
+        }>;
+      }>;
+      images: Array<{ key: string; path: string }>;
+      audio: Array<{ key: string; path: string }>;
+    };
+
+    this.registry.set("assets", manifest);
+
     const { width, height } = this.scale;
-    this.add
-      .text(width / 2, height / 2, "Demon Overlord\n— bootstrap OK —", {
+
+    loadingText = this.add
+      .text(width / 2, height / 2 + 30, "Loading...", {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "32px",
+        fontSize: "16px",
         color: "#e0c060",
-        align: "center",
       })
       .setOrigin(0.5);
+
+    baseBar = this.add.image(width / 2, height / 2, "bar-big-base");
+    fillBar = this.add.image(width / 2, height / 2, "bar-big-fill");
+
+    fillBar.setDisplaySize(0, fillBar.displayHeight);
+
+    this.load.on("progress", (value: number) => {
+      fillBar.setDisplaySize(baseBar.displayWidth * value, fillBar.displayHeight);
+      loadingText.setText(`Loading... ${Math.round(value * 100)}%`);
+    });
+
+    this.load.on("complete", () => {
+      loadingText.destroy();
+      baseBar.destroy();
+      fillBar.destroy();
+      this.scene.start("TitleScene");
+    });
+
+    this.queueManifestAssets(manifest);
+    this.load.start();
+  }
+
+  private queueManifestAssets(manifest: {
+    spritesheets: Array<{
+      id: string;
+      keyPrefix: string;
+      frameWidth: number;
+      frameHeight: number;
+      animations: Array<{ suffix: string; path: string; endFrame: number }>;
+    }>;
+    images: Array<{ key: string; path: string }>;
+    audio: Array<{ key: string; path: string }>;
+  }): void {
+    for (const sheet of manifest.spritesheets) {
+      for (const anim of sheet.animations) {
+        const key = `${sheet.keyPrefix}-${anim.suffix}`;
+        this.load.spritesheet(key, `assets/${anim.path}`, {
+          frameWidth: sheet.frameWidth,
+          frameHeight: sheet.frameHeight,
+          endFrame: anim.endFrame,
+        });
+      }
+    }
+
+    for (const img of manifest.images) {
+      this.load.image(img.key, `assets/${img.path}`);
+    }
+
+    for (const a of manifest.audio) {
+      this.load.audio(a.key, `assets/${a.path}`);
+    }
   }
 }

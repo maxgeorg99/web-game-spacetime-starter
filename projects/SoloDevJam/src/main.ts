@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { BootScene } from "./scenes/BootScene";
+import { TitleScene } from "./scenes/TitleScene";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.WEBGL,
@@ -11,7 +12,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene],
+  scene: [BootScene, TitleScene],
 };
 
 new Phaser.Game(config);
