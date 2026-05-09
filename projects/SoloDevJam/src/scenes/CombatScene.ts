@@ -30,18 +30,26 @@ export class CombatScene extends Phaser.Scene {
     this.player = new PlayerState(80, 80);
     this.enemy = new EnemyState("Skull", 30);
 
-    const demon = this.add.sprite(width * 0.25, height * 0.5, "char-demon-idle");
+    const demon = this.add.sprite(
+      width * 0.25,
+      height * 0.5,
+      "char-demon-idle",
+    );
     demon.play("char-demon-idle");
 
-    const skull = this.add.sprite(width * 0.75, height * 0.5, "enemy-skull-idle");
+    const skull = this.add.sprite(
+      width * 0.75,
+      height * 0.5,
+      "enemy-skull-idle",
+    );
     skull.play("enemy-skull-idle");
 
-    this.playerHpBar = new HpBar(this, width * 0.25, height * 0.85, "bar-big-base", "bar-big-fill");
+    this.playerHpBar = new HpBar(this, width * 0.1, height * 0.9, 200, 24);
     this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
     this.playerHpBar.setPercent(this.player.hpPercent);
     this.playerHpBar.setDepth(10);
 
-    this.enemyHpBar = new HpBar(this, width * 0.75, height * 0.22, "bar-small-base", "bar-small-fill");
+    this.enemyHpBar = new HpBar(this, width * 0.75, height * 0.35, 140, 18);
     this.enemyHpBar.setText(`HP: ${this.enemy.hp}/${this.enemy.maxHp}`);
     this.enemyHpBar.setPercent(this.enemy.hpPercent);
     this.enemyHpBar.setDepth(10);

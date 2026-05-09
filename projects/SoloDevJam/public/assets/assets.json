@@ -71,6 +71,7 @@
     { "key": "card-blank",       "path": "ui/cards/card_blank.png" },
     { "key": "card-curse",       "path": "ui/cards/curse_card.png" },
     { "key": "curse-bg",         "path": "ui/cards/curse_bg.png" },
+    { "key": "health-cost",      "path": "ui/cards/health_cost.png" },
 
     { "key": "icon-heart",       "path": "ui/icons/heart.png" },
     { "key": "icon-sword",       "path": "ui/icons/sword.png" },

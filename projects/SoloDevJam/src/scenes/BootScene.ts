@@ -1,10 +1,6 @@
 import Phaser from "phaser";
 import { ManifestEntry } from "../types";
 
-let baseBar: Phaser.GameObjects.Image;
-let fillBar: Phaser.GameObjects.Image;
-let loadingText: Phaser.GameObjects.Text;
-
 export class BootScene extends Phaser.Scene {
   constructor() {
     super("BootScene");
@@ -12,8 +8,6 @@ export class BootScene extends Phaser.Scene {
 
   preload(): void {
     this.load.json("assets", "assets/assets.json");
-    this.load.image("bar-big-base", "assets/ui/bars/bigbar_base.png");
-    this.load.image("bar-big-fill", "assets/ui/bars/bigbar_fill.png");
   }
 
   create(): void {
@@ -22,7 +16,18 @@ export class BootScene extends Phaser.Scene {
 
     const { width, height } = this.scale;
 
-    loadingText = this.add
+    const barW = 260;
+    const barH = 20;
+
+    const bg = this.add.graphics();
+    bg.fillStyle(0x1a0a0a, 1);
+    bg.fillRoundedRect(width / 2 - barW / 2, height / 2 - barH / 2, barW, barH, 6);
+    bg.lineStyle(2, 0x3a2020, 1);
+    bg.strokeRoundedRect(width / 2 - barW / 2, height / 2 - barH / 2, barW, barH, 6);
+
+    const fill = this.add.graphics();
+
+    const loadingText = this.add
       .text(width / 2, height / 2 + 30, "Loading...", {
         fontFamily: "system-ui, sans-serif",
         fontSize: "16px",
@@ -30,13 +35,13 @@ export class BootScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    baseBar = this.add.image(width / 2, height / 2, "bar-big-base");
-    fillBar = this.add.image(width / 2, height / 2, "bar-big-fill");
-
-    fillBar.setDisplaySize(0, fillBar.displayHeight);
-
     const onProgress = (value: number) => {
-      fillBar.setDisplaySize(baseBar.displayWidth * value, fillBar.displayHeight);
+      fill.clear();
+      const fillW = (barW - 4) * value;
+      if (fillW > 0) {
+        fill.fillStyle(0xff3e3e, 1);
+        fill.fillRoundedRect(width / 2 - barW / 2 + 2, height / 2 - barH / 2 + 2, fillW, barH - 4, 4);
+      }
       loadingText.setText(`Loading... ${Math.round(value * 100)}%`);
     };
 
@@ -44,8 +49,8 @@ export class BootScene extends Phaser.Scene {
       this.load.off("progress", onProgress);
       this.load.off("complete", onComplete);
       loadingText.destroy();
-      baseBar.destroy();
-      fillBar.destroy();
+      bg.destroy();
+      fill.destroy();
       this.scene.start("TitleScene");
     };
 

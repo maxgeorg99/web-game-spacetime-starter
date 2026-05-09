@@ -11,8 +11,9 @@ export class HandUI {
   private cardObjects: Array<{
     card: Card;
     bg: Phaser.GameObjects.Image;
-    nameText: Phaser.GameObjects.Text;
+    costIcon: Phaser.GameObjects.Image;
     costText: Phaser.GameObjects.Text;
+    nameText: Phaser.GameObjects.Text;
     valueText: Phaser.GameObjects.Text;
     container: Phaser.GameObjects.Container;
     baseY: number;
@@ -37,32 +38,57 @@ export class HandUI {
       const bg = this.scene.add.image(0, 0, card.art);
       bg.setDisplaySize(CARD_WIDTH, CARD_HEIGHT);
 
-      const nameText = this.scene.add.text(0, -CARD_HEIGHT / 2 + 16, card.name, {
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "13px",
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 2,
-      }).setOrigin(0.5);
+      const costIcon = this.scene.add.image(
+        -CARD_WIDTH / 2 + 18,
+        -CARD_HEIGHT / 2 + 18,
+        "health-cost",
+      );
+      costIcon.setDisplaySize(20, 30);
+      costIcon.setOrigin(0.5);
 
-      const costText = this.scene.add.text(-CARD_WIDTH / 2 + 16, -CARD_HEIGHT / 2 + 16, `${card.cost}`, {
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "16px",
-        color: "#ff6060",
-        stroke: "#000000",
-        strokeThickness: 2,
-      }).setOrigin(0.5);
+      const costText = this.scene.add
+        .text(-CARD_WIDTH / 2 + 20, -CARD_HEIGHT / 2 + 20, `${card.cost}`, {
+          fontFamily: "system-ui, sans-serif",
+          fontSize: "16px",
+          color: "#ffffff",
+          stroke: "#000000",
+          strokeThickness: 2,
+        })
+        .setOrigin(0.5);
 
-      const kindLabel = card.kind === "attack" ? "DMG" : card.kind === "heal" ? "HEAL" : "BLOCK";
-      const valueText = this.scene.add.text(0, CARD_HEIGHT / 2 - 24, `${kindLabel} ${card.value}`, {
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "14px",
-        color: "#e0c060",
-        stroke: "#000000",
-        strokeThickness: 2,
-      }).setOrigin(0.5);
+      const nameText = this.scene.add
+        .text(0, -CARD_HEIGHT / 2 + 20, card.name, {
+          fontFamily: "system-ui, sans-serif",
+          fontSize: "13px",
+          color: "#ffffff",
+          stroke: "#000000",
+          strokeThickness: 2,
+        })
+        .setOrigin(0.4);
 
-      const cardContainer = this.scene.add.container(x, y, [bg, nameText, costText, valueText]);
+      const kindLabel =
+        card.kind === "attack"
+          ? "DMG"
+          : card.kind === "heal"
+            ? "HEAL"
+            : "BLOCK";
+      const valueText = this.scene.add
+        .text(0, CARD_HEIGHT / 2 - 24, `${kindLabel} ${card.value}`, {
+          fontFamily: "system-ui, sans-serif",
+          fontSize: "14px",
+          color: "#e0c060",
+          stroke: "#000000",
+          strokeThickness: 2,
+        })
+        .setOrigin(0.5);
+
+      const cardContainer = this.scene.add.container(x, y, [
+        bg,
+        costIcon,
+        costText,
+        nameText,
+        valueText,
+      ]);
       cardContainer.setSize(CARD_WIDTH, CARD_HEIGHT);
       cardContainer.setInteractive({ useHandCursor: true });
       cardContainer.setDepth(20);
@@ -75,7 +101,16 @@ export class HandUI {
         cardContainer.y = baseY;
       });
 
-      this.cardObjects.push({ card, bg, nameText, costText, valueText, container: cardContainer, baseY });
+      this.cardObjects.push({
+        card,
+        bg,
+        costIcon,
+        costText,
+        nameText,
+        valueText,
+        container: cardContainer,
+        baseY,
+      });
       this.container.add(cardContainer);
     }
   }
