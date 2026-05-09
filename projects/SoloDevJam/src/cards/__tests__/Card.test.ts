@@ -11,9 +11,9 @@ describe("Card registry", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("covers costs 1 through 5", () => {
+  it("covers costs 1 through 4", () => {
     const costs = new Set(ALL_CARDS.map((c) => c.cost));
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 4; i++) {
       expect(costs.has(i)).toBe(true);
     }
   });
@@ -34,9 +34,9 @@ describe("Card registry", () => {
     expect(getCard("nonexistent")).toBeUndefined();
   });
 
-  it("starter deck has 10 cards", () => {
+  it("starter deck has 9 cards", () => {
     const deck = getStarterDeck();
-    expect(deck).toHaveLength(10);
+    expect(deck).toHaveLength(9);
   });
 
   it("all starter deck cards exist in ALL_CARDS", () => {

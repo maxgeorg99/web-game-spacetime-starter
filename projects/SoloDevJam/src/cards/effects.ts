@@ -16,21 +16,28 @@ export function applyCardEffect(
   card: Card,
   player: PlayerState,
   enemy: EnemyState,
+  comboBonus = 0,
 ): EffectResult {
   const result: EffectResult = { damageDealt: 0, healAmount: 0, blockGained: 0 };
 
   switch (card.kind) {
-    case "attack":
-      enemy.takeDamage(card.value);
-      result.damageDealt = card.value;
+    case "attack": {
+      const totalDamage = comboBonus > 0 ? card.value * 2 : card.value;
+      enemy.takeDamage(totalDamage);
+      result.damageDealt = totalDamage;
       break;
-    case "heal":
-      result.healAmount = player.heal(card.value);
+    }
+    case "heal": {
+      const healValue = comboBonus > 0 ? card.value * 2 : card.value;
+      result.healAmount = player.heal(healValue);
       break;
-    case "block":
-      player.addShield(card.value);
-      result.blockGained = card.value;
+    }
+    case "block": {
+      const blockValue = comboBonus > 0 ? card.value * 2 : card.value;
+      player.addShield(blockValue);
+      result.blockGained = blockValue;
       break;
+    }
   }
 
   return result;

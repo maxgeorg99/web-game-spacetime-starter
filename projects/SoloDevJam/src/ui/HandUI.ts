@@ -21,6 +21,8 @@ export class HandUI {
   }> = [];
 
   private onPlayCard: ((card: Card) => void) | null = null;
+  private lastPlayedX = 0;
+  private lastPlayedY = 0;
 
   constructor(scene: Phaser.Scene, onPlayCard?: (card: Card) => void) {
     this.scene = scene;
@@ -28,7 +30,11 @@ export class HandUI {
     this.onPlayCard = onPlayCard ?? null;
   }
 
-  show(cards: Card[], canAfford: boolean[]): void {
+  get lastPlayedPosition(): { x: number; y: number } {
+    return { x: this.lastPlayedX, y: this.lastPlayedY };
+  }
+
+  show(cards: Card[], canAfford: boolean[], comboNextCost: number | null = null): void {
     this.clear();
     const { width, height } = this.scene.scale;
     const totalWidth = cards.length * (CARD_WIDTH + 8);
@@ -76,17 +82,22 @@ export class HandUI {
         })
         .setOrigin(0.4);
 
+      const isComboCard = comboNextCost !== null && card.cost === comboNextCost;
       const kindLabel =
         card.kind === "attack"
           ? "DMG"
           : card.kind === "heal"
             ? "HEAL"
             : "BLOCK";
+      const valueLabel = isComboCard
+        ? `${kindLabel} ${card.value * 2}`
+        : `${kindLabel} ${card.value}`;
       const valueText = this.scene.add
-        .text(0, CARD_HEIGHT / 2 - 24, `${kindLabel} ${card.value}`, {
+        .text(0, CARD_HEIGHT / 2 - 24, valueLabel, {
           fontFamily: "system-ui, sans-serif",
           fontSize: "14px",
-          color: "#e0c060",
+          color: isComboCard ? "#ff4444" : "#e0c060",
+          fontStyle: isComboCard ? "bold" : "normal",
           stroke: "#000000",
           strokeThickness: 2,
         })
@@ -114,6 +125,8 @@ export class HandUI {
 
       if (affordable && this.onPlayCard) {
         cardContainer.on("pointerdown", () => {
+          this.lastPlayedX = cardContainer.x;
+          this.lastPlayedY = cardContainer.y;
           this.onPlayCard!(card);
         });
       }

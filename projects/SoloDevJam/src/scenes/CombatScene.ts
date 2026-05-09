@@ -9,6 +9,8 @@ import { EnemyState } from "../state/EnemyState";
 import { DeckState } from "../state/DeckState";
 import { HpBar } from "../ui/HpBar";
 import { HandUI } from "../ui/HandUI";
+import { Combo } from "../combat/Combo";
+import { ComboHud } from "../ui/ComboHud";
 
 export class CombatScene extends Phaser.Scene {
   private player!: PlayerState;
@@ -20,6 +22,10 @@ export class CombatScene extends Phaser.Scene {
   private demon!: Phaser.GameObjects.Sprite;
   private skull!: Phaser.GameObjects.Sprite;
   private endTurnBtn!: Phaser.GameObjects.Text;
+  private shieldIcon!: Phaser.GameObjects.Image;
+  private shieldText!: Phaser.GameObjects.Text;
+  private combo!: Combo;
+  private comboHud!: ComboHud;
   private playerTurn = true;
 
   constructor() {
@@ -54,6 +60,23 @@ export class CombatScene extends Phaser.Scene {
     this.enemyHpBar.setPercent(this.enemy.hpPercent);
     this.enemyHpBar.setDepth(10);
 
+    this.shieldIcon = this.add.image(width * 0.1 + 115, height * 0.9, "icon-shield");
+    this.shieldIcon.setDisplaySize(20, 20);
+    this.shieldIcon.setOrigin(0.5);
+    this.shieldIcon.setDepth(10);
+    this.shieldIcon.setVisible(false);
+
+    this.shieldText = this.add
+      .text(width * 0.1 + 130, height * 0.9, "", {
+        fontFamily: "system-ui, sans-serif",
+        fontSize: "14px",
+        color: "#66ccff",
+        stroke: "#000000",
+        strokeThickness: 3,
+      })
+      .setOrigin(0, 0.5)
+      .setDepth(10);
+
     this.handUI = new HandUI(this, (card) => this.playCard(card));
 
     this.endTurnBtn = this.add
@@ -72,6 +95,9 @@ export class CombatScene extends Phaser.Scene {
     this.endTurnBtn.on("pointerout", () => this.endTurnBtn.setColor("#888888"));
     this.endTurnBtn.on("pointerdown", () => this.endPlayerTurn());
 
+    this.combo = new Combo();
+    this.comboHud = new ComboHud(this);
+
     this.deck = new DeckState(getStarterDeck());
     this.startPlayerTurn();
   }
@@ -79,6 +105,10 @@ export class CombatScene extends Phaser.Scene {
   private startPlayerTurn(): void {
     this.playerTurn = true;
     this.endTurnBtn.setAlpha(1);
+    this.player.clearShield();
+    this.updateShieldDisplay();
+    this.combo.reset();
+    this.comboHud.hide();
     this.drawHand();
   }
 
@@ -89,15 +119,18 @@ export class CombatScene extends Phaser.Scene {
 
   private refreshHand(): void {
     const canAfford = this.deck.hand.map((c) => canPlayCard(c, this.player));
-    this.handUI.show(this.deck.hand, canAfford);
+    this.handUI.show(this.deck.hand, canAfford, this.combo.nextCost);
   }
 
   private playCard(card: Card): void {
     if (!this.playerTurn) return;
     if (!canPlayCard(card, this.player)) return;
 
+    const comboResult = this.combo.recordPlay(card.cost);
+    const comboBonus = comboResult.advanced ? 1 : 0;
+
     this.player.takeDamage(card.cost);
-    const result = applyCardEffect(card, this.player, this.enemy);
+    const result = applyCardEffect(card, this.player, this.enemy, comboBonus);
 
     this.deck.discard(card);
 
@@ -119,8 +152,22 @@ export class CombatScene extends Phaser.Scene {
       }
     }
 
+    if (result.blockGained > 0) {
+      this.blockVfx(this.demon.x, this.demon.y);
+      if (this.cache.audio.exists("sfx-attack-fire")) {
+        this.sound.play("sfx-attack-fire");
+      }
+    }
+
+    if (comboResult.advanced) {
+      const pos = this.handUI.lastPlayedPosition;
+      this.goldBurst(pos.x, pos.y);
+    }
+    this.comboHud.show(this.combo.tier);
+
     this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
     this.playerHpBar.setPercent(this.player.hpPercent);
+    this.updateShieldDisplay();
 
     this.refreshHand();
 
@@ -158,6 +205,7 @@ export class CombatScene extends Phaser.Scene {
       this.flashSprite(this.demon, 0xff0000);
       this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
       this.playerHpBar.setPercent(this.player.hpPercent);
+      this.updateShieldDisplay();
 
       if (this.player.hp <= 0) {
         this.onDefeat();
@@ -180,6 +228,54 @@ export class CombatScene extends Phaser.Scene {
         circle.clear();
         const radius = 10 + tween.progress * 50;
         circle.fillStyle(0x00ff66, 0.6 * (1 - tween.progress));
+        circle.fillCircle(x, y, radius);
+      },
+      onComplete: () => circle.destroy(),
+    });
+  }
+
+  private updateShieldDisplay(): void {
+    if (this.player.shield > 0) {
+      this.shieldIcon.setVisible(true);
+      this.shieldText.setText(`${this.player.shield}`);
+    } else {
+      this.shieldIcon.setVisible(false);
+      this.shieldText.setText("");
+    }
+  }
+
+  private blockVfx(x: number, y: number): void {
+    const circle = this.add.graphics();
+    circle.setDepth(30);
+    circle.fillStyle(0x6644cc, 0.5);
+    circle.fillCircle(x, y, 15);
+    this.tweens.add({
+      targets: circle,
+      alpha: 0,
+      duration: 600,
+      onUpdate: (tween) => {
+        circle.clear();
+        const radius = 15 + tween.progress * 40;
+        circle.fillStyle(0x6644cc, 0.5 * (1 - tween.progress));
+        circle.fillCircle(x, y, radius);
+      },
+      onComplete: () => circle.destroy(),
+    });
+  }
+
+  private goldBurst(x: number, y: number): void {
+    const circle = this.add.graphics();
+    circle.setDepth(35);
+    circle.fillStyle(0xffd700, 0.7);
+    circle.fillCircle(x, y, 8);
+    this.tweens.add({
+      targets: circle,
+      alpha: 0,
+      duration: 400,
+      onUpdate: (tween) => {
+        circle.clear();
+        const radius = 8 + tween.progress * 30;
+        circle.fillStyle(0xffd700, 0.7 * (1 - tween.progress));
         circle.fillCircle(x, y, radius);
       },
       onComplete: () => circle.destroy(),

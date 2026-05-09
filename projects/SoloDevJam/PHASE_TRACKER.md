@@ -2,12 +2,12 @@
 
 ## Current Phase
 
-**Phase 3.2 — Block cards**
+**Phase 4.1-4.3 — Combo system**
 
 ### Steps
 
-- [ ] Step 1: Implementation
-- [ ] Step 2: Code review + test writing
+- [x] Step 1: Implementation
+- [x] Step 2: Code review + test writing
 - [ ] Step 3: Playwright verification
 
 ## Completed Phases
@@ -26,6 +26,8 @@
 | 2.6 | Play card | Done | 2026-05-09 |
 | 2.7 | Enemy turn | Done | 2026-05-09 |
 | 2.8 | Win / lose | Done | 2026-05-09 |
+| 3.1 | Heal cards | Done | 2026-05-09 |
+| 3.2 | Block cards | Done | 2026-05-09 |
 
 ## Iteration Log
 
@@ -41,6 +43,5 @@
 - **Iter 9** (2026-05-09): Phase 2.6 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 10** (2026-05-09): Phase 2.7-2.8 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 11** (2026-05-09): Phase 3.1 — Step 1 ✓, Step 2 ✓, Step 3 ✓
-- **Iter 5** (2026-05-09): Phase 2.2 — Step 1 ✓, Step 2 ✓, Step 3 ✓
-- **Iter 6** (2026-05-09): Phase 2.3 — Step 1 ✓, Step 2 ✓, Step 3 ✓
-- **Iter 7** (2026-05-09): Phase 2.4 — Step 1 ✓, Step 2 ✓, Step 3 ✓
+- **Iter 12** (2026-05-09): Phase 3.2 — Step 1 ✓, Step 2 ✓, Step 3 ✓
+- **Iter 13** (2026-05-09): Phase 4.1-4.3 — Step 1 ✓, Step 2 ✓
