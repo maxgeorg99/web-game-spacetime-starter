@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-**Phase 2.1 — Player entity + HP bar**
+**Phase 2.2 — Enemy entity**
 
 ### Steps
 
@@ -25,3 +25,4 @@
 - **Iter 1** (2026-05-09): Phase 1.2 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 2** (2026-05-09): Phase 1.3 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 3** (2026-05-09): Phase 1.4 — Step 1 ✓, Step 2 ✓, Step 3 ✓
+- **Iter 4** (2026-05-09): Phase 2.1 — Step 1 ✓, Step 2 ✓, Step 3 ✓

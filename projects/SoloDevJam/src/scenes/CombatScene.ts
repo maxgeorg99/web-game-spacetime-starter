@@ -2,11 +2,14 @@ import Phaser from "phaser";
 import { ManifestEntry } from "../types";
 import { registerAnimations } from "../cards/AnimationFactory";
 import { PlayerState } from "../state/PlayerState";
+import { EnemyState } from "../state/EnemyState";
 import { HpBar } from "../ui/HpBar";
 
 export class CombatScene extends Phaser.Scene {
   private player!: PlayerState;
   private playerHpBar!: HpBar;
+  private enemy!: EnemyState;
+  private enemyHpBar!: HpBar;
 
   constructor() {
     super("CombatScene");
@@ -20,13 +23,22 @@ export class CombatScene extends Phaser.Scene {
     registerAnimations(this.anims, manifest.spritesheets);
 
     this.player = new PlayerState(80, 80);
+    this.enemy = new EnemyState("Skull", 30);
 
     const demon = this.add.sprite(width * 0.25, height * 0.5, "char-demon-idle");
     demon.play("char-demon-idle");
+
+    const skull = this.add.sprite(width * 0.75, height * 0.5, "enemy-skull-idle");
+    skull.play("enemy-skull-idle");
 
     this.playerHpBar = new HpBar(this, width * 0.25, height * 0.85, "bar-big-base", "bar-big-fill");
     this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
     this.playerHpBar.setPercent(this.player.hpPercent);
     this.playerHpBar.setDepth(10);
+
+    this.enemyHpBar = new HpBar(this, width * 0.75, height * 0.22, "bar-small-base", "bar-small-fill");
+    this.enemyHpBar.setText(`HP: ${this.enemy.hp}/${this.enemy.maxHp}`);
+    this.enemyHpBar.setPercent(this.enemy.hpPercent);
+    this.enemyHpBar.setDepth(10);
   }
 }
