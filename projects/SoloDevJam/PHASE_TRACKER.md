@@ -2,13 +2,20 @@
 
 ## Current Phase
 
-**Phase 4.1-4.3 — Combo system**
+**Phase 5.1 — Multi-fight run**
 
 ### Steps
 
 - [x] Step 1: Implementation
 - [x] Step 2: Code review + test writing
 - [ ] Step 3: Playwright verification
+
+### Sub-phases
+
+- [x] 5.1 — Multi-fight run
+- [x] 5.2 — Card reward screen
+- [x] 5.3 — Final boss
+- [x] 5.4 — Restart loop
 
 ## Completed Phases
 
@@ -45,3 +52,5 @@
 - **Iter 11** (2026-05-09): Phase 3.1 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 12** (2026-05-09): Phase 3.2 — Step 1 ✓, Step 2 ✓, Step 3 ✓
 - **Iter 13** (2026-05-09): Phase 4.1-4.3 — Step 1 ✓, Step 2 ✓
+- **Iter 14** (2026-05-09): Phase 5.1 — Step 1 ✓, Step 2 ✓
+- **Iter 15** (2026-05-09): Phase 5.2-5.4 — Step 1 ✓, Step 2 ✓

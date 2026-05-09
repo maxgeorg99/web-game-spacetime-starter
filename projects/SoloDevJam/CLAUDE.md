@@ -120,7 +120,7 @@ The Demon spritesheet (`char-demon-*`) is the **player character** — the demon
 
 ## Game Constants
 
-- Player starting HP / max HP: **80**
+- Player starting HP / max HP: **30**
 - Starter deck size: **10 cards**
 - Hand size per turn: **5**
 - Run length: **5 levels** (4 fights + 1 final boss)

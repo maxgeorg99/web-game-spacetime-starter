@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { RunState } from "../state/RunState";
 
 export class TitleScene extends Phaser.Scene {
   constructor() {
@@ -38,7 +39,9 @@ export class TitleScene extends Phaser.Scene {
     startText.setInteractive({ useHandCursor: true });
     startText.on("pointerover", () => startText.setColor("#e0c060"));
     startText.on("pointerout", () => startText.setColor("#ffffff"));
-    startText.on("pointerdown", () => this.scene.start("CombatScene"));
+    startText.on("pointerdown", () => {
+      this.scene.start("CombatScene", { runState: new RunState() });
+    });
 
     if (this.cache.audio.exists("music-title")) {
       this.sound.play("music-title", { loop: true });

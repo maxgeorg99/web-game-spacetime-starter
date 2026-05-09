@@ -48,6 +48,20 @@ describe("PlayerState", () => {
     expect(p.shield).toBe(0);
   });
 
+  it("payCost reduces HP directly ignoring shield", () => {
+    const p = new PlayerState(30, 30);
+    p.addShield(20);
+    p.payCost(5);
+    expect(p.hp).toBe(25);
+    expect(p.shield).toBe(20);
+  });
+
+  it("payCost does not go below 0", () => {
+    const p = new PlayerState(3, 30);
+    p.payCost(10);
+    expect(p.hp).toBe(0);
+  });
+
   it("clearShield removes shield", () => {
     const p = new PlayerState(80, 80);
     p.addShield(20);

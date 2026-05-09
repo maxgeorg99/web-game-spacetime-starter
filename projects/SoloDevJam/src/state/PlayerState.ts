@@ -26,6 +26,10 @@ export class PlayerState {
     return this.hp - before;
   }
 
+  payCost(amount: number): void {
+    this.hp = Math.max(0, this.hp - amount);
+  }
+
   addShield(amount: number): void {
     this.shield += amount;
   }

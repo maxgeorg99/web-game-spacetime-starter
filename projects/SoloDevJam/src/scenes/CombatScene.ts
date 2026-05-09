@@ -2,17 +2,18 @@ import Phaser from "phaser";
 import { ManifestEntry } from "../types";
 import { Card } from "../cards/Card";
 import { registerAnimations } from "../cards/AnimationFactory";
-import { getStarterDeck } from "../cards/cards";
 import { canPlayCard, applyCardEffect } from "../cards/effects";
 import { PlayerState } from "../state/PlayerState";
 import { EnemyState } from "../state/EnemyState";
 import { DeckState } from "../state/DeckState";
+import { RunState, getEnemyForLevel } from "../state/RunState";
 import { HpBar } from "../ui/HpBar";
 import { HandUI } from "../ui/HandUI";
 import { Combo } from "../combat/Combo";
 import { ComboHud } from "../ui/ComboHud";
 
 export class CombatScene extends Phaser.Scene {
+  private runState!: RunState;
   private player!: PlayerState;
   private enemy!: EnemyState;
   private deck!: DeckState;
@@ -20,7 +21,8 @@ export class CombatScene extends Phaser.Scene {
   private enemyHpBar!: HpBar;
   private handUI!: HandUI;
   private demon!: Phaser.GameObjects.Sprite;
-  private skull!: Phaser.GameObjects.Sprite;
+  private enemySprite!: Phaser.GameObjects.Sprite;
+  private enemyConfig!: { name: string; key: string; hp: number; damage: number };
   private endTurnBtn!: Phaser.GameObjects.Text;
   private shieldIcon!: Phaser.GameObjects.Image;
   private shieldText!: Phaser.GameObjects.Text;
@@ -39,21 +41,48 @@ export class CombatScene extends Phaser.Scene {
     const manifest = this.registry.get("assets") as ManifestEntry;
     registerAnimations(this.anims, manifest.spritesheets);
 
-    this.player = new PlayerState(80, 80);
-    this.enemy = new EnemyState("Skull", 30);
+    this.runState = (this.scene.settings.data as { runState?: RunState } | undefined)?.runState ?? new RunState();
+
+    this.enemyConfig = getEnemyForLevel(this.runState.level);
+    this.player = new PlayerState(this.runState.playerHp, this.runState.playerMaxHp);
+    this.enemy = new EnemyState(this.enemyConfig.name, this.enemyConfig.hp);
 
     this.demon = this.add.sprite(width * 0.25, height * 0.5, "char-demon-idle");
     this.demon.play("char-demon-idle");
 
-    this.skull = this.add
-      .sprite(width * 0.75, height * 0.5, "enemy-skull-idle")
-      .setFlipX(true);
-    this.skull.play("enemy-skull-idle");
+    this.sound.stopAll();
+
+    if (this.runState.isFinalBoss) {
+      this.enemySprite = this.add.sprite(width * 0.75, height * 0.45, "boss-final-1");
+      this.enemySprite.setDisplaySize(256, 256);
+      if (this.cache.audio.exists("music-boss")) {
+        this.sound.play("music-boss", { loop: true });
+      }
+    } else {
+      const ek = this.enemyConfig.key;
+      this.enemySprite = this.add.sprite(width * 0.75, height * 0.5, `enemy-${ek}-idle`);
+      this.enemySprite.setFlipX(true);
+      this.enemySprite.play(`enemy-${ek}-idle`);
+      if (this.cache.audio.exists("music-main")) {
+        this.sound.play("music-main", { loop: true });
+      }
+    }
 
     this.playerHpBar = new HpBar(this, width * 0.1, height * 0.9, 200, 24);
     this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
     this.playerHpBar.setPercent(this.player.hpPercent);
     this.playerHpBar.setDepth(10);
+
+    this.add
+      .text(width * 0.75, height * 0.35 - 30, `Level ${this.runState.level} — ${this.enemyConfig.name}`, {
+        fontFamily: "system-ui, sans-serif",
+        fontSize: "16px",
+        color: "#e0c060",
+        stroke: "#000000",
+        strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(10);
 
     this.enemyHpBar = new HpBar(this, width * 0.75, height * 0.35, 140, 18);
     this.enemyHpBar.setText(`HP: ${this.enemy.hp}/${this.enemy.maxHp}`);
@@ -98,7 +127,7 @@ export class CombatScene extends Phaser.Scene {
     this.combo = new Combo();
     this.comboHud = new ComboHud(this);
 
-    this.deck = new DeckState(getStarterDeck());
+    this.deck = new DeckState(this.runState.deck);
     this.startPlayerTurn();
   }
 
@@ -129,7 +158,7 @@ export class CombatScene extends Phaser.Scene {
     const comboResult = this.combo.recordPlay(card.cost);
     const comboBonus = comboResult.advanced ? 1 : 0;
 
-    this.player.takeDamage(card.cost);
+    this.player.payCost(card.cost);
     const result = applyCardEffect(card, this.player, this.enemy, comboBonus);
 
     this.deck.discard(card);
@@ -139,7 +168,7 @@ export class CombatScene extends Phaser.Scene {
     }
 
     if (result.damageDealt > 0) {
-      this.flashSprite(this.skull, 0xff0000);
+      this.flashSprite(this.enemySprite, 0xff0000);
       this.enemyHpBar.setText(`HP: ${this.enemy.hp}/${this.enemy.maxHp}`);
       this.enemyHpBar.setPercent(this.enemy.hpPercent);
     }
@@ -193,26 +222,39 @@ export class CombatScene extends Phaser.Scene {
   private enemyTurn(): void {
     if (this.enemy.hp <= 0 || this.player.hp <= 0) return;
 
-    this.skull.play("enemy-skull-attack");
-    this.skull.once("animationcomplete", () => {
-      this.skull.play("enemy-skull-idle");
+    const isBoss = this.runState.isFinalBoss;
+    const bossPhase2 = isBoss && this.enemy.hp < 40;
+    const damage = bossPhase2 ? 14 : this.enemyConfig.damage;
 
-      if (this.sound.get("sfx-player-damage")) {
-        this.sound.play("sfx-player-damage");
-      }
+    if (isBoss) {
+      this.flashSprite(this.enemySprite, 0xff4444);
+      this.time.delayedCall(400, () => this.applyEnemyDamage(damage));
+    } else {
+      const ek = this.enemyConfig.key;
+      this.enemySprite.play(`enemy-${ek}-attack`);
+      this.enemySprite.once("animationcomplete", () => {
+        this.enemySprite.play(`enemy-${ek}-idle`);
+        this.applyEnemyDamage(damage);
+      });
+    }
+  }
 
-      this.player.takeDamage(8);
-      this.flashSprite(this.demon, 0xff0000);
-      this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
-      this.playerHpBar.setPercent(this.player.hpPercent);
-      this.updateShieldDisplay();
+  private applyEnemyDamage(damage: number): void {
+    if (this.sound.get("sfx-player-damage")) {
+      this.sound.play("sfx-player-damage");
+    }
 
-      if (this.player.hp <= 0) {
-        this.onDefeat();
-      } else {
-        this.time.delayedCall(400, () => this.startPlayerTurn());
-      }
-    });
+    this.player.takeDamage(damage);
+    this.flashSprite(this.demon, 0xff0000);
+    this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
+    this.playerHpBar.setPercent(this.player.hpPercent);
+    this.updateShieldDisplay();
+
+    if (this.player.hp <= 0) {
+      this.onDefeat();
+    } else {
+      this.time.delayedCall(400, () => this.startPlayerTurn());
+    }
   }
 
   private healVfx(x: number, y: number): void {
@@ -282,20 +324,36 @@ export class CombatScene extends Phaser.Scene {
     });
   }
 
-  private flashSprite(sprite: Phaser.GameObjects.Sprite, color: number): void {
+  private flashSprite(sprite: Phaser.GameObjects.Image, color: number): void {
     sprite.setTint(color);
     this.time.delayedCall(150, () => sprite.clearTint());
   }
 
   private onVictory(): void {
     this.handUI.clear();
-    this.skull.play("enemy-skull-death");
-    this.time.delayedCall(800, () => this.showEndScreen("screen-victory"));
+    this.runState.playerHp = this.player.hp;
+
+    if (this.runState.isFinalBoss) {
+      if (this.cache.audio.exists("sting-win")) {
+        this.sound.play("sting-win");
+      }
+      this.time.delayedCall(800, () => this.showEndScreen("screen-victory"));
+    } else {
+      const ek = this.enemyConfig.key;
+      this.enemySprite.play(`enemy-${ek}-death`);
+      this.time.delayedCall(1000, () => {
+        this.runState.advanceLevel();
+        this.scene.start("RewardScene", { runState: this.runState });
+      });
+    }
   }
 
   private onDefeat(): void {
     this.handUI.clear();
     this.demon.play("char-demon-death");
+    if (this.cache.audio.exists("sting-game-over")) {
+      this.sound.play("sting-game-over");
+    }
     this.time.delayedCall(1200, () => this.showEndScreen("screen-loss"));
   }
 
@@ -305,6 +363,23 @@ export class CombatScene extends Phaser.Scene {
     bg.setDisplaySize(width, height);
     bg.setDepth(50);
     bg.setInteractive();
-    bg.on("pointerdown", () => this.scene.start("TitleScene"));
+
+    if (key === "screen-victory") {
+      this.add
+        .text(width / 2, height * 0.2, "Victory!", {
+          fontFamily: "system-ui, sans-serif",
+          fontSize: "48px",
+          color: "#ffd700",
+          stroke: "#000000",
+          strokeThickness: 6,
+        })
+        .setOrigin(0.5)
+        .setDepth(60);
+    }
+
+    bg.on("pointerdown", () => {
+      this.sound.stopAll();
+      this.scene.start("TitleScene");
+    });
   }
 }
