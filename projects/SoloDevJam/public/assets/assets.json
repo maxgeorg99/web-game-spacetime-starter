@@ -1,0 +1,122 @@
+{
+  "$schema": "Asset manifest. BootScene reads this and queues loads. Frame sizes measured from source PNGs.",
+  "spritesheets": [
+    {
+      "id": "demon",
+      "keyPrefix": "char-demon",
+      "frameWidth": 192,
+      "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/demon_idle.png",   "endFrame": 3, "frameRate": 6,  "repeat": -1 },
+        { "suffix": "run",    "path": "sprites/enemies/demon_run.png",    "endFrame": 3, "frameRate": 10, "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/demon_attack.png", "endFrame": 5, "frameRate": 14, "repeat":  0 },
+        { "suffix": "death",  "path": "sprites/enemies/demon_death.png",  "endFrame": 9, "frameRate": 10, "repeat":  0 }
+      ]
+    },
+    {
+      "id": "skull",
+      "keyPrefix": "enemy-skull",
+      "frameWidth": 192,
+      "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/skull_idle.png",   "endFrame": 7, "frameRate": 8,  "repeat": -1 },
+        { "suffix": "run",    "path": "sprites/enemies/skull_run.png",    "endFrame": 5, "frameRate": 10, "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/skull_attack.png", "endFrame": 6, "frameRate": 14, "repeat":  0 },
+        { "suffix": "death",  "path": "sprites/enemies/skull_death.png",  "endFrame": 4, "frameRate": 10, "repeat":  0 }
+      ]
+    },
+    {
+      "id": "bear",
+      "keyPrefix": "enemy-bear",
+      "frameWidth": 256,
+      "frameHeight": 256,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/bear_idle.png",   "endFrame": 7, "frameRate": 6,  "repeat": -1 },
+        { "suffix": "run",    "path": "sprites/enemies/bear_run.png",    "endFrame": 4, "frameRate": 10, "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/bear_attack.png", "endFrame": 8, "frameRate": 12, "repeat":  0 },
+        { "suffix": "death",  "path": "sprites/enemies/bear_death.png",  "endFrame": 4, "frameRate": 10, "repeat":  0 }
+      ]
+    },
+    {
+      "id": "centaur",
+      "keyPrefix": "enemy-centaur",
+      "frameWidth": 192,
+      "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/centaur_idle.png",   "endFrame": 9, "frameRate": 8,  "repeat": -1 },
+        { "suffix": "run",    "path": "sprites/enemies/centaur_run.png",    "endFrame": 7, "frameRate": 10, "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/centaur_attack.png", "endFrame": 9, "frameRate": 14, "repeat":  0 },
+        { "suffix": "death",  "path": "sprites/enemies/centaur_death.png",  "endFrame": 7, "frameRate": 10, "repeat":  0 }
+      ]
+    },
+    {
+      "id": "cerberus",
+      "keyPrefix": "enemy-cerberus",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/cerberus_idle.png",   "endFrame": 13, "frameRate": 10, "repeat": -1 },
+        { "suffix": "run",    "path": "sprites/enemies/cerberus_run.png",    "endFrame":  7, "frameRate": 12, "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/cerberus_attack.png", "endFrame": 14, "frameRate": 16, "repeat":  0 },
+        { "suffix": "death",  "path": "sprites/enemies/cerberus_death.png",  "endFrame":  9, "frameRate": 12, "repeat":  0 }
+      ]
+    }
+  ],
+
+  "images": [
+    { "key": "demon-avatar",     "path": "sprites/enemies/demon_avatar.png" },
+    { "key": "boss-final-1",     "path": "sprites/bosses/final_boss_1.png" },
+    { "key": "boss-final-2",     "path": "sprites/bosses/final_boss_2.png" },
+
+    { "key": "card-blank",       "path": "ui/cards/card_blank.png" },
+    { "key": "card-curse",       "path": "ui/cards/curse_card.png" },
+    { "key": "curse-bg",         "path": "ui/cards/curse_bg.png" },
+
+    { "key": "icon-heart",       "path": "ui/icons/heart.png" },
+    { "key": "icon-sword",       "path": "ui/icons/sword.png" },
+    { "key": "icon-shield",      "path": "ui/icons/shield.png" },
+    { "key": "icon-heal",        "path": "ui/icons/heal.png" },
+    { "key": "icon-combo",       "path": "ui/icons/combo.png" },
+
+    { "key": "bar-big-base",     "path": "ui/bars/bigbar_base.png" },
+    { "key": "bar-big-fill",     "path": "ui/bars/bigbar_fill.png" },
+    { "key": "bar-small-base",   "path": "ui/bars/smallbar_base.png" },
+    { "key": "bar-small-fill",   "path": "ui/bars/smallbar_fill.png" },
+
+    { "key": "banner",           "path": "ui/banners/banner.png" },
+    { "key": "banner-slots",     "path": "ui/banners/banner_slots.png" },
+
+    { "key": "paper-regular",    "path": "ui/papers/paper_regular.png" },
+    { "key": "paper-special",    "path": "ui/papers/paper_special.png" },
+
+    { "key": "screen-menu-bg",   "path": "ui/screens/menu_bg.png" },
+    { "key": "screen-title-bg",  "path": "ui/screens/title_bg.png" },
+    { "key": "screen-story",     "path": "ui/screens/story.png" },
+    { "key": "screen-victory",   "path": "ui/screens/victory.png" },
+    { "key": "screen-loss",      "path": "ui/screens/loss.png" }
+  ],
+
+  "audio": [
+    { "key": "music-title",       "path": "audio/music/title.mp3" },
+    { "key": "music-main",        "path": "audio/music/main.mp3" },
+    { "key": "music-boss",        "path": "audio/music/boss.mp3" },
+    { "key": "sting-win",         "path": "audio/music/win_sting.mp3" },
+    { "key": "sting-game-over",   "path": "audio/music/game_over_sting.mp3" },
+
+    { "key": "sfx-ui-click",      "path": "audio/sfx/ui_click.mp3" },
+    { "key": "sfx-ui-choose",     "path": "audio/sfx/ui_choose.mp3" },
+    { "key": "sfx-ui-reward",     "path": "audio/sfx/ui_reward.mp3" },
+    { "key": "sfx-ui-level-up",   "path": "audio/sfx/ui_level_up.mp3" },
+    { "key": "sfx-ui-win",        "path": "audio/sfx/ui_win.mp3" },
+    { "key": "sfx-ui-wrong",      "path": "audio/sfx/ui_wrong.mp3" },
+    { "key": "sfx-ui-booster",    "path": "audio/sfx/ui_booster_pack.mp3" },
+
+    { "key": "sfx-attack-fire",   "path": "audio/sfx/attack_fire.mp3" },
+    { "key": "sfx-attack-arrow",  "path": "audio/sfx/attack_arrow.mp3" },
+    { "key": "sfx-attack-soft",   "path": "audio/sfx/attack_soft.mp3" },
+    { "key": "sfx-player-damage", "path": "audio/sfx/player_damage.mp3" },
+    { "key": "sfx-thunder",       "path": "audio/sfx/thunder.mp3" },
+    { "key": "sfx-chaos-bolt",    "path": "audio/sfx/chaos_bolt.mp3" },
+    { "key": "sfx-monster-death", "path": "audio/sfx/monster_death.mp3" }
+  ]
+}
