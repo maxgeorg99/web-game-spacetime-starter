@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { ManifestEntry } from "../types";
+import { registerAnimations } from "../cards/AnimationFactory";
 
 export class CombatScene extends Phaser.Scene {
   private playerHp = 80;
@@ -13,39 +15,8 @@ export class CombatScene extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor("#1a0a0a");
 
-    const anims = this.anims;
-    const manifest = this.registry.get("assets") as {
-      spritesheets: Array<{
-        id: string;
-        keyPrefix: string;
-        frameWidth: number;
-        frameHeight: number;
-        animations: Array<{
-          suffix: string;
-          path: string;
-          endFrame: number;
-          frameRate: number;
-          repeat: number;
-        }>;
-      }>;
-    };
-
-    for (const sheet of manifest.spritesheets) {
-      for (const animDef of sheet.animations) {
-        const key = `${sheet.keyPrefix}-${animDef.suffix}`;
-        if (!anims.exists(key)) {
-          anims.create({
-            key,
-            frames: anims.generateFrameNumbers(key, {
-              start: 0,
-              end: animDef.endFrame,
-            }),
-            frameRate: animDef.frameRate,
-            repeat: animDef.repeat,
-          });
-        }
-      }
-    }
+    const manifest = this.registry.get("assets") as ManifestEntry;
+    registerAnimations(this.anims, manifest.spritesheets);
 
     const demon = this.add.sprite(width * 0.25, height * 0.5, "char-demon-idle");
     demon.play("char-demon-idle");
