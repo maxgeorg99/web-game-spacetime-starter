@@ -26,7 +26,7 @@ through a series of levels; pick a new card after every win.
 - On load complete, transitions to `TitleScene`
 - **Verify in browser:** loading screen visible, transitions to title without errors
 
-### 1.3 — TitleScene
+### 1.3 — TitleScene _(Done)_
 - Background: `screen-title-bg`
 - Title text "Demon Overlord" + tagline "Everything has a cost"
 - "Start Run" button → transitions to `CombatScene`
