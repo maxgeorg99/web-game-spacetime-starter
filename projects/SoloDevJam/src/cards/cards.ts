@@ -23,12 +23,13 @@ export function getCardsByKind(kind: string): Card[] {
 
 export function getStarterDeck(): Card[] {
   const ids = [
-    "strike_1", "strike_1", "strike_1",
+    "strike_1", "strike_1",
     "strike_2",
     "strike_3",
-    "heal_1", "heal_1",
+    "heal_1", "heal_3",
     "block_2", "block_2",
     "strike_4",
+    "strike_5",
   ];
   return ids.map((id) => getCard(id)!);
 }

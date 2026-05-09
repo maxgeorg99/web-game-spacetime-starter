@@ -109,6 +109,10 @@ export class CombatScene extends Phaser.Scene {
 
     if (result.healAmount > 0) {
       this.flashSprite(this.demon, 0x00ff00);
+      this.healVfx(this.demon.x, this.demon.y);
+      if (this.cache.audio.exists("sfx-attack-fire")) {
+        this.sound.play("sfx-attack-fire");
+      }
     }
 
     this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
@@ -156,6 +160,25 @@ export class CombatScene extends Phaser.Scene {
       } else {
         this.time.delayedCall(400, () => this.startPlayerTurn());
       }
+    });
+  }
+
+  private healVfx(x: number, y: number): void {
+    const circle = this.add.graphics();
+    circle.setDepth(30);
+    circle.fillStyle(0x00ff66, 0.6);
+    circle.fillCircle(x, y, 10);
+    this.tweens.add({
+      targets: circle,
+      alpha: 0,
+      duration: 500,
+      onUpdate: (tween) => {
+        circle.clear();
+        const radius = 10 + tween.progress * 50;
+        circle.fillStyle(0x00ff66, 0.6 * (1 - tween.progress));
+        circle.fillCircle(x, y, radius);
+      },
+      onComplete: () => circle.destroy(),
     });
   }
 
