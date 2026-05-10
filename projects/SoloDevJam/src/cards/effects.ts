@@ -15,7 +15,7 @@ export function canPlayCard(card: Card, player: PlayerState): boolean {
 export function applyCardEffect(
   card: Card,
   player: PlayerState,
-  enemy: EnemyState,
+  targets: EnemyState[],
   comboBonus = 0,
 ): EffectResult {
   const result: EffectResult = { damageDealt: 0, healAmount: 0, blockGained: 0 };
@@ -23,7 +23,9 @@ export function applyCardEffect(
   switch (card.kind) {
     case "attack": {
       const totalDamage = comboBonus > 0 ? card.value * 2 : card.value;
-      enemy.takeDamage(totalDamage);
+      for (const enemy of targets) {
+        enemy.takeDamage(totalDamage);
+      }
       result.damageDealt = totalDamage;
       break;
     }

@@ -1,36 +1,49 @@
 import { getStarterDeck } from "../cards/cards";
 import type { Card } from "../cards/Card";
-
-export const ENEMY_CONFIGS = [
-  { name: "Skull", key: "skull", hp: 30, damage: 8 },
-  { name: "Bear", key: "bear", hp: 40, damage: 10 },
-  { name: "Centaur", key: "centaur", hp: 50, damage: 12 },
-  { name: "Cerberus", key: "cerberus", hp: 60, damage: 14 },
-  { name: "Final Boss", key: "boss", hp: 80, damage: 8 },
-];
-
-export function getEnemyForLevel(level: number): typeof ENEMY_CONFIGS[0] {
-  return ENEMY_CONFIGS[Math.min(level - 1, ENEMY_CONFIGS.length - 1)];
-}
+import { MapNode, generateMap } from "./MapState";
 
 export class RunState {
-  level = 1;
-  readonly maxLevel = 5;
-  playerHp = 30;
-  playerMaxHp = 30;
+  nodes: MapNode[];
+  currentNodeId: string | null;
+  playerHp: number;
+  playerMaxHp: number;
   deck: Card[];
+  gold: number;
 
   constructor() {
+    this.nodes = generateMap();
+    this.currentNodeId = null;
     this.deck = getStarterDeck();
+    this.playerHp = 30;
+    this.playerMaxHp = 30;
+    this.gold = 0;
   }
 
-  advanceLevel(): boolean {
-    if (this.level >= this.maxLevel) return false;
-    this.level++;
-    return true;
+  get currentNode(): MapNode | null {
+    if (this.currentNodeId === null) return null;
+    return this.nodes.find((n) => n.id === this.currentNodeId) ?? null;
   }
 
-  get isFinalBoss(): boolean {
-    return this.level === this.maxLevel;
+  get availableNodes(): MapNode[] {
+    if (this.currentNodeId === null) {
+      return this.nodes.filter((n) => n.tier === 1);
+    }
+    const cur = this.currentNode;
+    if (!cur) return [];
+    return cur.connections
+      .map((id) => this.nodes.find((n) => n.id === id))
+      .filter((n): n is MapNode => n !== undefined && !n.cleared);
+  }
+
+  markNodeCleared(nodeId: string): void {
+    const node = this.nodes.find((n) => n.id === nodeId);
+    if (node) {
+      node.cleared = true;
+      this.currentNodeId = nodeId;
+    }
+  }
+
+  get isBossCleared(): boolean {
+    return this.nodes.some((n) => n.kind === "boss" && n.cleared);
   }
 }

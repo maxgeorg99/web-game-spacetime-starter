@@ -46,6 +46,12 @@ export class HpBar {
     this.label.setDepth(depth + 1);
   }
 
+  setVisible(visible: boolean): void {
+    this.bg.setVisible(visible);
+    this.fill.setVisible(visible);
+    this.label.setVisible(visible);
+  }
+
   destroy(): void {
     this.bg.destroy();
     this.fill.destroy();

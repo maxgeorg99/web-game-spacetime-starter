@@ -11,6 +11,17 @@ const strike: Card = {
   kind: "attack",
   value: 6,
   art: "card-blank",
+  targeting: "single",
+};
+
+const aoeStrike: Card = {
+  id: "hellfire_2",
+  name: "Hellfire",
+  cost: 2,
+  kind: "attack",
+  value: 6,
+  art: "card-blank",
+  targeting: "aoe",
 };
 
 const heal: Card = {
@@ -20,6 +31,7 @@ const heal: Card = {
   kind: "heal",
   value: 4,
   art: "card-blank",
+  targeting: "self",
 };
 
 const block: Card = {
@@ -29,6 +41,7 @@ const block: Card = {
   kind: "block",
   value: 10,
   art: "card-blank",
+  targeting: "self",
 };
 
 describe("canPlayCard", () => {
@@ -49,19 +62,37 @@ describe("canPlayCard", () => {
 });
 
 describe("applyCardEffect", () => {
-  it("attack deals damage to enemy", () => {
+  it("attack deals damage to single target", () => {
     const player = new PlayerState(80, 80);
-    const enemy = new EnemyState("Skull", 30);
-    const result = applyCardEffect(strike, player, enemy);
+    const enemy = new EnemyState("Skull", 30, 8);
+    const result = applyCardEffect(strike, player, [enemy]);
 
     expect(result.damageDealt).toBe(6);
     expect(enemy.hp).toBe(24);
   });
 
+  it("aoe attack hits all targets", () => {
+    const player = new PlayerState(80, 80);
+    const e1 = new EnemyState("Skull", 30, 8);
+    const e2 = new EnemyState("Skull", 20, 6);
+    const result = applyCardEffect(aoeStrike, player, [e1, e2]);
+
+    expect(result.damageDealt).toBe(6);
+    expect(e1.hp).toBe(24);
+    expect(e2.hp).toBe(14);
+  });
+
+  it("self card applies with empty targets array", () => {
+    const player = new PlayerState(50, 80);
+    const result = applyCardEffect(heal, player, []);
+
+    expect(result.healAmount).toBe(4);
+    expect(player.hp).toBe(54);
+  });
+
   it("heal restores player HP", () => {
     const player = new PlayerState(50, 80);
-    const enemy = new EnemyState("Skull", 30);
-    const result = applyCardEffect(heal, player, enemy);
+    const result = applyCardEffect(heal, player, []);
 
     expect(result.healAmount).toBe(4);
     expect(player.hp).toBe(54);
@@ -69,8 +100,7 @@ describe("applyCardEffect", () => {
 
   it("heal does not overheal", () => {
     const player = new PlayerState(78, 80);
-    const enemy = new EnemyState("Skull", 30);
-    const result = applyCardEffect(heal, player, enemy);
+    const result = applyCardEffect(heal, player, []);
 
     expect(result.healAmount).toBe(2);
     expect(player.hp).toBe(80);
@@ -78,10 +108,18 @@ describe("applyCardEffect", () => {
 
   it("block adds shield to player", () => {
     const player = new PlayerState(80, 80);
-    const enemy = new EnemyState("Skull", 30);
-    const result = applyCardEffect(block, player, enemy);
+    const result = applyCardEffect(block, player, []);
 
     expect(result.blockGained).toBe(10);
     expect(player.shield).toBe(10);
+  });
+
+  it("combo bonus doubles damage", () => {
+    const player = new PlayerState(80, 80);
+    const enemy = new EnemyState("Skull", 30, 8);
+    const result = applyCardEffect(strike, player, [enemy], 1);
+
+    expect(result.damageDealt).toBe(12);
+    expect(enemy.hp).toBe(18);
   });
 });

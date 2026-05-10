@@ -7,34 +7,10 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "animations": [
-        {
-          "suffix": "idle",
-          "path": "sprites/enemies/demon_idle.png",
-          "endFrame": 3,
-          "frameRate": 6,
-          "repeat": -1
-        },
-        {
-          "suffix": "run",
-          "path": "sprites/enemies/demon_run.png",
-          "endFrame": 3,
-          "frameRate": 10,
-          "repeat": -1
-        },
-        {
-          "suffix": "attack",
-          "path": "sprites/enemies/demon_attack.png",
-          "endFrame": 5,
-          "frameRate": 14,
-          "repeat": 0
-        },
-        {
-          "suffix": "death",
-          "path": "sprites/enemies/demon_death.png",
-          "endFrame": 9,
-          "frameRate": 10,
-          "repeat": 0
-        }
+        { "suffix": "idle",   "path": "sprites/enemies/demon_idle.png",   "endFrame": 3,  "frameRate": 6,  "repeat": -1 },
+        { "suffix": "run",    "path": "sprites/enemies/demon_run.png",    "endFrame": 3,  "frameRate": 10, "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/demon_attack.png", "endFrame": 5,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/demon_death.png",  "endFrame": 9,  "frameRate": 10, "repeat": 0  }
       ]
     },
     {
@@ -43,34 +19,10 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "animations": [
-        {
-          "suffix": "idle",
-          "path": "sprites/enemies/skull_idle.png",
-          "endFrame": 7,
-          "frameRate": 8,
-          "repeat": -1
-        },
-        {
-          "suffix": "run",
-          "path": "sprites/enemies/skull_run.png",
-          "endFrame": 5,
-          "frameRate": 10,
-          "repeat": -1
-        },
-        {
-          "suffix": "attack",
-          "path": "sprites/enemies/skull_attack.png",
-          "endFrame": 6,
-          "frameRate": 14,
-          "repeat": 0
-        },
-        {
-          "suffix": "death",
-          "path": "sprites/enemies/skull_death.png",
-          "endFrame": 4,
-          "frameRate": 10,
-          "repeat": 0
-        }
+        { "suffix": "idle",   "path": "sprites/enemies/skull_idle.png",   "endFrame": 7,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "run",    "path": "sprites/enemies/skull_run.png",    "endFrame": 5,  "frameRate": 10, "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/skull_attack.png", "endFrame": 6,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/skull_death.png",  "endFrame": 4,  "frameRate": 10, "repeat": 0  }
       ]
     },
     {
@@ -79,34 +31,10 @@
       "frameWidth": 256,
       "frameHeight": 256,
       "animations": [
-        {
-          "suffix": "idle",
-          "path": "sprites/enemies/bear_idle.png",
-          "endFrame": 7,
-          "frameRate": 6,
-          "repeat": -1
-        },
-        {
-          "suffix": "run",
-          "path": "sprites/enemies/bear_run.png",
-          "endFrame": 4,
-          "frameRate": 10,
-          "repeat": -1
-        },
-        {
-          "suffix": "attack",
-          "path": "sprites/enemies/bear_attack.png",
-          "endFrame": 8,
-          "frameRate": 12,
-          "repeat": 0
-        },
-        {
-          "suffix": "death",
-          "path": "sprites/enemies/bear_death.png",
-          "endFrame": 4,
-          "frameRate": 10,
-          "repeat": 0
-        }
+        { "suffix": "idle",   "path": "sprites/enemies/bear_idle.png",   "endFrame": 7,  "frameRate": 6,  "repeat": -1 },
+        { "suffix": "run",    "path": "sprites/enemies/bear_run.png",    "endFrame": 4,  "frameRate": 10, "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/bear_attack.png", "endFrame": 8,  "frameRate": 12, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/bear_death.png",  "endFrame": 4,  "frameRate": 10, "repeat": 0  }
       ]
     },
     {
@@ -115,34 +43,10 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "animations": [
-        {
-          "suffix": "idle",
-          "path": "sprites/enemies/centaur_idle.png",
-          "endFrame": 9,
-          "frameRate": 8,
-          "repeat": -1
-        },
-        {
-          "suffix": "run",
-          "path": "sprites/enemies/centaur_run.png",
-          "endFrame": 7,
-          "frameRate": 10,
-          "repeat": -1
-        },
-        {
-          "suffix": "attack",
-          "path": "sprites/enemies/centaur_attack.png",
-          "endFrame": 9,
-          "frameRate": 14,
-          "repeat": 0
-        },
-        {
-          "suffix": "death",
-          "path": "sprites/enemies/centaur_death.png",
-          "endFrame": 7,
-          "frameRate": 10,
-          "repeat": 0
-        }
+        { "suffix": "idle",   "path": "sprites/enemies/centaur_idle.png",   "endFrame": 9,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "run",    "path": "sprites/enemies/centaur_run.png",    "endFrame": 7,  "frameRate": 10, "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/centaur_attack.png", "endFrame": 9,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/centaur_death.png",  "endFrame": 7,  "frameRate": 10, "repeat": 0  }
       ]
     },
     {
@@ -151,101 +55,321 @@
       "frameWidth": 128,
       "frameHeight": 128,
       "animations": [
-        {
-          "suffix": "idle",
-          "path": "sprites/enemies/cerberus_idle.png",
-          "endFrame": 13,
-          "frameRate": 10,
-          "repeat": -1
-        },
-        {
-          "suffix": "run",
-          "path": "sprites/enemies/cerberus_run.png",
-          "endFrame": 7,
-          "frameRate": 12,
-          "repeat": -1
-        },
-        {
-          "suffix": "attack",
-          "path": "sprites/enemies/cerberus_attack.png",
-          "endFrame": 14,
-          "frameRate": 16,
-          "repeat": 0
-        },
-        {
-          "suffix": "death",
-          "path": "sprites/enemies/cerberus_death.png",
-          "endFrame": 9,
-          "frameRate": 12,
-          "repeat": 0
-        }
+        { "suffix": "idle",   "path": "sprites/enemies/cerberus_idle.png",   "endFrame": 13, "frameRate": 10, "repeat": -1 },
+        { "suffix": "run",    "path": "sprites/enemies/cerberus_run.png",    "endFrame": 7,  "frameRate": 12, "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/cerberus_attack.png", "endFrame": 14, "frameRate": 16, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/cerberus_death.png",  "endFrame": 9,  "frameRate": 12, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "gnoll",
+      "keyPrefix": "enemy-gnoll",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/gnoll_idle.png",   "endFrame": 5,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/gnoll_attack.png", "endFrame": 7,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/gnoll_death.png",  "endFrame": 4,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "gnome",
+      "keyPrefix": "enemy-gnome",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/gnome_idle.png",   "endFrame": 7,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/gnome_attack.png", "endFrame": 6,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/gnome_death.png",  "endFrame": 3,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "spider",
+      "keyPrefix": "enemy-spider",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/spider_idle.png",   "endFrame": 7,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/spider_attack.png", "endFrame": 7,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/spider_death.png",  "endFrame": 4,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "snake",
+      "keyPrefix": "enemy-snake",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/snake_idle.png",   "endFrame": 7,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/snake_attack.png", "endFrame": 5,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/snake_death.png",  "endFrame": 3,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "thief",
+      "keyPrefix": "enemy-thief",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/thief_idle.png",   "endFrame": 5,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/thief_attack.png", "endFrame": 5,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/thief_death.png",  "endFrame": 4,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "shaman",
+      "keyPrefix": "enemy-shaman",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/shaman_idle.png",   "endFrame": 7,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/shaman_attack.png", "endFrame": 9,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/shaman_death.png",  "endFrame": 4,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "skeletonmage",
+      "keyPrefix": "enemy-skeletonmage",
+      "frameWidth": 128, "frameHeight": 128,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/skeletonmage_idle.png",   "endFrame": 5,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/skeletonmage_attack.png", "endFrame": 8,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/skeletonmage_death.png",  "endFrame": 9,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "paddlefish",
+      "keyPrefix": "enemy-paddlefish",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/paddlefish_idle.png",   "endFrame": 7,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/paddlefish_attack.png", "endFrame": 5,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/paddlefish_death.png",  "endFrame": 4,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "harpoonfish",
+      "keyPrefix": "enemy-harpoonfish",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/harpoonfish_idle.png",   "endFrame": 7,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/harpoonfish_attack.png", "endFrame": 7,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/harpoonfish_death.png",  "endFrame": 3,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "panda",
+      "keyPrefix": "enemy-panda",
+      "frameWidth": 256, "frameHeight": 256,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/panda_idle.png",   "endFrame": 9,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/panda_attack.png", "endFrame": 12, "frameRate": 12, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/panda_death.png",  "endFrame": 3,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "lancer",
+      "keyPrefix": "enemy-lancer",
+      "frameWidth": 256, "frameHeight": 256,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/lancer_idle.png",   "endFrame": 6,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/lancer_attack.png", "endFrame": 7,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/lancer_death.png",  "endFrame": 4,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "minotaur",
+      "keyPrefix": "enemy-minotaur",
+      "frameWidth": 320, "frameHeight": 320,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/minotaur_idle.png",   "endFrame": 15, "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/minotaur_attack.png", "endFrame": 11, "frameRate": 12, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/minotaur_death.png",  "endFrame": 3,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "turtle",
+      "keyPrefix": "enemy-turtle",
+      "frameWidth": 320, "frameHeight": 320,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/turtle_idle.png",   "endFrame": 9,  "frameRate": 6,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/turtle_attack.png", "endFrame": 9,  "frameRate": 12, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/turtle_death.png",  "endFrame": 5,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "werewolf",
+      "keyPrefix": "enemy-werewolf",
+      "frameWidth": 196, "frameHeight": 196,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/werewolf_idle.png",   "endFrame": 5,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/werewolf_attack.png", "endFrame": 6,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/werewolf_death.png",  "endFrame": 9,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "lizardman",
+      "keyPrefix": "enemy-lizardman",
+      "frameWidth": 196, "frameHeight": 196,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/lizardman_idle.png",   "endFrame": 13, "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/lizardman_attack.png", "endFrame": 6,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/lizardman_death.png",  "endFrame": 11, "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "demone",
+      "keyPrefix": "enemy-demone",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/demone_idle.png",   "endFrame": 3,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/demone_attack.png", "endFrame": 5,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/demone_death.png",  "endFrame": 9,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "gargoyle",
+      "keyPrefix": "enemy-gargoyle",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/gargoyle_idle.png",   "endFrame": 5,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/gargoyle_attack.png", "endFrame": 8,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/gargoyle_death.png",  "endFrame": 6,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "gryphon",
+      "keyPrefix": "enemy-gryphon",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/gryphon_idle.png",   "endFrame": 3,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/gryphon_attack.png", "endFrame": 4,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/gryphon_death.png",  "endFrame": 6,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "headlesshorseman",
+      "keyPrefix": "enemy-headlesshorseman",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/headlesshorseman_idle.png",   "endFrame": 3,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/headlesshorseman_attack.png", "endFrame": 7,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/headlesshorseman_death.png",  "endFrame": 9,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "pyromancer",
+      "keyPrefix": "enemy-pyromancer",
+      "frameWidth": 128, "frameHeight": 128,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/pyromancer_idle.png",   "endFrame": 3,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/pyromancer_attack.png", "endFrame": 5,  "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/pyromancer_death.png",  "endFrame": 9,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "satyrarcher",
+      "keyPrefix": "enemy-satyrarcher",
+      "frameWidth": 128, "frameHeight": 128,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/satyrarcher_idle.png",   "endFrame": 11, "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/satyrarcher_attack.png", "endFrame": 11, "frameRate": 14, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/satyrarcher_death.png",  "endFrame": 7,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "stonegolem",
+      "keyPrefix": "enemy-stonegolem",
+      "frameWidth": 192, "frameHeight": 192,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/stonegolem_idle.png",   "endFrame": 12, "frameRate": 6,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/stonegolem_attack.png", "endFrame": 19, "frameRate": 12, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/stonegolem_death.png",  "endFrame": 8,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "troll",
+      "keyPrefix": "enemy-troll",
+      "frameWidth": 384, "frameHeight": 384,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/troll_idle.png",   "endFrame": 11, "frameRate": 6,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/troll_attack.png", "endFrame": 5,  "frameRate": 12, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/troll_death.png",  "endFrame": 9,  "frameRate": 10, "repeat": 0  }
+      ]
+    },
+    {
+      "id": "dragon",
+      "keyPrefix": "enemy-dragon",
+      "frameWidth": 144, "frameHeight": 144,
+      "animations": [
+        { "suffix": "idle",   "path": "sprites/enemies/dragon_idle.png",   "endFrame": 7,  "frameRate": 8,  "repeat": -1 },
+        { "suffix": "attack", "path": "sprites/enemies/dragon_attack.png", "endFrame": 16, "frameRate": 16, "repeat": 0  },
+        { "suffix": "death",  "path": "sprites/enemies/dragon_death.png",  "endFrame": 6,  "frameRate": 10, "repeat": 0  }
       ]
     }
   ],
 
   "images": [
-    { "key": "demon-avatar", "path": "sprites/enemies/demon_avatar.png" },
-    { "key": "boss-final-1", "path": "sprites/bosses/final_boss_1.png" },
-    { "key": "boss-final-2", "path": "sprites/bosses/final_boss_2.png" },
+    { "key": "demon-avatar",      "path": "sprites/enemies/demon_avatar.png" },
+    { "key": "boss-final-1",      "path": "sprites/bosses/final_boss_1.png" },
+    { "key": "boss-final-2",      "path": "sprites/bosses/final_boss_2.png" },
+    { "key": "boss-agna-1",       "path": "sprites/bosses/boss_agna_1.png" },
+    { "key": "boss-agna-2",       "path": "sprites/bosses/boss_agna_2.png" },
+    { "key": "boss-finalboss-1",  "path": "sprites/bosses/final_boss_phase_1.png" },
+    { "key": "boss-finalboss-2",  "path": "sprites/bosses/final_boss_phase_2.png" },
 
-    { "key": "card-blank", "path": "ui/cards/card_blank.png" },
-    { "key": "card-curse", "path": "ui/cards/curse_card.png" },
-    { "key": "curse-bg", "path": "ui/cards/curse_bg.png" },
-    { "key": "health-cost", "path": "ui/cards/health_cost.png" },
+    { "key": "card-blank",     "path": "ui/cards/card_blank.png" },
+    { "key": "card-curse",     "path": "ui/cards/curse_card.png" },
+    { "key": "curse-bg",       "path": "ui/cards/curse_bg.png" },
+    { "key": "health-cost",    "path": "ui/cards/health_cost.png" },
 
-    { "key": "icon-heart", "path": "ui/icons/heart.png" },
-    { "key": "icon-sword", "path": "ui/icons/sword.png" },
-    { "key": "icon-shield", "path": "ui/icons/shield.png" },
-    { "key": "icon-heal", "path": "ui/icons/heal.png" },
-    { "key": "icon-combo", "path": "ui/icons/combo.png" },
-    { "key": "strike", "path": "ui/icons/strike.png" },
-    { "key": "heavy-strike", "path": "ui/icons/heavy_strike.png" },
-    { "key": "mega-strike", "path": "ui/icons/mega_strike.png" },
-    { "key": "power-strike", "path": "ui/icons/power_strike.png" },
-    { "key": "siphon", "path": "ui/icons/siphon.png" },
-    { "key": "drain-life", "path": "ui/icons/drain_life.png" },
-    { "key": "dark-shield", "path": "ui/icons/dark_shield.png" },
-    { "key": "demon-wall", "path": "ui/icons/demon_wall.png" },
+    { "key": "icon-heart",     "path": "ui/icons/heart.png" },
+    { "key": "icon-sword",     "path": "ui/icons/sword.png" },
+    { "key": "icon-shield",    "path": "ui/icons/shield.png" },
+    { "key": "icon-heal",      "path": "ui/icons/heal.png" },
+    { "key": "icon-combo",     "path": "ui/icons/combo.png" },
+    { "key": "strike",         "path": "ui/icons/strike.png" },
+    { "key": "heavy-strike",   "path": "ui/icons/heavy_strike.png" },
+    { "key": "mega-strike",    "path": "ui/icons/mega_strike.png" },
+    { "key": "power-strike",   "path": "ui/icons/power_strike.png" },
+    { "key": "siphon",         "path": "ui/icons/siphon.png" },
+    { "key": "drain-life",     "path": "ui/icons/drain_life.png" },
+    { "key": "dark-shield",    "path": "ui/icons/dark_shield.png" },
+    { "key": "demon-wall",     "path": "ui/icons/demon_wall.png" },
 
-    { "key": "bar-big-base", "path": "ui/bars/bigbar_base.png" },
-    { "key": "bar-big-fill", "path": "ui/bars/bigbar_fill.png" },
+    { "key": "bar-big-base",   "path": "ui/bars/bigbar_base.png" },
+    { "key": "bar-big-fill",   "path": "ui/bars/bigbar_fill.png" },
     { "key": "bar-small-base", "path": "ui/bars/smallbar_base.png" },
     { "key": "bar-small-fill", "path": "ui/bars/smallbar_fill.png" },
 
-    { "key": "banner", "path": "ui/banners/banner.png" },
-    { "key": "banner-slots", "path": "ui/banners/banner_slots.png" },
+    { "key": "banner",         "path": "ui/banners/banner.png" },
+    { "key": "banner-slots",   "path": "ui/banners/banner_slots.png" },
 
-    { "key": "paper-regular", "path": "ui/papers/paper_regular.png" },
-    { "key": "paper-special", "path": "ui/papers/paper_special.png" },
+    { "key": "paper-regular",  "path": "ui/papers/paper_regular.png" },
+    { "key": "paper-special",  "path": "ui/papers/paper_special.png" },
 
     { "key": "screen-menu-bg", "path": "ui/screens/menu_bg.png" },
-    { "key": "screen-title-bg", "path": "ui/screens/title_bg.png" },
-    { "key": "screen-story", "path": "ui/screens/story.png" },
+    { "key": "screen-title-bg","path": "ui/screens/title_bg.png" },
+    { "key": "screen-story",   "path": "ui/screens/story.png" },
     { "key": "screen-victory", "path": "ui/screens/victory.png" },
-    { "key": "screen-loss", "path": "ui/screens/loss.png" }
+    { "key": "screen-loss",    "path": "ui/screens/loss.png" }
   ],
 
   "audio": [
-    { "key": "music-title", "path": "audio/music/title.mp3" },
-    { "key": "music-main", "path": "audio/music/main.mp3" },
-    { "key": "music-boss", "path": "audio/music/boss.mp3" },
-    { "key": "sting-win", "path": "audio/music/win_sting.mp3" },
-    { "key": "sting-game-over", "path": "audio/music/game_over_sting.mp3" },
+    { "key": "music-title",       "path": "audio/music/title.mp3" },
+    { "key": "music-main",        "path": "audio/music/main.mp3" },
+    { "key": "music-boss",        "path": "audio/music/boss.mp3" },
+    { "key": "sting-win",         "path": "audio/music/win_sting.mp3" },
+    { "key": "sting-game-over",   "path": "audio/music/game_over_sting.mp3" },
 
-    { "key": "sfx-ui-click", "path": "audio/sfx/ui_click.mp3" },
-    { "key": "sfx-ui-choose", "path": "audio/sfx/ui_choose.mp3" },
-    { "key": "sfx-ui-reward", "path": "audio/sfx/ui_reward.mp3" },
-    { "key": "sfx-ui-level-up", "path": "audio/sfx/ui_level_up.mp3" },
-    { "key": "sfx-ui-win", "path": "audio/sfx/ui_win.mp3" },
-    { "key": "sfx-ui-wrong", "path": "audio/sfx/ui_wrong.mp3" },
-    { "key": "sfx-ui-booster", "path": "audio/sfx/ui_booster_pack.mp3" },
+    { "key": "sfx-ui-click",      "path": "audio/sfx/ui_click.mp3" },
+    { "key": "sfx-ui-choose",     "path": "audio/sfx/ui_choose.mp3" },
+    { "key": "sfx-ui-reward",     "path": "audio/sfx/ui_reward.mp3" },
+    { "key": "sfx-ui-level-up",   "path": "audio/sfx/ui_level_up.mp3" },
+    { "key": "sfx-ui-win",        "path": "audio/sfx/ui_win.mp3" },
+    { "key": "sfx-ui-wrong",      "path": "audio/sfx/ui_wrong.mp3" },
+    { "key": "sfx-ui-booster",    "path": "audio/sfx/ui_booster_pack.mp3" },
 
-    { "key": "sfx-attack-fire", "path": "audio/sfx/attack_fire.mp3" },
-    { "key": "sfx-attack-arrow", "path": "audio/sfx/attack_arrow.mp3" },
-    { "key": "sfx-attack-soft", "path": "audio/sfx/attack_soft.mp3" },
+    { "key": "sfx-attack-fire",   "path": "audio/sfx/attack_fire.mp3" },
+    { "key": "sfx-attack-arrow",  "path": "audio/sfx/attack_arrow.mp3" },
+    { "key": "sfx-attack-soft",   "path": "audio/sfx/attack_soft.mp3" },
     { "key": "sfx-player-damage", "path": "audio/sfx/player_damage.mp3" },
-    { "key": "sfx-thunder", "path": "audio/sfx/thunder.mp3" },
-    { "key": "sfx-chaos-bolt", "path": "audio/sfx/chaos_bolt.mp3" },
+    { "key": "sfx-thunder",       "path": "audio/sfx/thunder.mp3" },
+    { "key": "sfx-chaos-bolt",    "path": "audio/sfx/chaos_bolt.mp3" },
     { "key": "sfx-monster-death", "path": "audio/sfx/monster_death.mp3" }
   ]
 }

@@ -52,4 +52,28 @@ describe("Card registry", () => {
       expect(card.value).toBeGreaterThan(0);
     }
   });
+
+  it("all cards have a targeting field", () => {
+    for (const card of ALL_CARDS) {
+      expect(["single", "aoe", "self"]).toContain(card.targeting);
+    }
+  });
+
+  it("attack cards use single or aoe targeting", () => {
+    for (const card of ALL_CARDS.filter((c) => c.kind === "attack")) {
+      expect(["single", "aoe"]).toContain(card.targeting);
+    }
+  });
+
+  it("heal and block cards use self targeting", () => {
+    for (const card of ALL_CARDS.filter(
+      (c) => c.kind === "heal" || c.kind === "block",
+    )) {
+      expect(card.targeting).toBe("self");
+    }
+  });
+
+  it("has at least one aoe card", () => {
+    expect(ALL_CARDS.filter((c) => c.targeting === "aoe").length).toBeGreaterThan(0);
+  });
 });

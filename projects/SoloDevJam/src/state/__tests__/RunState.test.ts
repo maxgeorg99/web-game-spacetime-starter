@@ -1,59 +1,65 @@
 import { describe, it, expect } from "vitest";
-import { RunState, getEnemyForLevel } from "../RunState";
+import { RunState } from "../RunState";
 
 describe("RunState", () => {
-  it("starts at level 1 with 30 HP", () => {
+  it("starts with generated map nodes", () => {
     const r = new RunState();
-    expect(r.level).toBe(1);
-    expect(r.playerHp).toBe(30);
-    expect(r.isFinalBoss).toBe(false);
+    expect(r.nodes.length).toBeGreaterThan(0);
   });
 
-  it("advanceLevel increments level up to 5", () => {
+  it("has exactly one boss node in tier 5", () => {
     const r = new RunState();
-    expect(r.advanceLevel()).toBe(true);
-    expect(r.level).toBe(2);
-    expect(r.advanceLevel()).toBe(true);
-    expect(r.level).toBe(3);
-    expect(r.advanceLevel()).toBe(true);
-    expect(r.level).toBe(4);
-    expect(r.advanceLevel()).toBe(true);
-    expect(r.level).toBe(5);
-    expect(r.isFinalBoss).toBe(true);
-    expect(r.advanceLevel()).toBe(false);
-    expect(r.level).toBe(5);
+    const bosses = r.nodes.filter((n) => n.kind === "boss");
+    expect(bosses).toHaveLength(1);
+    expect(bosses[0].tier).toBe(5);
+  });
+
+  it("starts at 30 HP with no currentNode", () => {
+    const r = new RunState();
+    expect(r.playerHp).toBe(30);
+    expect(r.currentNodeId).toBeNull();
+    expect(r.currentNode).toBeNull();
+  });
+
+  it("availableNodes returns tier-1 nodes before any fight", () => {
+    const r = new RunState();
+    const avail = r.availableNodes;
+    expect(avail.length).toBeGreaterThan(0);
+    expect(avail.every((n) => n.tier === 1)).toBe(true);
+  });
+
+  it("markNodeCleared sets currentNodeId and cleared flag", () => {
+    const r = new RunState();
+    const firstNode = r.availableNodes[0];
+    r.markNodeCleared(firstNode.id);
+    expect(r.currentNodeId).toBe(firstNode.id);
+    expect(firstNode.cleared).toBe(true);
+  });
+
+  it("availableNodes after clearing returns connections", () => {
+    const r = new RunState();
+    const firstNode = r.availableNodes[0];
+    r.markNodeCleared(firstNode.id);
+    const avail = r.availableNodes;
+    for (const n of avail) {
+      expect(firstNode.connections).toContain(n.id);
+    }
+  });
+
+  it("isBossCleared starts false", () => {
+    const r = new RunState();
+    expect(r.isBossCleared).toBe(false);
+  });
+
+  it("isBossCleared is true after clearing the boss node", () => {
+    const r = new RunState();
+    const boss = r.nodes.find((n) => n.kind === "boss")!;
+    r.markNodeCleared(boss.id);
+    expect(r.isBossCleared).toBe(true);
   });
 
   it("deck has 9 starter cards", () => {
     const r = new RunState();
     expect(r.deck).toHaveLength(9);
-  });
-});
-
-describe("getEnemyForLevel", () => {
-  it("returns skull for level 1", () => {
-    expect(getEnemyForLevel(1).name).toBe("Skull");
-  });
-
-  it("returns bear for level 2", () => {
-    expect(getEnemyForLevel(2).name).toBe("Bear");
-  });
-
-  it("returns centaur for level 3", () => {
-    expect(getEnemyForLevel(3).name).toBe("Centaur");
-  });
-
-  it("returns cerberus for level 4", () => {
-    expect(getEnemyForLevel(4).name).toBe("Cerberus");
-  });
-
-  it("returns final boss for level 5", () => {
-    const e = getEnemyForLevel(5);
-    expect(e.name).toBe("Final Boss");
-    expect(e.hp).toBe(80);
-  });
-
-  it("clamps beyond max level", () => {
-    expect(getEnemyForLevel(99).name).toBe("Final Boss");
   });
 });

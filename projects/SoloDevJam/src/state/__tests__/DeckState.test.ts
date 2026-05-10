@@ -10,6 +10,7 @@ function makeMockCards(n: number): Card[] {
     kind: "attack" as const,
     value: 5,
     art: "card-blank",
+    targeting: "single" as const,
   }));
 }
 

@@ -9,11 +9,13 @@ export class TitleScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
 
-    const bg = this.add.image(width / 2, height / 2, "screen-title-bg");
-    bg.setDisplaySize(width, height);
+    // Deep violet → blood red gradient
+    const bg = this.add.graphics();
+    bg.fillGradientStyle(0x07000e, 0x07000e, 0x2a0008, 0x2a0008, 1);
+    bg.fillRect(0, 0, width, height);
 
     this.add
-      .text(width / 2, height / 2 - 60, "Demon Overlord", {
+      .text(width / 2, height / 2 - 60, "Pay in Blood", {
         fontFamily: "system-ui, sans-serif",
         fontSize: "48px",
         color: "#e0c060",
@@ -40,7 +42,9 @@ export class TitleScene extends Phaser.Scene {
     startText.on("pointerover", () => startText.setColor("#e0c060"));
     startText.on("pointerout", () => startText.setColor("#ffffff"));
     startText.on("pointerdown", () => {
-      this.scene.start("CombatScene", { runState: new RunState() });
+      const runState = new RunState();
+      this.registry.set("runState", runState);
+      this.scene.start("MapScene");
     });
 
     if (this.cache.audio.exists("music-title")) {

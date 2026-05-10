@@ -3,6 +3,7 @@ import { Card } from "../cards/Card";
 import { ALL_CARDS } from "../cards/cards";
 import { RunState } from "../state/RunState";
 
+
 function pickRandomCards(count: number): Card[] {
   const pool = [...ALL_CARDS];
   const result: Card[] = [];
@@ -26,7 +27,7 @@ export class RewardScene extends Phaser.Scene {
 
   create(): void {
     const { width, height } = this.scale;
-    this.runState = (this.scene.settings.data as { runState: RunState }).runState;
+    this.runState = this.registry.get("runState") as RunState;
     this.choices = pickRandomCards(3);
 
     this.cameras.main.setBackgroundColor("#0a0a0a");
@@ -149,6 +150,7 @@ export class RewardScene extends Phaser.Scene {
   }
 
   private proceed(): void {
-    this.scene.start("CombatScene", { runState: this.runState });
+    this.registry.set("runState", this.runState);
+    this.scene.start("MapScene");
   }
 }

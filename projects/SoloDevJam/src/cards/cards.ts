@@ -8,6 +8,7 @@ export const ALL_CARDS: Card[] = [
     kind: "attack",
     value: 6,
     art: "strike",
+    targeting: "single",
   },
   {
     id: "strike_2",
@@ -16,6 +17,7 @@ export const ALL_CARDS: Card[] = [
     kind: "attack",
     value: 10,
     art: "heavy-strike",
+    targeting: "single",
   },
   {
     id: "strike_3",
@@ -24,6 +26,7 @@ export const ALL_CARDS: Card[] = [
     kind: "attack",
     value: 16,
     art: "power-strike",
+    targeting: "single",
   },
   {
     id: "strike_4",
@@ -32,6 +35,16 @@ export const ALL_CARDS: Card[] = [
     kind: "attack",
     value: 22,
     art: "mega-strike",
+    targeting: "single",
+  },
+  {
+    id: "hellfire_2",
+    name: "Hellfire",
+    cost: 2,
+    kind: "attack",
+    value: 6,
+    art: "heavy-strike",
+    targeting: "aoe",
   },
   {
     id: "heal_1",
@@ -40,6 +53,7 @@ export const ALL_CARDS: Card[] = [
     kind: "heal",
     value: 4,
     art: "siphon",
+    targeting: "self",
   },
   {
     id: "heal_3",
@@ -48,6 +62,7 @@ export const ALL_CARDS: Card[] = [
     kind: "heal",
     value: 12,
     art: "drain-life",
+    targeting: "self",
   },
   {
     id: "block_2",
@@ -56,6 +71,7 @@ export const ALL_CARDS: Card[] = [
     kind: "block",
     value: 10,
     art: "dark-shield",
+    targeting: "self",
   },
   {
     id: "block_4",
@@ -64,6 +80,7 @@ export const ALL_CARDS: Card[] = [
     kind: "block",
     value: 20,
     art: "demon-wall",
+    targeting: "self",
   },
 ];
 
