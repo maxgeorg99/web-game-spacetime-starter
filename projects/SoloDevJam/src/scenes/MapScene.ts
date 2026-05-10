@@ -30,28 +30,13 @@ function nodeName(node: MapNode): string {
   return pool[hashId(node.id) % pool.length];
 }
 
-// ─── Avatar keys per node kind ────────────────────────────────────────────────
-
-const COMBAT_AVATARS = [
-  "avatar-skull", "avatar-gnoll", "avatar-thief", "avatar-snake",
-  "avatar-spider", "avatar-paddlefish", "avatar-harpoonfish", "avatar-gnome",
-  "avatar-shaman", "avatar-skeletonmage", "avatar-satyrarcher",
-];
-const ELITE_AVATARS = [
-  "avatar-panda", "avatar-lancer", "avatar-minotaur", "avatar-turtle",
-  "avatar-werewolf", "avatar-lizardman", "avatar-gargoyle", "avatar-gryphon",
-  "avatar-stonegolem", "avatar-troll", "avatar-headlesshorseman", "avatar-bear",
-  "avatar-pyromancer", "avatar-centaur", "avatar-lizard",
-];
-const BOSS_AVATARS = ["avatar-cerberus"];
+// ─── Avatar key from actual encounter ─────────────────────────────────────────
 
 function nodeAvatarKey(node: MapNode): string {
-  const pool = node.kind === "boss"
-    ? BOSS_AVATARS
-    : node.kind === "elite"
-      ? ELITE_AVATARS
-      : COMBAT_AVATARS;
-  return pool[hashId(node.id) % pool.length];
+  const sk = node.encounterTemplates[0]?.spriteKey;
+  if (!sk) return "avatar-skull";
+  if (sk.startsWith("boss-")) return sk;
+  return `avatar-${sk}`;
 }
 
 // ─── Building sprite key per kind ─────────────────────────────────────────────

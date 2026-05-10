@@ -1,3 +1,5 @@
+import type { EnemyTemplate } from "../data/enemies";
+
 export type NodeKind = "combat" | "elite" | "boss";
 
 export interface MapNode {
@@ -6,6 +8,7 @@ export interface MapNode {
   tier: number;          // 1 = first fight, 5 = boss
   connections: string[]; // ids of tier+1 nodes reachable from here
   cleared: boolean;
+  encounterTemplates: EnemyTemplate[];
 }
 
 export function generateMap(): MapNode[] {
@@ -13,7 +16,7 @@ export function generateMap(): MapNode[] {
 
   function mkNode(tier: number, kind: NodeKind): MapNode {
     const idx = nodes.filter((n) => n.tier === tier).length;
-    const node: MapNode = { id: `t${tier}_${idx}`, kind, tier, connections: [], cleared: false };
+    const node: MapNode = { id: `t${tier}_${idx}`, kind, tier, connections: [], cleared: false, encounterTemplates: [] };
     nodes.push(node);
     return node;
   }

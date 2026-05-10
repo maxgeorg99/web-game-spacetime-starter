@@ -1,6 +1,9 @@
 import { getStarterDeck } from "../cards/cards";
 import type { Card } from "../cards/Card";
 import { MapNode, generateMap } from "./MapState";
+import {
+  pickCombatEncounter, pickEliteEncounter, pickBossEncounter,
+} from "../data/enemies";
 
 export class RunState {
   nodes: MapNode[];
@@ -12,6 +15,12 @@ export class RunState {
 
   constructor() {
     this.nodes = generateMap();
+    for (const node of this.nodes) {
+      const pick = node.kind === "boss" ? pickBossEncounter
+        : node.kind === "elite" ? pickEliteEncounter
+        : pickCombatEncounter;
+      node.encounterTemplates = pick();
+    }
     this.currentNodeId = null;
     this.deck = getStarterDeck();
     this.playerHp = 30;

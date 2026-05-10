@@ -13,12 +13,7 @@ import { HpBar } from "../ui/HpBar";
 import { HandUI } from "../ui/HandUI";
 import { Combo } from "../combat/Combo";
 import { ComboHud } from "../ui/ComboHud";
-import {
-  EnemyTemplate,
-  pickCombatEncounter,
-  pickEliteEncounter,
-  pickBossEncounter,
-} from "../data/enemies";
+import { EnemyTemplate } from "../data/enemies";
 
 interface EnemyVisual {
   sprite: Phaser.GameObjects.Sprite;
@@ -33,19 +28,7 @@ interface EnemyVisual {
 }
 
 function buildRosterForNode(node: MapNode): { state: EnemyState; tpl: EnemyTemplate }[] {
-  let encounter: EnemyTemplate[];
-  switch (node.kind) {
-    case "combat":
-      encounter = pickCombatEncounter();
-      break;
-    case "elite":
-      encounter = pickEliteEncounter();
-      break;
-    case "boss":
-      encounter = pickBossEncounter();
-      break;
-  }
-  return encounter.map((tpl) => ({
+  return node.encounterTemplates.map((tpl) => ({
     tpl,
     state: new EnemyState(tpl.name, tpl.hp, tpl.damage),
   }));
