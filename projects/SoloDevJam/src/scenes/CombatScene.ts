@@ -520,6 +520,7 @@ export class CombatScene extends Phaser.Scene {
         // Phase 2 enrage swap at low HP
         if (vis.tpl.phase2Key && enemy.hp < enemy.maxHp * 0.4) {
           vis.sprite.setTexture(vis.tpl.phase2Key);
+          vis.sprite.setDisplaySize(vis.tpl.displayW ?? vis.tpl.displaySize, vis.tpl.displaySize);
         }
         this.flashSprite(vis.sprite, 0xff2200);
         this.time.delayedCall(500, () => {

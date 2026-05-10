@@ -18,8 +18,6 @@ const ELITE_NAMES  = [
 ];
 const BOSS_NAME    = "The Dark Throne";
 
-const TIER_LABELS  = ["Borderlands", "Midlands", "Heartlands", "Capital Gates", "The Throne"];
-
 function hashId(s: string): number {
   let h = 0;
   for (const c of s) h = (Math.imul(h, 31) + c.charCodeAt(0)) | 0;
@@ -32,6 +30,43 @@ function nodeName(node: MapNode): string {
   return pool[hashId(node.id) % pool.length];
 }
 
+// ─── Avatar keys per node kind ────────────────────────────────────────────────
+
+const COMBAT_AVATARS = [
+  "avatar-skull", "avatar-gnoll", "avatar-thief", "avatar-snake",
+  "avatar-spider", "avatar-paddlefish", "avatar-harpoonfish", "avatar-gnome",
+  "avatar-shaman", "avatar-skeletonmage", "avatar-satyrarcher",
+];
+const ELITE_AVATARS = [
+  "avatar-panda", "avatar-lancer", "avatar-minotaur", "avatar-turtle",
+  "avatar-werewolf", "avatar-lizardman", "avatar-gargoyle", "avatar-gryphon",
+  "avatar-stonegolem", "avatar-troll", "avatar-headlesshorseman", "avatar-bear",
+  "avatar-pyromancer", "avatar-centaur", "avatar-lizard",
+];
+const BOSS_AVATARS = ["avatar-cerberus"];
+
+function nodeAvatarKey(node: MapNode): string {
+  const pool = node.kind === "boss"
+    ? BOSS_AVATARS
+    : node.kind === "elite"
+      ? ELITE_AVATARS
+      : COMBAT_AVATARS;
+  return pool[hashId(node.id) % pool.length];
+}
+
+// ─── Building sprite key per kind ─────────────────────────────────────────────
+
+const BUILDING_KEY: Record<NodeKind, string> = {
+  combat: "building-tower",
+  elite:  "building-monastery",
+  boss:   "building-castle",
+};
+const BUILDING_DISPLAY: Record<NodeKind, { w: number; h: number }> = {
+  combat: { w: 24, h: 48 },
+  elite:  { w: 28, h: 48 },
+  boss:   { w: 70, h: 56 },
+};
+
 // ─── Layout constants ─────────────────────────────────────────────────────────
 
 const TIER_X      = [180, 380, 590, 810, 1060];
@@ -39,20 +74,6 @@ const Y_BANDS: Record<number, number[]> = {
   1: [360],
   2: [260, 460],
   3: [185, 360, 535],
-};
-
-const NODE_R: Record<NodeKind, number> = { combat: 24, elite: 26, boss: 36 };
-
-// Fill colours: normal / available / cleared
-const NODE_FILL: Record<NodeKind, [number, number, number]> = {
-  combat: [0x3a4830, 0x60784a, 0x252e1e],
-  elite:  [0x5a3a10, 0x9a6020, 0x30200a],
-  boss:   [0x5a0a0a, 0xaa1818, 0x280404],
-};
-const NODE_STROKE: Record<NodeKind, number> = {
-  combat: 0x8aaa66,
-  elite:  0xd4901c,
-  boss:   0xee3030,
 };
 
 export class MapScene extends Phaser.Scene {
@@ -66,12 +87,10 @@ export class MapScene extends Phaser.Scene {
     const { width, height } = this.scale;
     this.cameras.main.setBackgroundColor("#000000");
 
-    // Dark forest → deep earth gradient
     const bg = this.add.graphics();
     bg.fillGradientStyle(0x060d06, 0x060d06, 0x0a0703, 0x0a0703, 1);
     bg.fillRect(0, 0, width, height);
 
-    // Subtle vignette: dark edges
     const vignette = this.add.graphics().setDepth(1).setAlpha(0.45);
     vignette.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 1, 1, 0, 0);
     vignette.fillRect(0, 0, width, height * 0.25);
@@ -80,7 +99,6 @@ export class MapScene extends Phaser.Scene {
 
     this.runState = this.registry.get("runState") as RunState;
 
-    // Title
     this.add
       .text(width / 2, 30, "Your Conquest", {
         fontFamily: "Georgia, serif",
@@ -92,24 +110,9 @@ export class MapScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(10);
 
-    // Tier labels at top
-    for (let t = 0; t < 5; t++) {
-      this.add
-        .text(TIER_X[t], 68, TIER_LABELS[t], {
-          fontFamily: "Georgia, serif",
-          fontSize: "12px",
-          color: "#7a6a44",
-          stroke: "#000000",
-          strokeThickness: 2,
-        })
-        .setOrigin(0.5)
-        .setDepth(10);
-    }
-
-    // Horizontal divider line
     const divider = this.add.graphics().setDepth(2).setAlpha(0.3);
     divider.lineStyle(1, 0x7a6a44, 1);
-    divider.lineBetween(60, 82, width - 60, 82);
+    divider.lineBetween(60, 62, width - 60, 62);
 
     this.renderHpHud();
     this.renderMap();
@@ -137,7 +140,6 @@ export class MapScene extends Phaser.Scene {
     const available = new Set(this.runState.availableNodes.map((n) => n.id));
     const positions = this.buildPositions(height);
 
-    // Roads first
     const roads = this.add.graphics().setDepth(3);
     for (const node of this.runState.nodes) {
       const from = positions.get(node.id)!;
@@ -147,7 +149,6 @@ export class MapScene extends Phaser.Scene {
       }
     }
 
-    // Nodes on top
     for (const node of this.runState.nodes) {
       const pos = positions.get(node.id)!;
       this.renderNode(node, pos.x, pos.y, available.has(node.id));
@@ -160,130 +161,104 @@ export class MapScene extends Phaser.Scene {
     x2: number, y2: number,
     cleared: boolean,
   ): void {
-    // Shadow
     gfx.lineStyle(5, 0x000000, 0.5);
     gfx.lineBetween(x1, y1 + 2, x2, y2 + 2);
-    // Road fill
     gfx.lineStyle(3, cleared ? 0x4a3a1a : 0x2e2414, cleared ? 0.9 : 0.6);
     gfx.lineBetween(x1, y1, x2, y2);
-    // Road highlight
     gfx.lineStyle(1, cleared ? 0x7a6030 : 0x3a2e18, cleared ? 0.6 : 0.3);
     gfx.lineBetween(x1, y1 - 1, x2, y2 - 1);
   }
 
   private renderNode(node: MapNode, x: number, y: number, isAvailable: boolean): void {
-    const r = NODE_R[node.kind];
-    const [fillDim, fillAvail, fillCleared] = NODE_FILL[node.kind];
-    const strokeColor = NODE_STROKE[node.kind];
+    const isBoss = node.kind === "boss";
+    const buildingKey = BUILDING_KEY[node.kind];
+    const buildingDisp = BUILDING_DISPLAY[node.kind];
+    const avatarKey = nodeAvatarKey(node);
 
-    const gfx = this.add.graphics().setDepth(5);
+    const nameColor: Record<NodeKind, string> = {
+      combat: "#8aaa66",
+      elite:  "#d4901c",
+      boss:   "#ee6060",
+    };
 
+    // Building sprite (top)
+    const building = this.add.image(x, y - 28, buildingKey).setDepth(5);
+    building.setDisplaySize(buildingDisp.w, buildingDisp.h);
+
+    // Avatar sprite (middle)
+    const avatar = this.add.image(x, y + 16, avatarKey).setDepth(5);
+    avatar.setDisplaySize(32, 32);
+
+    // Location name (bottom)
+    const name = this.add.text(x, y + 40, nodeName(node), {
+      fontFamily: "Georgia, serif",
+      fontSize: "11px",
+      color: isAvailable ? nameColor[node.kind] : "#44443a",
+      stroke: "#000000",
+      strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(6);
+
+    // ── Cleared ──────────────────────────────────────────────────────────────
     if (node.cleared) {
-      this.drawNodeShape(gfx, node.kind, x, y, r, fillCleared, strokeColor, 0.6);
-      this.add.text(x, y, "✓", {
+      building.setAlpha(0.3);
+      avatar.setAlpha(0.3);
+      name.setColor("#3a4028").setAlpha(0.5);
+
+      this.add.text(x, y - 4, "✓", {
         fontFamily: "Georgia, serif",
-        fontSize: "16px",
+        fontSize: "18px",
         color: "#557744",
-      }).setOrigin(0.5).setDepth(6);
-      this.add.text(x, y + r + 14, nodeName(node), {
-        fontFamily: "Georgia, serif",
-        fontSize: "11px",
-        color: "#3a4028",
-        stroke: "#000000",
-        strokeThickness: 2,
       }).setOrigin(0.5).setDepth(6);
       return;
     }
 
-    const fill = isAvailable ? fillAvail : fillDim;
-    this.drawNodeShape(gfx, node.kind, x, y, r, fill, strokeColor, isAvailable ? 1 : 0.7);
-
-    // Boss gets an outer pulsing ring
-    if (node.kind === "boss") {
-      const ring = this.add.graphics().setDepth(4);
-      ring.lineStyle(2, 0xee3030, 0.5);
-      ring.strokeCircle(x, y, r + 8);
-      if (isAvailable) {
-        this.tweens.add({ targets: ring, alpha: { from: 0.8, to: 0.2 }, yoyo: true, repeat: -1, duration: 900 });
-      }
+    // ── Unavailable (locked) ──────────────────────────────────────────────────
+    if (!isAvailable) {
+      building.setAlpha(0.35);
+      avatar.setAlpha(0.35);
+      name.setColor("#44443a");
+      return;
     }
 
-    // Current node marker: small flame above
+    // ── Available (interactive) ───────────────────────────────────────────────
+
+    // Boss pulsing ring
+    if (isBoss) {
+      const ring = this.add.graphics().setDepth(4);
+      ring.lineStyle(2, 0xee3030, 0.5);
+      ring.strokeCircle(x, y - 28, 32);
+      this.tweens.add({ targets: ring, alpha: { from: 0.8, to: 0.2 }, yoyo: true, repeat: -1, duration: 900 });
+    }
+
+    // Current node marker
     if (node.id === this.runState.currentNodeId) {
-      this.add.text(x, y - r - 14, "▼", {
+      this.add.text(x, y - 56, "▼", {
         fontFamily: "system-ui",
         fontSize: "14px",
         color: "#ffaa00",
       }).setOrigin(0.5).setDepth(7);
     }
 
-    // Location name below node
-    const nameColor: Record<NodeKind, string> = {
-      combat: "#8aaa66",
-      elite:  "#d4901c",
-      boss:   "#ee6060",
-    };
-    this.add.text(x, y + r + 14, nodeName(node), {
-      fontFamily: "Georgia, serif",
-      fontSize: "12px",
-      color: isAvailable ? nameColor[node.kind] : "#44443a",
-      stroke: "#000000",
-      strokeThickness: 2,
-    }).setOrigin(0.5).setDepth(6);
+    // Hover glow & click interaction
+    const hit = this.add.rectangle(x, y, 64, 84)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(8)
+      .setAlpha(0.001);
 
-    if (!isAvailable) return;
-
-    // Hover glow & click
-    const hitR = r + 8;
-    const hit = this.add.circle(x, y, hitR).setInteractive({ useHandCursor: true }).setDepth(8).setAlpha(0.001);
-
+    const glow = this.add.graphics().setDepth(4).setAlpha(0);
     hit.on("pointerover", () => {
-      gfx.setAlpha(1.2);
-      this.drawNodeShape(gfx, node.kind, x, y, r, fillAvail, strokeColor, 1.3);
+      building.setAlpha(0.85);
+      glow.clear();
+      glow.fillStyle(0xffffff, 0.1);
+      glow.fillCircle(x, y - 28, 34);
+      glow.setAlpha(1);
     });
-    hit.on("pointerout",  () => {
-      this.drawNodeShape(gfx, node.kind, x, y, r, fillAvail, strokeColor, 1);
+    hit.on("pointerout", () => {
+      building.setAlpha(1);
+      glow.clear();
+      glow.setAlpha(0);
     });
     hit.on("pointerdown", () => this.scene.start("CombatScene", { nodeId: node.id }));
-  }
-
-  private drawNodeShape(
-    gfx: Phaser.GameObjects.Graphics,
-    kind: NodeKind,
-    cx: number, cy: number,
-    r: number,
-    fill: number,
-    stroke: number,
-    alpha: number,
-  ): void {
-    gfx.clear();
-    gfx.setAlpha(alpha);
-
-    if (kind === "elite") {
-      // Diamond
-      gfx.fillStyle(fill, 1);
-      gfx.beginPath();
-      gfx.moveTo(cx,     cy - r);
-      gfx.lineTo(cx + r, cy);
-      gfx.lineTo(cx,     cy + r);
-      gfx.lineTo(cx - r, cy);
-      gfx.closePath();
-      gfx.fillPath();
-      gfx.lineStyle(2, stroke, 1);
-      gfx.beginPath();
-      gfx.moveTo(cx,     cy - r);
-      gfx.lineTo(cx + r, cy);
-      gfx.lineTo(cx,     cy + r);
-      gfx.lineTo(cx - r, cy);
-      gfx.closePath();
-      gfx.strokePath();
-    } else {
-      // Circle (combat & boss)
-      gfx.fillStyle(fill, 1);
-      gfx.fillCircle(cx, cy, r);
-      gfx.lineStyle(kind === "boss" ? 3 : 2, stroke, 1);
-      gfx.strokeCircle(cx, cy, r);
-    }
   }
 
   private buildPositions(height: number): Map<string, { x: number; y: number }> {
