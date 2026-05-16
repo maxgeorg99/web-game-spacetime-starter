@@ -1,4 +1,4 @@
-export type CardKind = "attack" | "heal" | "block";
+export type CardKind = "attack" | "heal" | "block" | "draw" | "burn";
 export type CardTargeting = "single" | "aoe" | "self";
 
 export interface Card {
@@ -9,4 +9,8 @@ export interface Card {
   value: number;
   art: string;
   targeting: CardTargeting;
+}
+
+export interface AscensionModifiers {
+  level: number;
 }

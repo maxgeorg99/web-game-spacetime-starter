@@ -278,18 +278,15 @@ A sub-phase is complete when:
 
 ### 4.1 — Add new card archetypes
 - **Problem:** Only damage/block/heal exists. No build variety across runs.
-- **Solution:** Add status effect cards (Bleed: DoT, Weaken: reduce enemy damage, Vulnerable: increase damage taken). Add card draw + resource generation. Add conditional triggers ("if combo active, deal extra").
-- **Reporter:** gigoi
-- **Verify:** Multiple distinct archetypes exist. Runs with different card pools feel different.
+- **Solution:**
+  - **Card Draw** — cost 1 → draw 1 (doubled: draw 2), cost 2 → draw 2 (doubled: draw 4). Solves running out of cards mid-chain without breaking it.
+  - **Burn** — applies stacks that tick at end of enemy turn, stacks additively. Cost 1 → 2 stacks (doubled: 4), cost 2 → 4 stacks (doubled: 8). Full doubled chain (1→2) yields up to 12 stacks. Enemies need enough HP for Burn builds to pay off — tune accordingly.
+- **Verify:** A Burn-focused run, a Card Draw-focused run, Combo chain interacts meaningfully with every new type.
 
-### 4.2 — More levels + proper run structure
-- **Problem:** 5 encounters is too short for builds to snowball. Linear branching is basic.
-- **Solution:** Extend to 7 tiers (5 combat/elite + 2 boss/mini-boss). Add rest nodes (heal 30% HP) between tiers 3-4 and 5-6. Add elite/boss variety. Branching map with meaningful path choices.
-- **Reporter:** 阿警, Icydeath
-- **Verify:** Full run takes 7 encounters. Players make meaningful path decisions (elite for risk/reward, rest for safety).
-
-### 4.3 — Difficulty modes / ascension layers
+### 4.2 — Difficulty modes / ascension layers
 - **Problem:** Skilled players finish without being threatened. No replay incentive after winning.
-- **Solution:** Add difficulty selection on title screen: Normal (current), Hard (enemy +25% HP/damage, fewer heal drops), Ascension 1-5 (cumulative modifiers: enemies have +1 damage, start with -5 HP, elites appear more often, boss has extra phase, etc.).
-- **Reporter:** I :heart: Pixel Art, Icydeath
-- **Verify:** Hard mode noticeably tougher. Ascension layers stack. Players can select difficulty before starting a run.
+- **Solution:** Add Ascension 1–3 with cumulative modifiers, unlocked after defeating the first boss (Ascension 1) or clearing the current ascension level (each subsequent tier).
+  - Ascension 1 — enemies deal +1 damage
+  - Ascension 2 — start with −5 max HP
+  - Ascension 3 — elites appear more often
+- **Verify:** All active ascension modifiers stack simultaneously. Ascension level is displayed on the run start screen and post-run summary.

@@ -9,7 +9,6 @@ const C = {
   border: 0x3d1a10,
   borderFaint: 0x2a1208,
   gold: 0xc9a84c,
-  goldBright: 0xf0c040,
   blood: 0xc0392b,
   bloodDark: 0x7b1a12,
   textBright: 0xf0d8c0,
@@ -56,8 +55,27 @@ const CORE_RULES: Rule[] = [
     body: "Heal cards restore HP but do nothing to the enemy — every heal is a turn not spent dealing damage. Block shields expire at the start of YOUR next turn, so stack block before a heavy hit.",
   },
   {
+    title: "Draw Cards & Burn",
+    body: "Burn cards apply stacks that deal damage at the end of each enemy turn, Draw cards add new cards to your hand mid-turn",
+  },
+  {
     title: "Build a Combo",
     body: "Playing cards with increasing costs in one turn (1 -> 2 -> 3) gives you double the effect!",
+  },
+];
+
+const ASCENSION_RULES: Rule[] = [
+  {
+    title: "Ascension 1 — Deadlier Foes",
+    body: "All enemies deal +1 damage. Unlocked after defeating the boss on Normal.",
+  },
+  {
+    title: "Ascension 2 — Weakened Vitality",
+    body: "Start each run with −5 max HP. Unlocked after defeating the boss on Ascension 1.",
+  },
+  {
+    title: "Ascension 3 — Elite Onslaught",
+    body: "More elite fights appear on the map. Unlocked after defeating the boss on Ascension 2.",
   },
 ];
 
@@ -127,9 +145,15 @@ export class TutorialScene extends Phaser.Scene {
     y = this.addSectionHeader("Reading a Card", width, y);
     y += 8;
 
-    y = this.addAnnotatedCard(PAD_L, y, width, EXAMPLE_CARD);
+    y = this.addAnnotatedCard(width, y, EXAMPLE_CARD);
 
-    y += 20;
+    y += 16;
+
+    // ── Section: Ascension ────────────────────────────────────────────────────
+    y = this.addSectionHeader("Ascension", width, y);
+    for (const rule of ASCENSION_RULES) {
+      y = this.addRuleBlock(PAD_L, y, INNER_W, rule);
+    }
 
     y += 32; // breathing room above footer
 
@@ -146,7 +170,7 @@ export class TutorialScene extends Phaser.Scene {
     // Scroll indicator (only visible when scrollable)
     if (this.maxScroll > 0) {
       this.add
-        .text(width / 2, height - 12, "Scroll \u25bc", {
+        .text(width - 60, 18, "Scroll \u25bc", {
           fontFamily: "'Palatino Linotype', Palatino, Georgia, serif",
           fontSize: "13px",
           color: "#6a4030",
@@ -270,23 +294,11 @@ export class TutorialScene extends Phaser.Scene {
     return y + boxH + 10;
   }
 
-  // ── Annotated card diagram ──────────────────────────────────────────────────
-  /**
-   * Draws:
-   *   • the card sprite on the left
-   *   • four callout arrows pointing to: cost badge, name bar, art, effect line
-   *   • label text on the right of each arrow
-   * Returns new y after the whole block.
-   */
-  private addAnnotatedCard(
-    padL: number,
-    y: number,
-    sceneW: number,
-    card: Card,
-  ): number {
+  // ── Annotated card diagram (centered card, arrows to labels) ─────────────────
+  private addAnnotatedCard(sceneW: number, y: number, card: Card): number {
     const CW = 130;
     const CH = 152;
-    const CX = padL + CW / 2 + 10;
+    const CX = sceneW / 2;
     const CY = y + CH / 2 + 8;
 
     // ── actual game card ────────────────────────────────────────────────────
@@ -313,7 +325,7 @@ export class TutorialScene extends Phaser.Scene {
     this.content.add(costTxt);
 
     const nameTxt = this.add
-      .text(CX + 2, CY - CH / 2 + 26, card.name, {
+      .text(CX + 2, CY - CH / 2 + 14, card.name, {
         fontFamily: "system-ui, sans-serif",
         fontSize: "14px",
         color: "#ffffff",
@@ -342,102 +354,117 @@ export class TutorialScene extends Phaser.Scene {
       .setOrigin(0.5);
     this.content.add(effectTxt);
 
-    // ── annotation arrows ─────────────────────────────────────────────────────
-    // Each annotation: { fromX, fromY, label }
-    // All arrows sweep right from the card edge to a label column.
+    // ── arrows from card out to labels ──────────────────────────────────────
+    const CARD_LEFT = CX - CW / 2;
+    const CARD_RIGHT = CX + CW / 2;
+    const CARD_TOP = CY - CH / 2;
+    const CARD_BOTTOM = CY + CH / 2;
 
-    const LABEL_X = CX + CW / 2 + 20; // arrow tip x
-    const LABEL_COL = LABEL_X + 12; // text starts here
-    const LABEL_W = sceneW - LABEL_COL - 52;
+    const LABEL_L = CX - CW / 2 - 140; // label column x (left of card)
+    const LABEL_R = CX + CW / 2 + 140; // label column x (right of card)
+    const LABEL_W = 120;
 
     const annotations: Array<{
-      fromX: number;
-      fromY: number;
-      labelY?: number;
+      side: "left" | "right";
+      cardAnchorX: number;
+      cardAnchorY: number;
       title: string;
       body: string;
       tipColor: number;
     }> = [
       {
-        fromX: dropX + 9,
-        fromY: dropY,
-        labelY: dropY - 30,
+        side: "left",
+        cardAnchorX: CARD_LEFT + 12,
+        cardAnchorY: CARD_TOP + 14,
         title: "HP cost",
-        body: "Playing this card costs you this much HP immediately.",
+        body: "Cards cost HP cost.",
         tipColor: C.blood,
       },
       {
-        fromX: CX + CW / 2,
-        fromY: CY - CH / 2 + 11,
+        side: "right",
+        cardAnchorX: CARD_RIGHT - 12,
+        cardAnchorY: CARD_TOP + 20,
         title: "Card name",
-        body: "Tells you the card's kind — strike, shield8…",
+        body: "Tells you the card's name may include — strike, shield...",
         tipColor: C.gold,
       },
       {
-        fromX: CX + CW / 2,
-        fromY: artY,
+        side: "left",
+        cardAnchorX: CARD_LEFT + 22,
+        cardAnchorY: artY,
         title: "Art",
-        body: "Visual only — hover over a card in combat to see full stats.",
+        body: "Visual icon",
         tipColor: C.textDim,
       },
       {
-        fromX: CX + CW / 2,
-        fromY: CY + CH / 2 - 14,
+        side: "right",
+        cardAnchorX: CARD_RIGHT - 30,
+        cardAnchorY: CARD_BOTTOM - 18,
         title: "Effect",
-        body: "DMG = damage dealt.  BLOCK = shield gained.  HEAL = HP restored.",
-        tipColor: C.goldBright,
+        body: "DMG, BLOCK, HEAL, DRAW or BURN",
+        tipColor: C.gold,
       },
     ];
 
     const annGfx = this.add.graphics();
 
     for (const ann of annotations) {
-      const ly = ann.labelY ?? ann.fromY;
+      const labelX = ann.side === "left" ? LABEL_L : LABEL_R;
+      const labelDir = ann.side === "left" ? -1 : 1;
+
+      // Line from card anchor → label column
       annGfx.lineStyle(1, ann.tipColor, 0.5);
-      // Line from label column → card element (reversed direction)
-      if (ly !== ann.fromY) {
-        annGfx.lineBetween(LABEL_X, ly, ann.fromX, ann.fromY);
-      } else {
-        annGfx.lineBetween(LABEL_X, ly, ann.fromX, ly);
-      }
-      // Arrowhead pointing left at card element
+      annGfx.lineBetween(
+        ann.cardAnchorX,
+        ann.cardAnchorY,
+        labelX,
+        ann.cardAnchorY,
+      );
+
+      // Arrowhead pointing toward card
       annGfx.fillStyle(ann.tipColor, 0.8);
       annGfx.fillTriangle(
-        ann.fromX,
-        ann.fromY,
-        ann.fromX + 8,
-        ann.fromY - 4,
-        ann.fromX + 8,
-        ann.fromY + 4,
+        ann.cardAnchorX,
+        ann.cardAnchorY,
+        ann.cardAnchorX + 8 * labelDir,
+        ann.cardAnchorY - 4,
+        ann.cardAnchorX + 8 * labelDir,
+        ann.cardAnchorY + 4,
       );
-      // Dot at label origin
+
+      // Dot at label end
       annGfx.fillStyle(ann.tipColor, 0.9);
-      annGfx.fillCircle(LABEL_X, ly, 3);
+      annGfx.fillCircle(labelX, ann.cardAnchorY, 3);
+
+      // Title at label position
+      const tx = ann.side === "left" ? labelX - 8 : labelX + 8;
+      const titleAlign = ann.side === "left" ? 1 : 0;
+      const titleObj = this.add
+        .text(tx, ann.cardAnchorY - 10, ann.title, {
+          fontFamily: "Georgia, serif",
+          fontSize: "15px",
+          color: "#c9a84c",
+          stroke: "#000",
+          strokeThickness: 2,
+        })
+        .setOrigin(titleAlign, 1);
+      this.content.add(titleObj);
+
+      // Body below title
+      const bodyObj = this.add
+        .text(tx, ann.cardAnchorY + 4, ann.body, {
+          fontFamily: "Georgia, serif",
+          fontSize: "14px",
+          color: "#a08060",
+          wordWrap: { width: LABEL_W },
+          lineSpacing: 1,
+        })
+        .setOrigin(titleAlign, 0);
+      this.content.add(bodyObj);
     }
 
     this.content.add(annGfx);
 
-    for (const ann of annotations) {
-      const ly = ann.labelY ?? ann.fromY;
-      const titleObj = this.add.text(LABEL_COL, ly - 10, ann.title, {
-        fontFamily: "Georgia, serif",
-        fontSize: "15px",
-        color: Phaser.Display.Color.IntegerToColor(ann.tipColor).rgba,
-        stroke: "#000",
-        strokeThickness: 2,
-      });
-      this.content.add(titleObj);
-
-      const bodyObj = this.add.text(LABEL_COL, ly + 5, ann.body, {
-        fontFamily: "Georgia, serif",
-        fontSize: "14px",
-        color: "#a08060",
-        wordWrap: { width: LABEL_W },
-        lineSpacing: 1,
-      });
-      this.content.add(bodyObj);
-    }
-
-    return y + CH + 60;
+    return y + CH + 24;
   }
 }

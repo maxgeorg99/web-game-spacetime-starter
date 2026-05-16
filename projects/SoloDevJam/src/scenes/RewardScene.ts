@@ -112,13 +112,33 @@ export class RewardScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    const isDrawCard = card.kind === "draw";
     const kindLabel =
-      card.kind === "attack" ? "DMG" : card.kind === "heal" ? "HEAL" : "BLOCK";
+      card.kind === "attack"
+        ? "DMG"
+        : card.kind === "heal"
+          ? "HEAL"
+          : card.kind === "block"
+            ? "BLOCK"
+            : isDrawCard
+              ? "DRAW"
+              : card.kind === "burn"
+                ? "BURN"
+                : "???";
+
+    const suffix = isDrawCard ? "CARD" + (card.value !== 1 ? "s" : "") : "";
+
+    const label = suffix
+      ? `${kindLabel} ${card.value} ${suffix}`
+      : `${kindLabel} ${card.value}`;
+
+    const valueColor = "#e0c060";
+
     const valueText = this.add
-      .text(0, CARD_H / 2 - 24, `${kindLabel} ${card.value}`, {
+      .text(0, CARD_H / 2 - 24, label, {
         fontFamily: "system-ui, sans-serif",
         fontSize: "16px",
-        color: "#e0c060",
+        color: valueColor,
         stroke: "#000000",
         strokeThickness: 2,
       })

@@ -2,8 +2,11 @@ import { getStarterDeck } from "../cards/cards";
 import type { Card } from "../cards/Card";
 import { MapNode, generateMap } from "./MapState";
 import {
-  pickCombatEncounter, pickEliteEncounter, pickBossEncounter,
+  pickCombatEncounter,
+  pickEliteEncounter,
+  pickBossEncounter,
 } from "../data/enemies";
+import { getHighestUnlockedAscension } from "./AscensionState";
 
 export class RunState {
   nodes: MapNode[];
@@ -11,10 +14,11 @@ export class RunState {
   playerHp: number;
   playerMaxHp: number;
   deck: Card[];
-  gold: number;
+  ascension: number;
+  highestUnlocked: number;
 
-  constructor() {
-    this.nodes = generateMap();
+  constructor(ascension = 0) {
+    this.nodes = generateMap(ascension >= 3);
     for (const node of this.nodes) {
       const pick = node.kind === "boss" ? pickBossEncounter
         : node.kind === "elite" ? pickEliteEncounter
@@ -23,9 +27,11 @@ export class RunState {
     }
     this.currentNodeId = null;
     this.deck = getStarterDeck();
-    this.playerHp = 25;
-    this.playerMaxHp = 25;
-    this.gold = 0;
+    const hpPenalty = ascension >= 2 ? 5 : 0;
+    this.playerHp = 25 - hpPenalty;
+    this.playerMaxHp = 25 - hpPenalty;
+    this.ascension = ascension;
+    this.highestUnlocked = getHighestUnlockedAscension();
   }
 
   get currentNode(): MapNode | null {

@@ -90,20 +90,35 @@ export class HandUI {
         .setOrigin(0.5, 0);
 
       const isComboCard = comboNextCost !== null && card.cost === comboNextCost;
+      const isDrawCard = card.kind === "draw";
       const kindLabel =
         card.kind === "attack"
           ? "DMG"
           : card.kind === "heal"
             ? "HEAL"
-            : "BLOCK";
-      const valueLabel = isComboCard
-        ? `${kindLabel} ${card.value * 2}`
-        : `${kindLabel} ${card.value}`;
+            : card.kind === "block"
+              ? "BLOCK"
+              : isDrawCard
+                ? "DRAW"
+                : card.kind === "burn"
+                  ? "BURN"
+                  : "???";
+
+      const doubledVal = card.value * 2;
+      const val = isComboCard ? doubledVal : card.value;
+      const suffix = isDrawCard ? "CARD" + (val !== 1 ? "s" : "") : "";
+
+      const valueLabel = suffix
+        ? `${kindLabel} ${val} ${suffix}`
+        : `${kindLabel} ${val}`;
+
+      const valueColor = isComboCard ? "#ffd700" : "#e0c060";
+
       const valueText = this.scene.add
         .text(0, CARD_HEIGHT / 2 - 24, valueLabel, {
           fontFamily: "system-ui, sans-serif",
           fontSize: "16px",
-          color: isComboCard ? "#ffd700" : "#e0c060",
+          color: valueColor,
           fontStyle: isComboCard ? "bold" : "normal",
           stroke: "#000000",
           strokeThickness: isComboCard ? 4 : 2,

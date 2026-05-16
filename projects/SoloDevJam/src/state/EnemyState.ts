@@ -9,6 +9,7 @@ export class EnemyState {
   name: string;
   readonly baseDamage: number;
   intent: Intent;
+  burnStacks: number;
 
   constructor(name: string, hp: number, damage: number) {
     this.name = name;
@@ -16,14 +17,15 @@ export class EnemyState {
     this.maxHp = hp;
     this.baseDamage = damage;
     this.intent = { kind: "attack", damage };
+    this.burnStacks = 0;
   }
 
   takeDamage(raw: number): void {
     this.hp = Math.max(0, this.hp - raw);
   }
 
-  computeIntent(overrideDamage?: number): void {
-    this.intent = { kind: "attack", damage: overrideDamage ?? this.baseDamage };
+  computeIntent(overrideDamage?: number, ascensionExtraDamage = 0): void {
+    this.intent = { kind: "attack", damage: (overrideDamage ?? this.baseDamage) + ascensionExtraDamage };
   }
 
   get isAlive(): boolean {

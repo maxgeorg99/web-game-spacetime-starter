@@ -32,12 +32,12 @@ export class EnemyGroup {
     this.activeIndex = this.firstLivingIndex();
   }
 
-  computeIntents(bossPhase2 = false): void {
+  computeIntents(bossPhase2 = false, ascensionBonusDmg = 0): void {
     for (let i = 0; i < this.enemies.length; i++) {
       const e = this.enemies[i];
       if (!e?.isAlive) continue;
       const override = bossPhase2 ? 14 : undefined;
-      e.computeIntent(override);
+      e.computeIntent(override, ascensionBonusDmg);
     }
   }
 

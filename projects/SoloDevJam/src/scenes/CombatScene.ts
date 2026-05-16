@@ -15,6 +15,7 @@ import { Combo } from "../combat/Combo";
 import { ComboHud } from "../ui/ComboHud";
 import { EnemyTemplate, scaleForTier } from "../data/enemies";
 import { getAudioManager } from "../audio/AudioManager";
+import { unlockNextAscension } from "../state/AscensionState";
 
 interface EnemyVisual {
   sprite: Phaser.GameObjects.Sprite;
@@ -22,6 +23,7 @@ interface EnemyVisual {
   intentText: Phaser.GameObjects.Text;
   nameLabel: Phaser.GameObjects.Text;
   highlightRing: Phaser.GameObjects.Graphics;
+  burnText: Phaser.GameObjects.Text;
   animKey: string;
   tpl: EnemyTemplate;
   x: number;
@@ -298,12 +300,26 @@ export class CombatScene extends Phaser.Scene {
     ring.strokeCircle(x, y, half + 8);
     ring.setVisible(false);
 
+    // Burn stack counter below name
+    const burnText = this.add
+      .text(x, barY - 32, "", {
+        fontFamily: "system-ui, sans-serif",
+        fontSize: "13px",
+        color: "#ff8800",
+        fontStyle: "bold",
+        stroke: "#000000",
+        strokeThickness: 2,
+      })
+      .setOrigin(0.5)
+      .setDepth(11);
+
     return {
       sprite,
       hpBar,
       intentText,
       nameLabel,
       highlightRing: ring,
+      burnText,
       animKey,
       tpl,
       x,
@@ -329,8 +345,10 @@ export class CombatScene extends Phaser.Scene {
 
   private computeAndShowIntents(): void {
     const bossPhase2 =
-      this.isBossFight && (this.enemyGroup.enemies[0]?.hp ?? 999) < 40;
-    this.enemyGroup.computeIntents(bossPhase2);
+      this.isBossFight &&
+      (this.enemyGroup.enemies[0]?.hp ?? 999) < 40;
+    const ascDmg = this.runState.ascension >= 1 ? 1 : 0;
+    this.enemyGroup.computeIntents(bossPhase2, ascDmg);
 
     for (let i = 0; i < this.enemyVisuals.length; i++) {
       const state = this.enemyGroup.enemies[i];
@@ -488,6 +506,22 @@ export class CombatScene extends Phaser.Scene {
     }
     this.comboHud.show(this.combo.tier);
 
+    if (result.cardsDrawn > 0) {
+      this.deck.draw(result.cardsDrawn);
+      audio.playSfx(this, "sfx-ui-booster");
+    }
+
+    if (result.burnApplied > 0) {
+      for (let i = 0; i < this.enemyVisuals.length; i++) {
+        const state = this.enemyGroup.enemies[i];
+        if (!state) continue;
+        if (targets.includes(state)) {
+          this.updateEnemyBurnDisplay(i);
+        }
+      }
+      audio.playSfx(this, "sfx-attack-fire");
+    }
+
     this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
     this.playerHpBar.setPercent(this.player.hpPercent);
     this.updateShieldDisplay();
@@ -519,6 +553,17 @@ export class CombatScene extends Phaser.Scene {
     if (!state) return;
     vis.hpBar.setText(`${state.hp}/${state.maxHp}`);
     vis.hpBar.setPercent(state.hpPercent);
+  }
+
+  private updateEnemyBurnDisplay(index: number): void {
+    const state = this.enemyGroup.enemies[index];
+    const vis = this.enemyVisuals[index];
+    if (!state) return;
+    if (state.burnStacks > 0) {
+      vis.burnText.setText(`${state.burnStacks} burn`).setVisible(true);
+    } else {
+      vis.burnText.setVisible(false);
+    }
   }
 
   private checkEnemyDeaths(): void {
@@ -553,6 +598,7 @@ export class CombatScene extends Phaser.Scene {
     vis.hpBar.setVisible(false);
     vis.nameLabel.setVisible(false);
     vis.intentText.setVisible(false);
+    vis.burnText.setVisible(false);
     vis.highlightRing.setVisible(false);
   }
 
@@ -571,8 +617,33 @@ export class CombatScene extends Phaser.Scene {
   }
 
   private runEnemyTurns(): void {
+    this.processBurnTicks();
+    if (this.enemyGroup.allDead()) {
+      this.onVictory();
+      return;
+    }
     const entries = this.enemyGroup.livingWithIndices;
     this.doNextEnemyTurn(entries, 0);
+  }
+
+  private processBurnTicks(): void {
+    for (let i = 0; i < this.enemyGroup.enemies.length; i++) {
+      const enemy = this.enemyGroup.enemies[i];
+      if (!enemy || !enemy.isAlive || enemy.burnStacks <= 0) continue;
+      const tickDmg = enemy.burnStacks;
+      if (tickDmg > 0) {
+        enemy.takeDamage(tickDmg);
+        const vis = this.enemyVisuals[i];
+        this.burnFireVfx(vis.sprite.x, vis.sprite.y);
+        this.floatDamageNumber(vis.sprite.x, vis.sprite.y - vis.tpl.displaySize / 2, tickDmg, false);
+      }
+      this.updateEnemyHpBar(i);
+      if (enemy.hp <= 0) {
+        this.killEnemy(i);
+      } else {
+        this.updateEnemyBurnDisplay(i);
+      }
+    }
   }
 
   private doNextEnemyTurn(
@@ -647,6 +718,11 @@ export class CombatScene extends Phaser.Scene {
     this.handUI.clear();
     this.runState.playerHp = this.player.hp;
     this.runState.markNodeCleared(this.activeNodeId);
+
+    if (this.isBossFight) {
+      unlockNextAscension();
+    }
+
     this.registry.set("runState", this.runState);
 
     const audio = getAudioManager(this);
@@ -877,5 +953,13 @@ export class CombatScene extends Phaser.Scene {
       ease: "Power2",
       onComplete: () => pop.destroy(),
     });
+  }
+
+  private burnFireVfx(x: number, y: number): void {
+    if (!this.anims.exists("vfx-fire-burn")) return;
+    const fire = this.add.sprite(x, y, "vfx-fire-burn");
+    fire.setDisplaySize(128, 128).setDepth(35);
+    fire.play("vfx-fire-burn");
+    fire.once("animationcomplete", () => fire.destroy());
   }
 }

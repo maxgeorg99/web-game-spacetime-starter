@@ -11,7 +11,7 @@ export interface MapNode {
   encounterTemplates: EnemyTemplate[];
 }
 
-export function generateMap(): MapNode[] {
+export function generateMap(moreElites = false): MapNode[] {
   const nodes: MapNode[] = [];
 
   function mkNode(tier: number, kind: NodeKind): MapNode {
@@ -27,19 +27,20 @@ export function generateMap(): MapNode[] {
   // Tiers 2–3: 2–3 nodes, at most 1 elite each
   for (const tier of [2, 3] as const) {
     const count = Math.random() < 0.5 ? 2 : 3;
-    let eliteUsed = false;
+    let eliteUsed = 0;
+    const maxElites = moreElites ? 2 : 1;
     for (let i = 0; i < count; i++) {
       let kind: NodeKind = "combat";
-      if (!eliteUsed && Math.random() < 0.4) {
+      if (eliteUsed < maxElites && Math.random() < (moreElites ? 0.55 : 0.4)) {
         kind = "elite";
-        eliteUsed = true;
+        eliteUsed++;
       }
       mkNode(tier, kind);
     }
   }
 
   // Tier 4: exactly 2 nodes, at least 1 combat
-  if (Math.random() < 0.4) {
+  if (moreElites || Math.random() < 0.4) {
     mkNode(4, "combat");
     mkNode(4, "elite");
   } else {

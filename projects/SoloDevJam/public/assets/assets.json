@@ -300,6 +300,15 @@
         { "suffix": "attack", "path": "sprites/enemies/dragon_attack.png", "endFrame": 16, "frameRate": 16, "repeat": 0  },
         { "suffix": "death",  "path": "sprites/enemies/dragon_death.png",  "endFrame": 6,  "frameRate": 10, "repeat": 0  }
       ]
+    },
+    {
+      "id": "fire",
+      "keyPrefix": "vfx-fire",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "animations": [
+        { "suffix": "burn", "path": "effects/fire_sheet.png", "endFrame": 4, "frameRate": 14, "repeat": 0 }
+      ]
     }
   ],
 
@@ -378,7 +387,12 @@
     { "key": "avatar-headlesshorseman","path": "sprites/enemies/headlesshorseman_avatar.png" },
     { "key": "avatar-bear",           "path": "sprites/enemies/bear_avatar.png" },
     { "key": "avatar-centaur",        "path": "sprites/enemies/centaur_avatar.png" },
-    { "key": "avatar-cerberus",       "path": "sprites/enemies/cerberus_avatar.png" }
+    { "key": "avatar-cerberus",       "path": "sprites/enemies/cerberus_avatar.png" },
+
+    { "key": "icon-draw-whispers",  "path": "ui/icons/draw_whispers.png" },
+    { "key": "icon-draw-knowledge", "path": "ui/icons/draw_knowledge.png" },
+    { "key": "icon-burn-ember",     "path": "ui/icons/burn_ember.png" },
+    { "key": "icon-burn-immolate",  "path": "ui/icons/burn_immolate.png" }
   ],
 
   "audio": [

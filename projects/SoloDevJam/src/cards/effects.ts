@@ -6,6 +6,8 @@ export interface EffectResult {
   damageDealt: number;
   healAmount: number;
   blockGained: number;
+  cardsDrawn: number;
+  burnApplied: number;
 }
 
 export function canPlayCard(card: Card, player: PlayerState): boolean {
@@ -18,7 +20,7 @@ export function applyCardEffect(
   targets: EnemyState[],
   comboBonus = 0,
 ): EffectResult {
-  const result: EffectResult = { damageDealt: 0, healAmount: 0, blockGained: 0 };
+  const result: EffectResult = { damageDealt: 0, healAmount: 0, blockGained: 0, cardsDrawn: 0, burnApplied: 0 };
 
   switch (card.kind) {
     case "attack": {
@@ -38,6 +40,19 @@ export function applyCardEffect(
       const blockValue = comboBonus > 0 ? card.value * 2 : card.value;
       player.addShield(blockValue);
       result.blockGained = blockValue;
+      break;
+    }
+    case "draw": {
+      const count = comboBonus > 0 ? card.value * 2 : card.value;
+      result.cardsDrawn = count;
+      break;
+    }
+    case "burn": {
+      const stacks = comboBonus > 0 ? card.value * 2 : card.value;
+      for (const enemy of targets) {
+        enemy.burnStacks += stacks;
+      }
+      result.burnApplied = stacks;
       break;
     }
   }
