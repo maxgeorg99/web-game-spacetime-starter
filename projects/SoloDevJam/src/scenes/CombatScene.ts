@@ -13,7 +13,8 @@ import { HpBar } from "../ui/HpBar";
 import { HandUI } from "../ui/HandUI";
 import { Combo } from "../combat/Combo";
 import { ComboHud } from "../ui/ComboHud";
-import { EnemyTemplate } from "../data/enemies";
+import { EnemyTemplate, scaleForTier } from "../data/enemies";
+import { getAudioManager } from "../audio/AudioManager";
 
 interface EnemyVisual {
   sprite: Phaser.GameObjects.Sprite;
@@ -27,10 +28,13 @@ interface EnemyVisual {
   y: number;
 }
 
-function buildRosterForNode(node: MapNode): { state: EnemyState; tpl: EnemyTemplate }[] {
+function buildRosterForNode(
+  node: MapNode,
+): { state: EnemyState; tpl: EnemyTemplate }[] {
+  const scale = scaleForTier(node.tier);
   return node.encounterTemplates.map((tpl) => ({
     tpl,
-    state: new EnemyState(tpl.name, tpl.hp, tpl.damage),
+    state: new EnemyState(tpl.name, Math.round(tpl.hp * scale), Math.round(tpl.damage * scale)),
   }));
 }
 
@@ -110,17 +114,16 @@ export class CombatScene extends Phaser.Scene {
     const roster = buildRosterForNode(node);
     this.enemyGroup = new EnemyGroup(roster.map((r) => r.state));
 
-    this.player = new PlayerState(this.runState.playerHp, this.runState.playerMaxHp);
+    this.player = new PlayerState(
+      this.runState.playerHp,
+      this.runState.playerMaxHp,
+    );
     this.demon = this.add.sprite(width * 0.25, height * 0.5, "char-demon-idle");
     this.demon.setDisplaySize(384, 384);
     this.demon.play("char-demon-idle");
 
-    this.sound.stopAll();
-    if (this.isBossFight) {
-      if (this.cache.audio.exists("music-boss")) this.sound.play("music-boss", { loop: true });
-    } else {
-      if (this.cache.audio.exists("music-main")) this.sound.play("music-main", { loop: true });
-    }
+    const audio = getAudioManager(this);
+    audio.transitionTo(this.isBossFight ? "boss" : "main");
 
     // Spawn enemy visuals
     const positions = enemyPositions(roster.length, width, height);
@@ -132,11 +135,16 @@ export class CombatScene extends Phaser.Scene {
     }
 
     // Level / node label
-    const kindLabel = node.kind === "boss" ? "BOSS" : node.kind === "elite" ? "Elite" : `Tier ${node.tier}`;
+    const kindLabel =
+      node.kind === "boss"
+        ? "BOSS"
+        : node.kind === "elite"
+          ? "Elite"
+          : `Tier ${node.tier}`;
     this.add
       .text(width * 0.74, height * 0.18, kindLabel, {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "15px",
+        fontSize: "17px",
         color: "#e0c060",
         stroke: "#000000",
         strokeThickness: 3,
@@ -151,12 +159,20 @@ export class CombatScene extends Phaser.Scene {
     this.playerHpBar.setDepth(10);
 
     // Shield display
-    this.shieldIcon = this.add.image(width * 0.1 + 115, height * 0.9, "icon-shield");
-    this.shieldIcon.setDisplaySize(20, 20).setOrigin(0.5).setDepth(10).setVisible(false);
+    this.shieldIcon = this.add.image(
+      width * 0.1 + 115,
+      height * 0.9,
+      "icon-shield",
+    );
+    this.shieldIcon
+      .setDisplaySize(20, 20)
+      .setOrigin(0.5)
+      .setDepth(10)
+      .setVisible(false);
     this.shieldText = this.add
       .text(width * 0.1 + 130, height * 0.9, "", {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "14px",
+        fontSize: "16px",
         color: "#66ccff",
         stroke: "#000000",
         strokeThickness: 3,
@@ -166,18 +182,50 @@ export class CombatScene extends Phaser.Scene {
 
     // Hand & End Turn
     this.handUI = new HandUI(this, (card) => this.onCardSelected(card));
+
+    const btnW = 180;
+    const btnH = 44;
+    const btnX = width - btnW / 2 - 20;
+    const btnY = height - btnH / 2 - 8;
+
+    const btnBg = this.add.graphics().setDepth(19);
+    btnBg.fillStyle(0x8b0000, 0.9);
+    btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 8);
+    btnBg.lineStyle(2, 0xd4a040, 1);
+    btnBg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 8);
+
     this.endTurnBtn = this.add
-      .text(width - 80, height - 30, "[ End Turn ]", {
+      .text(btnX, btnY, "End Turn", {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "18px",
-        color: "#888888",
+        fontSize: "24px",
+        color: "#ffffff",
+        fontStyle: "bold",
+        stroke: "#000000",
+        strokeThickness: 4,
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
       .setDepth(20);
-    this.endTurnBtn.on("pointerover", () => this.endTurnBtn.setColor("#ffffff"));
-    this.endTurnBtn.on("pointerout", () => this.endTurnBtn.setColor("#888888"));
+    this.endTurnBtn.on("pointerover", () => {
+      this.endTurnBtn.setColor("#ffd700");
+      btnBg.clear();
+      btnBg.fillStyle(0xaa1111, 1);
+      btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 8);
+      btnBg.lineStyle(2, 0xffd700, 1);
+      btnBg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 8);
+    });
+    this.endTurnBtn.on("pointerout", () => {
+      this.endTurnBtn.setColor("#ffffff");
+      btnBg.clear();
+      btnBg.fillStyle(0x8b0000, 0.9);
+      btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 8);
+      btnBg.lineStyle(2, 0xd4a040, 1);
+      btnBg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 8);
+    });
     this.endTurnBtn.on("pointerdown", () => this.endPlayerTurn());
+
+    // Store btnBg for disposal later
+    (this.endTurnBtn as any)._btnBg = btnBg;
 
     this.combo = new Combo();
     this.comboHud = new ComboHud(this);
@@ -198,7 +246,11 @@ export class CombatScene extends Phaser.Scene {
     const displayW = tpl.displayW ?? tpl.displaySize;
     const half = displayH / 2;
 
-    const sprite = this.add.sprite(x, y, tpl.isStatic ? tpl.spriteKey : `${animKey}-idle`);
+    const sprite = this.add.sprite(
+      x,
+      y,
+      tpl.isStatic ? tpl.spriteKey : `${animKey}-idle`,
+    );
     sprite.setDisplaySize(displayW, displayH);
     if (tpl.isStatic) {
       sprite.setFlipX(false);
@@ -220,7 +272,7 @@ export class CombatScene extends Phaser.Scene {
     const nameLabel = this.add
       .text(x, barY - 18, tpl.name, {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "13px",
+        fontSize: "15px",
         color: "#dddddd",
         stroke: "#000000",
         strokeThickness: 2,
@@ -232,7 +284,7 @@ export class CombatScene extends Phaser.Scene {
     const intentText = this.add
       .text(x, y - half - 12, "", {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "14px",
+        fontSize: "16px",
         color: "#ff9999",
         stroke: "#000000",
         strokeThickness: 2,
@@ -246,7 +298,17 @@ export class CombatScene extends Phaser.Scene {
     ring.strokeCircle(x, y, half + 8);
     ring.setVisible(false);
 
-    return { sprite, hpBar, intentText, nameLabel, highlightRing: ring, animKey, tpl, x, y };
+    return {
+      sprite,
+      hpBar,
+      intentText,
+      nameLabel,
+      highlightRing: ring,
+      animKey,
+      tpl,
+      x,
+      y,
+    };
   }
 
   // ─── Turn management ────────────────────────────────────────────────────────
@@ -254,6 +316,9 @@ export class CombatScene extends Phaser.Scene {
   private startPlayerTurn(): void {
     this.playerTurn = true;
     this.endTurnBtn.setAlpha(1);
+    const btnBg = (this.endTurnBtn as any)
+      ._btnBg as Phaser.GameObjects.Graphics;
+    if (btnBg) btnBg.setAlpha(1);
     this.player.clearShield();
     this.updateShieldDisplay();
     this.combo.reset();
@@ -263,8 +328,8 @@ export class CombatScene extends Phaser.Scene {
   }
 
   private computeAndShowIntents(): void {
-    const bossPhase2 = this.isBossFight &&
-      (this.enemyGroup.enemies[0]?.hp ?? 999) < 40;
+    const bossPhase2 =
+      this.isBossFight && (this.enemyGroup.enemies[0]?.hp ?? 999) < 40;
     this.enemyGroup.computeIntents(bossPhase2);
 
     for (let i = 0; i < this.enemyVisuals.length; i++) {
@@ -303,7 +368,11 @@ export class CombatScene extends Phaser.Scene {
 
     const living = this.enemyGroup.living;
 
-    if (card.targeting === "self" || card.targeting === "aoe" || living.length <= 1) {
+    if (
+      card.targeting === "self" ||
+      card.targeting === "aoe" ||
+      living.length <= 1
+    ) {
       const targets = card.targeting === "self" ? [] : living;
       this.executeCard(card, targets);
     } else {
@@ -320,7 +389,7 @@ export class CombatScene extends Phaser.Scene {
     this.cancelBtn = this.add
       .text(width - 80, height - 60, "[ Cancel ]", {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "16px",
+        fontSize: "18px",
         color: "#aaaaaa",
       })
       .setOrigin(0.5)
@@ -374,28 +443,43 @@ export class CombatScene extends Phaser.Scene {
     const result = applyCardEffect(card, this.player, targets, comboBonus);
     this.deck.discard(card);
 
-    if (this.cache.audio.exists("sfx-attack-soft")) this.sound.play("sfx-attack-soft");
+    const audio = getAudioManager(this);
+    audio.playSfx(this, "sfx-attack-soft");
 
     if (result.damageDealt > 0) {
       for (let i = 0; i < this.enemyVisuals.length; i++) {
         const state = this.enemyGroup.enemies[i];
         if (!state) continue;
         if (targets.includes(state)) {
-          this.flashSprite(this.enemyVisuals[i].sprite, 0xff0000);
+          const vis = this.enemyVisuals[i];
+          this.flashSprite(vis.sprite, 0xff0000);
           this.updateEnemyHpBar(i);
+          this.floatDamageNumber(
+            vis.sprite.x,
+            vis.sprite.y - vis.tpl.displaySize / 2,
+            result.damageDealt,
+            comboResult.advanced,
+          );
         }
       }
+      this.cameras.main.shake(80, 0.003);
     }
 
     if (result.healAmount > 0) {
       this.flashSprite(this.demon, 0x00ff00);
       this.healVfx(this.demon.x, this.demon.y);
-      if (this.cache.audio.exists("sfx-attack-fire")) this.sound.play("sfx-attack-fire");
+      audio.playSfx(this, "sfx-attack-fire");
+      this.floatHealNumber(this.demon.x, this.demon.y - 192, result.healAmount);
     }
 
     if (result.blockGained > 0) {
       this.blockVfx(this.demon.x, this.demon.y);
-      if (this.cache.audio.exists("sfx-attack-fire")) this.sound.play("sfx-attack-fire");
+      audio.playSfx(this, "sfx-attack-fire");
+      this.floatBlockNumber(
+        this.demon.x,
+        this.demon.y - 192,
+        result.blockGained,
+      );
     }
 
     if (comboResult.advanced) {
@@ -407,6 +491,14 @@ export class CombatScene extends Phaser.Scene {
     this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
     this.playerHpBar.setPercent(this.player.hpPercent);
     this.updateShieldDisplay();
+
+    // Card pop effect
+    if (this.handUI.lastPlayedPosition) {
+      this.cardPopEffect(
+        this.handUI.lastPlayedPosition.x,
+        this.handUI.lastPlayedPosition.y,
+      );
+    }
 
     // Check each target for death
     this.checkEnemyDeaths();
@@ -470,6 +562,9 @@ export class CombatScene extends Phaser.Scene {
     if (!this.playerTurn) return;
     this.playerTurn = false;
     this.endTurnBtn.setAlpha(0.4);
+    const btnBg = (this.endTurnBtn as any)
+      ._btnBg as Phaser.GameObjects.Graphics;
+    if (btnBg) btnBg.setAlpha(0.3);
     this.handUI.clear();
     this.deck.discardAll();
     this.time.delayedCall(600, () => this.runEnemyTurns());
@@ -495,7 +590,8 @@ export class CombatScene extends Phaser.Scene {
     const vis = this.enemyVisuals[index];
     const intent = enemy.intent;
 
-    const advance = () => this.time.delayedCall(400, () => this.doNextEnemyTurn(entries, idx + 1));
+    const advance = () =>
+      this.time.delayedCall(400, () => this.doNextEnemyTurn(entries, idx + 1));
 
     if (intent.kind === "attack") {
       const dmg = intent.damage;
@@ -503,12 +599,18 @@ export class CombatScene extends Phaser.Scene {
         // Phase 2 enrage swap at low HP
         if (vis.tpl.phase2Key && enemy.hp < enemy.maxHp * 0.4) {
           vis.sprite.setTexture(vis.tpl.phase2Key);
-          vis.sprite.setDisplaySize(vis.tpl.displayW ?? vis.tpl.displaySize, vis.tpl.displaySize);
+          vis.sprite.setDisplaySize(
+            vis.tpl.displayW ?? vis.tpl.displaySize,
+            vis.tpl.displaySize,
+          );
         }
         this.flashSprite(vis.sprite, 0xff2200);
         this.time.delayedCall(500, () => {
           this.dealEnemyDamage(dmg);
-          if (this.player.hp <= 0) { this.onDefeat(); return; }
+          if (this.player.hp <= 0) {
+            this.onDefeat();
+            return;
+          }
           advance();
         });
       } else {
@@ -516,7 +618,10 @@ export class CombatScene extends Phaser.Scene {
         vis.sprite.once("animationcomplete", () => {
           vis.sprite.play(`${vis.animKey}-idle`);
           this.dealEnemyDamage(dmg);
-          if (this.player.hp <= 0) { this.onDefeat(); return; }
+          if (this.player.hp <= 0) {
+            this.onDefeat();
+            return;
+          }
           advance();
         });
       }
@@ -526,12 +631,14 @@ export class CombatScene extends Phaser.Scene {
   }
 
   private dealEnemyDamage(damage: number): void {
-    if (this.cache.audio.exists("sfx-player-damage")) this.sound.play("sfx-player-damage");
+    const audio = getAudioManager(this);
+    audio.playSfx(this, "sfx-player-damage");
     this.player.takeDamage(damage);
     this.flashSprite(this.demon, 0xff0000);
     this.playerHpBar.setText(`HP: ${this.player.hp}/${this.player.maxHp}`);
     this.playerHpBar.setPercent(this.player.hpPercent);
     this.updateShieldDisplay();
+    this.cameras.main.shake(120, 0.005);
   }
 
   // ─── Victory / defeat ────────────────────────────────────────────────────────
@@ -542,9 +649,12 @@ export class CombatScene extends Phaser.Scene {
     this.runState.markNodeCleared(this.activeNodeId);
     this.registry.set("runState", this.runState);
 
+    const audio = getAudioManager(this);
     if (this.isBossFight) {
-      if (this.cache.audio.exists("sting-win")) this.sound.play("sting-win");
-      this.time.delayedCall(800, () => this.showEndScreen("screen-victory", true));
+      audio.playSfx(this, "sting-win");
+      this.time.delayedCall(800, () =>
+        this.showEndScreen("screen-victory", true),
+      );
     } else {
       this.time.delayedCall(800, () => this.scene.start("RewardScene"));
     }
@@ -553,7 +663,8 @@ export class CombatScene extends Phaser.Scene {
   private onDefeat(): void {
     this.handUI.clear();
     this.demon.play("char-demon-death");
-    if (this.cache.audio.exists("sting-game-over")) this.sound.play("sting-game-over");
+    const audio = getAudioManager(this);
+    audio.playSfx(this, "sting-game-over");
     this.time.delayedCall(1200, () => this.showEndScreen("screen-loss", false));
   }
 
@@ -564,17 +675,22 @@ export class CombatScene extends Phaser.Scene {
     overlay.fillGradientStyle(
       isVictory ? 0x1a1200 : 0x1a0000,
       isVictory ? 0x1a1200 : 0x1a0000,
-      0x000000, 0x000000, 0.92,
+      0x000000,
+      0x000000,
+      0.92,
     );
     overlay.fillRect(0, 0, width, height);
-    overlay.setInteractive(new Phaser.Geom.Rectangle(0, 0, width, height), Phaser.Geom.Rectangle.Contains);
+    overlay.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, width, height),
+      Phaser.Geom.Rectangle.Contains,
+    );
 
     const label = isVictory ? "Victory!" : "Defeated";
     const color = isVictory ? "#ffd700" : "#ff4444";
     this.add
       .text(width / 2, height * 0.4, label, {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "64px",
+        fontSize: "68px",
         color,
         stroke: "#000000",
         strokeThickness: 6,
@@ -585,14 +701,15 @@ export class CombatScene extends Phaser.Scene {
     this.add
       .text(width / 2, height * 0.58, "[ Click to continue ]", {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "20px",
+        fontSize: "22px",
         color: "#aaaaaa",
       })
       .setOrigin(0.5)
       .setDepth(60);
 
     overlay.on("pointerdown", () => {
-      this.sound.stopAll();
+      const audio = getAudioManager(this);
+      audio.stopAll();
       this.scene.start("TitleScene");
     });
   }
@@ -662,6 +779,103 @@ export class CombatScene extends Phaser.Scene {
         circle.fillCircle(x, y, r);
       },
       onComplete: () => circle.destroy(),
+    });
+  }
+
+  private floatDamageNumber(
+    x: number,
+    y: number,
+    amount: number,
+    isCombo: boolean,
+  ): void {
+    const color = isCombo ? "#ffd700" : "#ff6666";
+    const label = `-${amount}`;
+    const txt = this.add
+      .text(x, y, label, {
+        fontFamily: "system-ui, sans-serif",
+        fontSize: isCombo ? "22px" : "18px",
+        color,
+        fontStyle: "bold",
+        stroke: "#000000",
+        strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(40);
+
+    this.tweens.add({
+      targets: txt,
+      y: y - 60,
+      alpha: 0,
+      duration: 900,
+      ease: "Power1",
+      onComplete: () => txt.destroy(),
+    });
+  }
+
+  private floatHealNumber(x: number, y: number, amount: number): void {
+    const txt = this.add
+      .text(x, y, `+${amount}`, {
+        fontFamily: "system-ui, sans-serif",
+        fontSize: "18px",
+        color: "#66ff66",
+        fontStyle: "bold",
+        stroke: "#000000",
+        strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(40);
+
+    this.tweens.add({
+      targets: txt,
+      y: y - 50,
+      alpha: 0,
+      duration: 800,
+      ease: "Power1",
+      onComplete: () => txt.destroy(),
+    });
+  }
+
+  private floatBlockNumber(x: number, y: number, amount: number): void {
+    const txt = this.add
+      .text(x, y, `+${amount}`, {
+        fontFamily: "system-ui, sans-serif",
+        fontSize: "18px",
+        color: "#66ccff",
+        fontStyle: "bold",
+        stroke: "#000000",
+        strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(40);
+
+    this.tweens.add({
+      targets: txt,
+      y: y - 50,
+      alpha: 0,
+      duration: 800,
+      ease: "Power1",
+      onComplete: () => txt.destroy(),
+    });
+  }
+
+  private cardPopEffect(x: number, y: number): void {
+    const pop = this.add
+      .text(x, y, "", {
+        fontFamily: "system-ui, sans-serif",
+        fontSize: "24px",
+      })
+      .setOrigin(0.5)
+      .setDepth(45)
+      .setAlpha(0);
+
+    this.tweens.add({
+      targets: pop,
+      scaleX: { from: 0.5, to: 1.5 },
+      scaleY: { from: 0.5, to: 1.5 },
+      alpha: { from: 0.6, to: 0 },
+      duration: 350,
+      ease: "Power2",
+      onComplete: () => pop.destroy(),
     });
   }
 }

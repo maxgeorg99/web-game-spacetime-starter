@@ -34,7 +34,11 @@ export class HandUI {
     return { x: this.lastPlayedX, y: this.lastPlayedY };
   }
 
-  show(cards: Card[], canAfford: boolean[], comboNextCost: number | null = null): void {
+  show(
+    cards: Card[],
+    canAfford: boolean[],
+    comboNextCost: number | null = null,
+  ): void {
     this.clear();
     const { width, height } = this.scene.scale;
     const totalWidth = cards.length * (CARD_WIDTH + 8);
@@ -61,7 +65,7 @@ export class HandUI {
       const costText = this.scene.add
         .text(-CARD_WIDTH / 2 + 20, -CARD_HEIGHT / 2 + 20, `${card.cost}`, {
           fontFamily: "system-ui, sans-serif",
-          fontSize: "16px",
+          fontSize: "18px",
           color: "#ffffff",
           stroke: "#000000",
           strokeThickness: 2,
@@ -73,14 +77,17 @@ export class HandUI {
       artIcon.setOrigin(0.5);
 
       const nameText = this.scene.add
-        .text(0, -CARD_HEIGHT / 2 + 20, card.name, {
+        .text(0, -CARD_HEIGHT / 2 + 5, card.name, {
           fontFamily: "system-ui, sans-serif",
-          fontSize: "13px",
+          fontSize: "15px",
           color: "#ffffff",
           stroke: "#000000",
           strokeThickness: 2,
+          wordWrap: { width: CARD_WIDTH - 40 },
+          maxLines: 2,
+          align: "center",
         })
-        .setOrigin(0.4);
+        .setOrigin(0.5, 0);
 
       const isComboCard = comboNextCost !== null && card.cost === comboNextCost;
       const kindLabel =
@@ -95,11 +102,11 @@ export class HandUI {
       const valueText = this.scene.add
         .text(0, CARD_HEIGHT / 2 - 24, valueLabel, {
           fontFamily: "system-ui, sans-serif",
-          fontSize: "14px",
-          color: isComboCard ? "#ff4444" : "#e0c060",
+          fontSize: "16px",
+          color: isComboCard ? "#ffd700" : "#e0c060",
           fontStyle: isComboCard ? "bold" : "normal",
           stroke: "#000000",
-          strokeThickness: 2,
+          strokeThickness: isComboCard ? 4 : 2,
         })
         .setOrigin(0.5);
 

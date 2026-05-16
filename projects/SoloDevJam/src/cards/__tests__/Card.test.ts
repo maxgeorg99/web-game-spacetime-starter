@@ -34,9 +34,9 @@ describe("Card registry", () => {
     expect(getCard("nonexistent")).toBeUndefined();
   });
 
-  it("starter deck has 9 cards", () => {
+  it("starter deck has 10 cards", () => {
     const deck = getStarterDeck();
-    expect(deck).toHaveLength(9);
+    expect(deck).toHaveLength(10);
   });
 
   it("all starter deck cards exist in ALL_CARDS", () => {

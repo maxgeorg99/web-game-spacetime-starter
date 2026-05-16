@@ -199,3 +199,97 @@ A sub-phase is complete when:
 - Run length: 5 levels (4 fights + 1 boss)
 - Combo cap: tier 5
 - Combo bonus damage: `2 * tier`
+
+---
+
+## Sprint 1 — Bug fixes & critical UX _(Quick wins)_
+
+### 1.1 — Fix music system
+- **Problem:** Music restarts on every battle. No ambient background track.
+- **Solution:** Persistent `AudioManager` singleton with state-aware transitions (title → main → boss). Ambient background track from game start. Crossfade between tracks.
+- **Reporter:** Owl
+- **Verify:** Start game → hear ambient → enter battle → music transitions smoothly (no restart). Boss fight gets boss music.
+
+### 1.2 — Fix tutorial overflow
+- **Problem:** "How to Play" content is clipped. Not all steps are reachable.
+- **Solution:** Compute max scroll bounds after building content. Add scroll indicator when content exceeds viewport. Ensure mask and input work correctly.
+- **Reporter:** Owl
+- **Verify:** Open tutorial → scroll to bottom → all 5 rules + annotated card diagram are visible.
+
+### 1.3 — Make End Turn button obvious
+- **Problem:** Small gray "[ End Turn ]" text in bottom-right corner blends into background. Players miss it.
+- **Solution:** Render as a proper button with crimson background, larger text (22px+), gold border. Position with visual prominence. Add subtle pulse animation.
+- **Reporter:** uncreativenam0
+- **Verify:** In combat, End Turn button is immediately visible and clearly clickable.
+
+### 1.4 — Fix "red = doubled" UX contradiction
+- **Problem:** Red signals "can't play" but combo-doubled cards show red text, implying they're blocked.
+- **Solution:** Gold/amber treatment for doubled effects. Show "+" badge or glow effect that reads as empowered, not blocked.
+- **Reporter:** 阿警
+- **Verify:** Combo-next cards show gold value text with "+" indicator, clearly distinct from unaffordable (dimmed) cards.
+
+---
+
+## Sprint 2 — Visual polish _(Feels professional)_
+
+### 2.1 — Fix font rendering
+- **Problem:** Fonts use pixel interpolation, making text blurry at small sizes. Base font size is small.
+- **Solution:** Set `roundPixels: true` on game config. Increase all font sizes by ~2px across all scenes. Use sharp text rendering.
+- **Reporter:** Owl
+- **Verify:** All text renders crisp and readable at correct resolution.
+
+### 2.2 — Fix demon sprite blurriness
+- **Problem:** Demon is scaled up via `setDisplaySize(384, 384)` causing quality loss.
+- **Solution:** Render demon at native spritesheet frame size, or use nearest-neighbor filtering. Avoid upscaling beyond source resolution.
+- **Reporter:** Owl
+- **Verify:** Demon sprite appears sharp and clear in combat.
+
+### 2.3 — Add visual feedback for actions
+- **Problem:** Actions feel weightless — only sound feedback, no visual punch.
+- **Solution:** Add camera shake on damage taken. Add card play pop effect (scale + fade). Add small hit flash + float damage numbers.
+- **Reporter:** Owl
+- **Verify:** Playing a card produces visible pop animation. Taking damage shakes camera. Hit numbers float up from targets.
+
+---
+
+## Sprint 3 — Balance & economy rework _(Decisions matter)_
+
+### 3.1 — Make blood scarce and meaningful
+- **Problem:** Heal cards are too common. Blood costs feel trivial. HP is treated as free mana.
+- **Solution:** Reduce heal card frequency in reward pool. Increase costs on high-value attack cards. Reduce starting HP from 30→25. Every HP spent should matter.
+- **Reporter:** SolAnon1, I :heart: Pixel Art, bhildebrand
+- **Verify:** Players feel pressure managing HP. Heal cards are valuable finds, not guaranteed drops.
+
+### 3.2 — Tune attack/block numbers down
+- **Problem:** Base values are high enough that players can ignore strategy and still win.
+- **Solution:** Reduce base attack values across strikes (6→4, 10→7, 16→11, 22→16). Lower block values (10→7, 20→14). Reduce enemy HP proportionally (22→18, 42→34, etc.).
+- **Reporter:** bhildebrand, Chrispies
+- **Verify:** Winning requires meaningful card choices. Button-mashing loses.
+
+### 3.3 — Scale enemy HP and damage per level
+- **Problem:** The doubling mechanic only shines in longer games. Early enemies are same difficulty as late ones (before boss).
+- **Solution:** Apply tier-based scaling multiplier to enemy HP and damage (tier 1: 0.7x, tier 2: 0.85x, tier 3: 1.0x, tier 4: 1.15x, boss: 1.0x). Early levels teach the mechanic, later levels demand optimization.
+- **Reporter:** 阿警
+- **Verify:** Tier 1 enemies are introductory (lower stats). Tier 4 enemies are threatening. Boss is a real challenge.
+
+---
+
+## Sprint 4 — Content expansion _(Replayability)_
+
+### 4.1 — Add new card archetypes
+- **Problem:** Only damage/block/heal exists. No build variety across runs.
+- **Solution:** Add status effect cards (Bleed: DoT, Weaken: reduce enemy damage, Vulnerable: increase damage taken). Add card draw + resource generation. Add conditional triggers ("if combo active, deal extra").
+- **Reporter:** gigoi
+- **Verify:** Multiple distinct archetypes exist. Runs with different card pools feel different.
+
+### 4.2 — More levels + proper run structure
+- **Problem:** 5 encounters is too short for builds to snowball. Linear branching is basic.
+- **Solution:** Extend to 7 tiers (5 combat/elite + 2 boss/mini-boss). Add rest nodes (heal 30% HP) between tiers 3-4 and 5-6. Add elite/boss variety. Branching map with meaningful path choices.
+- **Reporter:** 阿警, Icydeath
+- **Verify:** Full run takes 7 encounters. Players make meaningful path decisions (elite for risk/reward, rest for safety).
+
+### 4.3 — Difficulty modes / ascension layers
+- **Problem:** Skilled players finish without being threatened. No replay incentive after winning.
+- **Solution:** Add difficulty selection on title screen: Normal (current), Hard (enemy +25% HP/damage, fewer heal drops), Ascension 1-5 (cumulative modifiers: enemies have +1 damage, start with -5 HP, elites appear more often, boss has extra phase, etc.).
+- **Reporter:** I :heart: Pixel Art, Icydeath
+- **Verify:** Hard mode noticeably tougher. Ascension layers stack. Players can select difficulty before starting a run.

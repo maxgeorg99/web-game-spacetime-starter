@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { Card } from "../cards/Card";
 import { ALL_CARDS } from "../cards/cards";
 import { RunState } from "../state/RunState";
-
+import { getAudioManager } from "../audio/AudioManager";
 
 function pickRandomCards(count: number): Card[] {
   const pool = [...ALL_CARDS];
@@ -35,7 +35,7 @@ export class RewardScene extends Phaser.Scene {
     this.add
       .text(width / 2, 60, "Choose a Reward", {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "32px",
+        fontSize: "34px",
         color: "#e0c060",
         stroke: "#000000",
         strokeThickness: 4,
@@ -56,7 +56,7 @@ export class RewardScene extends Phaser.Scene {
     const skipBtn = this.add
       .text(width / 2, height - 60, "[ Skip ]", {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "22px",
+        fontSize: "24px",
         color: "#888888",
       })
       .setOrigin(0.5)
@@ -67,84 +67,79 @@ export class RewardScene extends Phaser.Scene {
     skipBtn.on("pointerout", () => skipBtn.setColor("#888888"));
     skipBtn.on("pointerdown", () => this.proceed());
 
-    if (this.cache.audio.exists("sfx-ui-reward")) {
-      this.sound.play("sfx-ui-reward");
-    }
+    const audio = getAudioManager(this);
+    audio.transitionTo("ambient");
+    audio.playSfx(this, "sfx-ui-reward");
   }
 
   private renderChoiceCard(x: number, y: number, card: Card): void {
-    const bg = this.add.image(x, y, "card-blank");
-    bg.setDisplaySize(CARD_W, CARD_H);
-    bg.setDepth(5);
+    const cardContainer = this.add.container(x, y).setDepth(5);
 
-    const art = this.add.image(x, y - 8, card.art);
+    const bg = this.add.image(0, 0, "card-blank");
+    bg.setDisplaySize(CARD_W, CARD_H);
+
+    const art = this.add.image(0, -8, card.art);
     art.setDisplaySize(64, 64);
-    art.setDepth(6);
 
     const nameText = this.add
-      .text(x, y - CARD_H / 2 + 18, card.name, {
+      .text(0, -CARD_H / 2 + 5, card.name, {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "14px",
+        fontSize: "16px",
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 2,
+        wordWrap: { width: CARD_W - 60 },
+        maxLines: 2,
+        align: "center",
       })
-      .setOrigin(0.5)
-      .setDepth(6);
+      .setOrigin(0.5, 0);
 
-    const costIcon = this.add.image(x - CARD_W / 2 + 22, y - CARD_H / 2 + 22, "health-cost");
+    const costIcon = this.add.image(
+      -CARD_W / 2 + 22,
+      -CARD_H / 2 + 22,
+      "health-cost",
+    );
     costIcon.setDisplaySize(18, 26);
     costIcon.setOrigin(0.5);
-    costIcon.setDepth(6);
 
-    this.add
-      .text(x - CARD_W / 2 + 24, y - CARD_H / 2 + 24, `${card.cost}`, {
+    const costText = this.add
+      .text(-CARD_W / 2 + 24, -CARD_H / 2 + 24, `${card.cost}`, {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "14px",
+        fontSize: "16px",
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 2,
       })
-      .setOrigin(0.5)
-      .setDepth(6);
+      .setOrigin(0.5);
 
     const kindLabel =
       card.kind === "attack" ? "DMG" : card.kind === "heal" ? "HEAL" : "BLOCK";
     const valueText = this.add
-      .text(x, y + CARD_H / 2 - 24, `${kindLabel} ${card.value}`, {
+      .text(0, CARD_H / 2 - 24, `${kindLabel} ${card.value}`, {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "14px",
+        fontSize: "16px",
         color: "#e0c060",
         stroke: "#000000",
         strokeThickness: 2,
       })
-      .setOrigin(0.5)
-      .setDepth(6);
+      .setOrigin(0.5);
 
-    const hitArea = this.add.rectangle(x, y, CARD_W, CARD_H);
-    hitArea.setInteractive({ useHandCursor: true });
-    hitArea.setDepth(7);
-    hitArea.setAlpha(0.001);
+    cardContainer.add([bg, art, nameText, costIcon, costText, valueText]);
+    cardContainer.setSize(CARD_W, CARD_H);
+    cardContainer.setInteractive({ useHandCursor: true });
 
-    hitArea.on("pointerover", () => {
-      bg.setAlpha(0.8);
-      nameText.setY(y - CARD_H / 2 + 18 - 10);
-      art.setY(y - 8 - 10);
-      valueText.setY(y + CARD_H / 2 - 24 - 10);
+    cardContainer.on("pointerover", () => {
+      cardContainer.y = y - 12;
     });
 
-    hitArea.on("pointerout", () => {
-      bg.setAlpha(1);
-      nameText.setY(y - CARD_H / 2 + 18);
-      art.setY(y - 8);
-      valueText.setY(y + CARD_H / 2 - 24);
+    cardContainer.on("pointerout", () => {
+      cardContainer.y = y;
     });
 
-    hitArea.on("pointerdown", () => {
+    cardContainer.on("pointerdown", () => {
       this.runState.deck.push(card);
-      if (this.cache.audio.exists("sfx-ui-booster")) {
-        this.sound.play("sfx-ui-booster");
-      }
+      const audio = getAudioManager(this);
+      audio.playSfx(this, "sfx-ui-booster");
       this.proceed();
     });
   }

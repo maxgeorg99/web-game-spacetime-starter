@@ -5,18 +5,50 @@ import { RunState } from "../state/RunState";
 // ─── Themed location names ────────────────────────────────────────────────────
 
 const COMBAT_NAMES = [
-  "Village", "Ruins", "Outpost", "Hamlet", "Crossroads", "Encampment",
-  "Mill", "Barrow", "Goblin Camp", "Snake Pit", "Spider Den", "Gnoll Warren",
-  "Thief's Hideout", "Gnome Burrow", "Swamp Hut", "River Ford", "Haunted Farm",
-  "Bandit Road", "Cursed Grove", "Fisherman's Dock", "Burial Mound", "Old Bridge",
+  "Village",
+  "Ruins",
+  "Outpost",
+  "Hamlet",
+  "Crossroads",
+  "Encampment",
+  "Mill",
+  "Barrow",
+  "Goblin Camp",
+  "Snake Pit",
+  "Spider Den",
+  "Gnoll Warren",
+  "Thief's Hideout",
+  "Gnome Burrow",
+  "Swamp Hut",
+  "River Ford",
+  "Haunted Farm",
+  "Bandit Road",
+  "Cursed Grove",
+  "Fisherman's Dock",
+  "Burial Mound",
+  "Old Bridge",
 ];
-const ELITE_NAMES  = [
-  "Fortress", "Stronghold", "Keep", "Rampart", "Garrison", "Watchtower",
-  "Minotaur Labyrinth", "Werewolf Den", "Gargoyle Spire", "Knight Bastion",
-  "Shaman Circle", "Stone Golem Mine", "Lizardman Marsh", "Ogre Tower",
-  "Gryphon Aerie", "Pyromancer's Tower", "Headless Hollow", "Dwarf Delve",
+const ELITE_NAMES = [
+  "Fortress",
+  "Stronghold",
+  "Keep",
+  "Rampart",
+  "Garrison",
+  "Watchtower",
+  "Minotaur Labyrinth",
+  "Werewolf Den",
+  "Gargoyle Spire",
+  "Knight Bastion",
+  "Shaman Circle",
+  "Stone Golem Mine",
+  "Lizardman Marsh",
+  "Ogre Tower",
+  "Gryphon Aerie",
+  "Pyromancer's Tower",
+  "Headless Hollow",
+  "Dwarf Delve",
 ];
-const BOSS_NAME    = "The Dark Throne";
+const BOSS_NAME = "The Dark Throne";
 
 function hashId(s: string): number {
   let h = 0;
@@ -43,18 +75,18 @@ function nodeAvatarKey(node: MapNode): string {
 
 const BUILDING_KEY: Record<NodeKind, string> = {
   combat: "building-tower",
-  elite:  "building-monastery",
-  boss:   "building-castle",
+  elite: "building-monastery",
+  boss: "building-castle",
 };
 const BUILDING_DISPLAY: Record<NodeKind, { w: number; h: number }> = {
-  combat: { w: 24, h: 48 },
-  elite:  { w: 28, h: 48 },
-  boss:   { w: 70, h: 56 },
+  combat: { w: 48, h: 98 },
+  elite: { w: 48, h: 98 },
+  boss: { w: 140, h: 112 },
 };
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 
-const TIER_X      = [180, 380, 590, 810, 1060];
+const TIER_X = [180, 380, 590, 810, 1060];
 const Y_BANDS: Record<number, number[]> = {
   1: [360],
   2: [260, 460],
@@ -77,9 +109,27 @@ export class MapScene extends Phaser.Scene {
     bg.fillRect(0, 0, width, height);
 
     const vignette = this.add.graphics().setDepth(1).setAlpha(0.45);
-    vignette.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 1, 1, 0, 0);
+    vignette.fillGradientStyle(
+      0x000000,
+      0x000000,
+      0x000000,
+      0x000000,
+      1,
+      1,
+      0,
+      0,
+    );
     vignette.fillRect(0, 0, width, height * 0.25);
-    vignette.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0, 0, 1, 1);
+    vignette.fillGradientStyle(
+      0x000000,
+      0x000000,
+      0x000000,
+      0x000000,
+      0,
+      0,
+      1,
+      1,
+    );
     vignette.fillRect(0, height * 0.75, width, height * 0.25);
 
     this.runState = this.registry.get("runState") as RunState;
@@ -87,7 +137,7 @@ export class MapScene extends Phaser.Scene {
     this.add
       .text(width / 2, 30, "Your Conquest", {
         fontFamily: "Georgia, serif",
-        fontSize: "30px",
+        fontSize: "32px",
         color: "#c8a84a",
         stroke: "#000000",
         strokeThickness: 4,
@@ -105,13 +155,13 @@ export class MapScene extends Phaser.Scene {
 
   private renderHpHud(): void {
     const { height } = this.scale;
-    const hp  = this.runState.playerHp;
+    const hp = this.runState.playerHp;
     const max = this.runState.playerMaxHp;
 
     this.add
       .text(24, height - 28, `Blood  ${hp} / ${max}`, {
         fontFamily: "Georgia, serif",
-        fontSize: "17px",
+        fontSize: "19px",
         color: "#cc4444",
         stroke: "#000000",
         strokeThickness: 3,
@@ -142,8 +192,10 @@ export class MapScene extends Phaser.Scene {
 
   private drawRoad(
     gfx: Phaser.GameObjects.Graphics,
-    x1: number, y1: number,
-    x2: number, y2: number,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
     cleared: boolean,
   ): void {
     gfx.lineStyle(5, 0x000000, 0.5);
@@ -154,7 +206,12 @@ export class MapScene extends Phaser.Scene {
     gfx.lineBetween(x1, y1 - 1, x2, y2 - 1);
   }
 
-  private renderNode(node: MapNode, x: number, y: number, isAvailable: boolean): void {
+  private renderNode(
+    node: MapNode,
+    x: number,
+    y: number,
+    isAvailable: boolean,
+  ): void {
     const isBoss = node.kind === "boss";
     const buildingKey = BUILDING_KEY[node.kind];
     const buildingDisp = BUILDING_DISPLAY[node.kind];
@@ -162,8 +219,8 @@ export class MapScene extends Phaser.Scene {
 
     const nameColor: Record<NodeKind, string> = {
       combat: "#8aaa66",
-      elite:  "#d4901c",
-      boss:   "#ee6060",
+      elite: "#d4901c",
+      boss: "#ee6060",
     };
 
     // Building sprite (top)
@@ -171,17 +228,20 @@ export class MapScene extends Phaser.Scene {
     building.setDisplaySize(buildingDisp.w, buildingDisp.h);
 
     // Avatar sprite (middle)
-    const avatar = this.add.image(x, y + 16, avatarKey).setDepth(5);
-    avatar.setDisplaySize(32, 32);
+    const avatar = this.add.image(x, y + 36, avatarKey).setDepth(5);
+    avatar.setDisplaySize(60, 60);
 
     // Location name (bottom)
-    const name = this.add.text(x, y + 40, nodeName(node), {
-      fontFamily: "Georgia, serif",
-      fontSize: "11px",
-      color: isAvailable ? nameColor[node.kind] : "#44443a",
-      stroke: "#000000",
-      strokeThickness: 2,
-    }).setOrigin(0.5).setDepth(6);
+    const name = this.add
+      .text(x, y + 65, nodeName(node), {
+        fontFamily: "Georgia, serif",
+        fontSize: "18px",
+        color: isAvailable ? nameColor[node.kind] : "#44443a",
+        stroke: "#000000",
+        strokeThickness: 2,
+      })
+      .setOrigin(0.5)
+      .setDepth(6);
 
     // ── Cleared ──────────────────────────────────────────────────────────────
     if (node.cleared) {
@@ -189,11 +249,14 @@ export class MapScene extends Phaser.Scene {
       avatar.setAlpha(0.3);
       name.setColor("#3a4028").setAlpha(0.5);
 
-      this.add.text(x, y - 4, "✓", {
-        fontFamily: "Georgia, serif",
-        fontSize: "18px",
-        color: "#557744",
-      }).setOrigin(0.5).setDepth(6);
+      this.add
+        .text(x, y - 4, "✓", {
+          fontFamily: "Georgia, serif",
+          fontSize: "48px",
+          color: "#557744",
+        })
+        .setOrigin(0.5)
+        .setDepth(6);
       return;
     }
 
@@ -212,20 +275,30 @@ export class MapScene extends Phaser.Scene {
       const ring = this.add.graphics().setDepth(4);
       ring.lineStyle(2, 0xee3030, 0.5);
       ring.strokeCircle(x, y - 28, 32);
-      this.tweens.add({ targets: ring, alpha: { from: 0.8, to: 0.2 }, yoyo: true, repeat: -1, duration: 900 });
+      this.tweens.add({
+        targets: ring,
+        alpha: { from: 0.8, to: 0.2 },
+        yoyo: true,
+        repeat: -1,
+        duration: 900,
+      });
     }
 
     // Current node marker
     if (node.id === this.runState.currentNodeId) {
-      this.add.text(x, y - 56, "▼", {
-        fontFamily: "system-ui",
-        fontSize: "14px",
-        color: "#ffaa00",
-      }).setOrigin(0.5).setDepth(7);
+      this.add
+        .text(x, y - 56, "▼", {
+          fontFamily: "system-ui",
+          fontSize: "14px",
+          color: "#ffaa00",
+        })
+        .setOrigin(0.5)
+        .setDepth(7);
     }
 
     // Hover glow & click interaction
-    const hit = this.add.rectangle(x, y, 64, 84)
+    const hit = this.add
+      .rectangle(x, y, 64, 84)
       .setInteractive({ useHandCursor: true })
       .setDepth(8)
       .setAlpha(0.001);
@@ -235,7 +308,7 @@ export class MapScene extends Phaser.Scene {
       building.setAlpha(0.85);
       glow.clear();
       glow.fillStyle(0xffffff, 0.1);
-      glow.fillCircle(x, y - 28, 34);
+      glow.fillCircle(x, y - 28, 48);
       glow.setAlpha(1);
     });
     hit.on("pointerout", () => {
@@ -243,10 +316,14 @@ export class MapScene extends Phaser.Scene {
       glow.clear();
       glow.setAlpha(0);
     });
-    hit.on("pointerdown", () => this.scene.start("CombatScene", { nodeId: node.id }));
+    hit.on("pointerdown", () =>
+      this.scene.start("CombatScene", { nodeId: node.id }),
+    );
   }
 
-  private buildPositions(height: number): Map<string, { x: number; y: number }> {
+  private buildPositions(
+    height: number,
+  ): Map<string, { x: number; y: number }> {
     const map = new Map<string, { x: number; y: number }>();
     const scale = height / 720;
 

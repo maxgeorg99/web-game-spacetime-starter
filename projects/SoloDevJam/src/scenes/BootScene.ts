@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { ManifestEntry } from "../types";
+import { getAudioManager } from "../audio/AudioManager";
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -30,7 +31,7 @@ export class BootScene extends Phaser.Scene {
     const loadingText = this.add
       .text(width / 2, height / 2 + 30, "Loading...", {
         fontFamily: "system-ui, sans-serif",
-        fontSize: "16px",
+        fontSize: "18px",
         color: "#e0c060",
       })
       .setOrigin(0.5);
@@ -51,6 +52,7 @@ export class BootScene extends Phaser.Scene {
       loadingText.destroy();
       bg.destroy();
       fill.destroy();
+      getAudioManager(this).playAmbient(this);
       this.scene.start("TitleScene");
     };
 

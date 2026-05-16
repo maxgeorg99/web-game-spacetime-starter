@@ -23,8 +23,8 @@ export class RunState {
     }
     this.currentNodeId = null;
     this.deck = getStarterDeck();
-    this.playerHp = 30;
-    this.playerMaxHp = 30;
+    this.playerHp = 25;
+    this.playerMaxHp = 25;
     this.gold = 0;
   }
 

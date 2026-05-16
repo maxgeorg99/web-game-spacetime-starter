@@ -14,9 +14,9 @@ describe("RunState", () => {
     expect(bosses[0].tier).toBe(5);
   });
 
-  it("starts at 30 HP with no currentNode", () => {
+  it("starts at 25 HP with no currentNode", () => {
     const r = new RunState();
-    expect(r.playerHp).toBe(30);
+    expect(r.playerHp).toBe(25);
     expect(r.currentNodeId).toBeNull();
     expect(r.currentNode).toBeNull();
   });
@@ -58,8 +58,8 @@ describe("RunState", () => {
     expect(r.isBossCleared).toBe(true);
   });
 
-  it("deck has 9 starter cards", () => {
+  it("deck has 10 starter cards", () => {
     const r = new RunState();
-    expect(r.deck).toHaveLength(9);
+    expect(r.deck).toHaveLength(10);
   });
 });
