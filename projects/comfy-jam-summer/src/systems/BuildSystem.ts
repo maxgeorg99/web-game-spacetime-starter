@@ -9,6 +9,7 @@ export class BuildSystem {
   private placedObjects: Map<string, Phaser.GameObjects.Image> = new Map();
   gridOffsetX: number;
   gridOffsetY: number;
+  onTowerClick?: (x: number, y: number) => void;
 
   constructor(scene: Phaser.Scene, gridOffsetX: number, gridOffsetY: number) {
     this.scene = scene;
@@ -40,7 +41,13 @@ export class BuildSystem {
     const img = this.scene.add
       .image(x, y, "sandtower")
       .setDisplaySize(TILE_SIZE, TILE_SIZE)
-      .setDepth(2);
+      .setDepth(2)
+      .setInteractive({ useHandCursor: true });
+
+    img.on("pointerdown", () => {
+      if (this.toolMode === "destroy") return;
+      this.onTowerClick?.(x, y);
+    });
 
     const key = tileKey(col, row);
     this.occupied.add(key);

@@ -95,6 +95,8 @@
 
     { "key": "proj-water",      "path": "sprites/projectiles/Projectile.png" },
     { "key": "proj-beachball",  "path": "sprites/projectiles/attack_volleyball.png" },
+    { "key": "proj-coconut",    "path": "sprites/projectiles/coconut.png" },
+    { "key": "proj-bazooka",    "path": "sprites/projectiles/WaterGunsSpriteSheet.png" },
 
     { "key": "ui-bar-big-base",   "path": "sprites/ui/bars/BigBar_Base.png" },
     { "key": "ui-bar-big-fill",   "path": "sprites/ui/bars/BigBar_Fill.png" },

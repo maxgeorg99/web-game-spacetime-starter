@@ -7,12 +7,14 @@ import { createOcean } from "../objects/OceanBackground";
 import { buildIsland } from "../objects/IslandBuilder";
 import { buildHud } from "../objects/HudOverlay";
 import { EnemySystem } from "../systems/EnemySystem";
+import { WeaponWheel } from "../systems/WeaponWheel";
 
 export class GameScene extends Phaser.Scene {
   private ocean!: Phaser.GameObjects.TileSprite;
   private buildSystem!: BuildSystem;
   private highlightSystem!: HighlightSystem;
   private enemySystem!: EnemySystem;
+  private weaponWheel!: WeaponWheel;
   private gridOffsetX = 0;
   private gridOffsetY = 0;
 
@@ -50,8 +52,19 @@ export class GameScene extends Phaser.Scene {
     // 6. Enemy spawner.
     this.enemySystem = new EnemySystem(this, this.gridOffsetX, this.gridOffsetY);
 
+    // 7. Weapon wheel for towers.
+    this.weaponWheel = new WeaponWheel(this, (label) => {
+      console.log("weapon selected:", label);
+    });
+
+    this.buildSystem.onTowerClick = (x, y) => {
+      this.weaponWheel.show(x, y - 24);
+    };
+
     // 7. Grid click handler.
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      if (this.weaponWheel.isOpen) return;
+
       const { col, row } = worldToGrid(
         pointer.x,
         pointer.y,
