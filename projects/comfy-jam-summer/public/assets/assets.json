@@ -10,6 +10,7 @@
         { "suffix": "sheet", "path": "sprites/terrain/beach_tiles.png", "endFrame": 179, "frameRate": 0, "repeat": 0 }
       ]
     },
+
     {
       "id": "turtle",
       "keyPrefix": "enemy-turtle",
@@ -66,6 +67,20 @@
   ],
 
   "images": [
+    { "key": "ocean",         "path": "sprites/terrain/ocean.png" },
+    { "key": "palm",         "path": "sprites/terrain/palm.png" },
+    { "key": "sandtower",    "path": "sprites/terrain/Sandtower.png" },
+    { "key": "shell-black",  "path": "sprites/terrain/black-shell.png" },
+    { "key": "shell-green",  "path": "sprites/terrain/green-shell.png" },
+    { "key": "shell-brown",  "path": "sprites/terrain/brown-shell.png" },
+    { "key": "shell-red",    "path": "sprites/terrain/red-shell.png" },
+    { "key": "shell-pink",   "path": "sprites/terrain/pink-shell.png" },
+    { "key": "shell-yellow", "path": "sprites/terrain/yellow-shell.png" },
+    { "key": "wall-h",       "path": "sprites/terrain/sand-wall-horizontal.png" },
+    { "key": "wall-v",       "path": "sprites/terrain/sand-wall-vertical.png" },
+
+    { "key": "ui-hud",       "path": "sprites/ui/ui-test.png" },
+
     { "key": "turtle-avatar",     "path": "sprites/enemies/Turtle_Turtle Avatar.png" },
     { "key": "snake-avatar",      "path": "sprites/enemies/Snake_Snake Avatar.png" },
     { "key": "paddlefish-avatar", "path": "sprites/enemies/Paddle_Fish_Paddle Fish Avatar.png" },

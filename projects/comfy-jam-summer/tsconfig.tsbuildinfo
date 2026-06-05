@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/types.ts","./src/config/constants.ts","./src/scenes/BootScene.ts","./src/scenes/GameScene.ts","./src/scenes/TitleScene.ts"],"version":"5.9.3"}
