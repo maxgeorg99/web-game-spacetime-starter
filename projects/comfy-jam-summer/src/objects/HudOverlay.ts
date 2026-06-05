@@ -12,7 +12,11 @@ export function buildHud(
 
   // ---- Resources bar (top-left) ----
   // Gold icon + amount
-  scene.add.image(24, 20, "icon-gold").setOrigin(0.5).setDisplaySize(24, 24).setDepth(10);
+  scene.add
+    .image(24, 20, "icon-gold")
+    .setOrigin(0.5)
+    .setDisplaySize(24, 24)
+    .setDepth(10);
   scene.add
     .text(40, 20, "120", {
       fontFamily: "system-ui, sans-serif",
@@ -25,7 +29,11 @@ export function buildHud(
     .setDepth(10);
 
   // Shell icon + amount
-  scene.add.image(100, 20, "shell-yellow").setOrigin(0.5).setDisplaySize(24, 24).setDepth(10);
+  scene.add
+    .image(100, 20, "shell-yellow")
+    .setOrigin(0.5)
+    .setDisplaySize(34, 34)
+    .setDepth(10);
   scene.add
     .text(116, 20, "15", {
       fontFamily: "system-ui, sans-serif",
@@ -37,43 +45,68 @@ export function buildHud(
     .setOrigin(0, 0.5)
     .setDepth(10);
 
-  // ---- Next-wave panel (top-left) ----
-  const panelY = 60;
-  const panelW = 110;
-  const panelH = 52;
+  // ---- Next-wave panel (top-left, shark-warning sign) ----
+  const panelY = 110;
+  const panelW = 180;
+  const panelH = 140;
+  const panelX = 10;
 
+  // Warning sign background image.
   scene.add
-    .graphics()
-    .fillStyle(0x1a2a1a, 0.7)
-    .fillRoundedRect(10, panelY - panelH / 2, panelW, panelH, 6)
-    .lineStyle(1, 0x4a7a4a, 0.6)
-    .strokeRoundedRect(10, panelY - panelH / 2, panelW, panelH, 6)
+    .image(panelX + panelW / 2, panelY, "ui-sign")
+    .setDisplaySize(panelW, panelH)
     .setDepth(10);
 
+  // Small phone icon top-right, slightly rotated for playfulness.
   scene.add
-    .text(16, panelY - 12, "NEXT WAVE", {
-      fontFamily: "system-ui, sans-serif",
-      fontSize: "10px",
-      color: "#6aaa6a",
-    })
-    .setDepth(10);
-
-  scene.add
-    .image(38, panelY + 15, "paddlefish-avatar")
+    .image(panelX + panelW, panelY - panelH / 2 + 16, "ui-phone")
     .setOrigin(0.5)
-    .setDisplaySize(36, 36)
-    .setDepth(10);
+    .setDisplaySize(32, 28)
+    .setDepth(10)
+    .setAlpha(0.85)
+    .setRotation(-0.25);
 
-  scene.add
-    .text(54, panelY + 6, "x6", {
-      fontFamily: "system-ui, sans-serif",
-      fontSize: "14px",
-      color: "#e0d0a0",
-      stroke: "#1a3a5c",
-      strokeThickness: 3,
-    })
-    .setOrigin(0, 0.5)
-    .setDepth(10);
+  const avatars: { key: string; count: number }[] = [
+    { key: "paddlefish-avatar", count: 3 },
+    { key: "harpoonfish-avatar", count: 2 },
+    { key: "turtle-avatar", count: 1 },
+    { key: "snake-avatar", count: 4 },
+  ];
+
+  const cols = 2;
+  const avatarSize = 48;
+  const gapX = 18;
+  const gapY = 0;
+  const totalW = cols * avatarSize + (cols - 1) * gapX;
+  const totalH =
+    Math.ceil(avatars.length / cols) * avatarSize +
+    (Math.ceil(avatars.length / cols) - 1) * gapY;
+  const startX = panelX + panelW / 2 - totalW / 1.5;
+  const startY = panelY - totalH / 2 + 20;
+
+  for (let i = 0; i < avatars.length; i++) {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const cx = startX + col * (avatarSize + gapX) + avatarSize / 2;
+    const cy = startY + row * (avatarSize + gapY) + avatarSize / 2;
+
+    scene.add
+      .image(cx, cy, avatars[i].key)
+      .setOrigin(0.5)
+      .setDisplaySize(avatarSize, avatarSize)
+      .setDepth(10);
+
+    scene.add
+      .text(cx + avatarSize / 2 + 4, cy, `x${avatars[i].count}`, {
+        fontFamily: "system-ui, sans-serif",
+        fontSize: "13px",
+        color: "#e0d0a0",
+        stroke: "#000000",
+        strokeThickness: 3,
+      })
+      .setOrigin(0, 0.5)
+      .setDepth(10);
+  }
 
   // ---- Bottom toolbar (260×120) ----
   const hudY = height - 60;

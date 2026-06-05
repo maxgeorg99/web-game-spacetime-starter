@@ -6,11 +6,13 @@ import { HighlightSystem } from "../systems/HighlightSystem";
 import { createOcean } from "../objects/OceanBackground";
 import { buildIsland } from "../objects/IslandBuilder";
 import { buildHud } from "../objects/HudOverlay";
+import { EnemySystem } from "../systems/EnemySystem";
 
 export class GameScene extends Phaser.Scene {
   private ocean!: Phaser.GameObjects.TileSprite;
   private buildSystem!: BuildSystem;
   private highlightSystem!: HighlightSystem;
+  private enemySystem!: EnemySystem;
   private gridOffsetX = 0;
   private gridOffsetY = 0;
 
@@ -45,7 +47,10 @@ export class GameScene extends Phaser.Scene {
       console.log(label, "mode:", this.buildSystem.toolMode);
     });
 
-    // 6. Grid click handler.
+    // 6. Enemy spawner.
+    this.enemySystem = new EnemySystem(this, this.gridOffsetX, this.gridOffsetY);
+
+    // 7. Grid click handler.
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       const { col, row } = worldToGrid(
         pointer.x,
@@ -64,9 +69,10 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  update(): void {
+  update(_time: number, delta: number): void {
     this.ocean.tilePositionX += 0.3;
     this.ocean.tilePositionY += 0.15;
     this.highlightSystem.update(this.input.activePointer);
+    this.enemySystem.update(delta);
   }
 }
