@@ -8,6 +8,8 @@ import { buildIsland } from "../objects/IslandBuilder";
 import { buildHud } from "../objects/HudOverlay";
 import { EnemySystem } from "../systems/EnemySystem";
 import { WeaponWheel } from "../systems/WeaponWheel";
+import { DialogBox } from "../systems/DialogBox";
+import { DIALOGS } from "../config/DialogConfig";
 
 export class GameScene extends Phaser.Scene {
   private ocean!: Phaser.GameObjects.TileSprite;
@@ -15,8 +17,11 @@ export class GameScene extends Phaser.Scene {
   private highlightSystem!: HighlightSystem;
   private enemySystem!: EnemySystem;
   private weaponWheel!: WeaponWheel;
+  private dialogBox!: DialogBox;
   private gridOffsetX = 0;
   private gridOffsetY = 0;
+  private firstTowerPlaced = false;
+  private firstWallPlaced = false;
 
   constructor() {
     super("GameScene");
@@ -57,11 +62,25 @@ export class GameScene extends Phaser.Scene {
       console.log("weapon selected:", label);
     });
 
+    // 8. Dialog box for lifeguard commentary.
+    this.dialogBox = new DialogBox(this);
+
     this.buildSystem.onTowerClick = (x, y) => {
       this.weaponWheel.show(x, y - 24);
     };
 
-    // 7. Grid click handler.
+    // Trigger dialogs on first placement.
+    this.buildSystem.onPlace = (_col, _row, mode) => {
+      if (mode === "tower" && !this.firstTowerPlaced) {
+        this.firstTowerPlaced = true;
+        this.dialogBox.show(DIALOGS.first_tower);
+      } else if (mode === "wall" && !this.firstWallPlaced) {
+        this.firstWallPlaced = true;
+        this.dialogBox.show(DIALOGS.first_wall);
+      }
+    };
+
+    // 9. Grid click handler.
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (this.weaponWheel.isOpen) return;
 
@@ -80,6 +99,11 @@ export class GameScene extends Phaser.Scene {
 
       this.buildSystem.handleGridClick(col, row, pointer);
     });
+
+    // Kick off lifeguard intro after a short delay.
+    this.time.delayedCall(600, () => {
+      this.dialogBox.show(DIALOGS.game_start);
+    });
   }
 
   update(_time: number, delta: number): void {
@@ -87,5 +111,6 @@ export class GameScene extends Phaser.Scene {
     this.ocean.tilePositionY += 0.15;
     this.highlightSystem.update(this.input.activePointer);
     this.enemySystem.update(delta);
+    this.dialogBox.update(delta);
   }
 }

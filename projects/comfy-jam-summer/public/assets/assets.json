@@ -7,7 +7,13 @@
       "frameWidth": 32,
       "frameHeight": 32,
       "animations": [
-        { "suffix": "sheet", "path": "sprites/terrain/beach_tiles.png", "endFrame": 179, "frameRate": 0, "repeat": 0 }
+        {
+          "suffix": "sheet",
+          "path": "sprites/terrain/beach_tiles.png",
+          "endFrame": 179,
+          "frameRate": 0,
+          "repeat": 0
+        }
       ]
     },
 
@@ -17,10 +23,34 @@
       "frameWidth": 320,
       "frameHeight": 320,
       "animations": [
-        { "suffix": "idle",   "path": "sprites/enemies/Turtle_Turtle_Idle.png",  "endFrame": 9, "frameRate": 6,  "repeat": -1 },
-        { "suffix": "walk",   "path": "sprites/enemies/Turtle_Turtle_Walk.png",  "endFrame": 6, "frameRate": 6,  "repeat": -1 },
-        { "suffix": "attack", "path": "sprites/enemies/Turtle_Turtle_Attack.png", "endFrame": 9, "frameRate": 12, "repeat": 0 },
-        { "suffix": "death",  "path": "sprites/enemies/Turtle_Turtle_Death.png",  "endFrame": 5, "frameRate": 10, "repeat": 0 }
+        {
+          "suffix": "idle",
+          "path": "sprites/enemies/Turtle_Turtle_Idle.png",
+          "endFrame": 9,
+          "frameRate": 6,
+          "repeat": -1
+        },
+        {
+          "suffix": "walk",
+          "path": "sprites/enemies/Turtle_Turtle_Walk.png",
+          "endFrame": 6,
+          "frameRate": 6,
+          "repeat": -1
+        },
+        {
+          "suffix": "attack",
+          "path": "sprites/enemies/Turtle_Turtle_Attack.png",
+          "endFrame": 9,
+          "frameRate": 12,
+          "repeat": 0
+        },
+        {
+          "suffix": "death",
+          "path": "sprites/enemies/Turtle_Turtle_Death.png",
+          "endFrame": 5,
+          "frameRate": 10,
+          "repeat": 0
+        }
       ]
     },
     {
@@ -29,10 +59,34 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "animations": [
-        { "suffix": "idle",   "path": "sprites/enemies/Snake_Snake_Idle.png",   "endFrame": 7, "frameRate": 8,  "repeat": -1 },
-        { "suffix": "run",    "path": "sprites/enemies/Snake_Snake_Run.png",    "endFrame": 7, "frameRate": 8,  "repeat": -1 },
-        { "suffix": "attack", "path": "sprites/enemies/Snake_Snake_Attack.png", "endFrame": 5, "frameRate": 14, "repeat": 0 },
-        { "suffix": "death",  "path": "sprites/enemies/Snake_Snake_Death.png",  "endFrame": 3, "frameRate": 10, "repeat": 0 }
+        {
+          "suffix": "idle",
+          "path": "sprites/enemies/Snake_Snake_Idle.png",
+          "endFrame": 7,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        {
+          "suffix": "run",
+          "path": "sprites/enemies/Snake_Snake_Run.png",
+          "endFrame": 7,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        {
+          "suffix": "attack",
+          "path": "sprites/enemies/Snake_Snake_Attack.png",
+          "endFrame": 5,
+          "frameRate": 14,
+          "repeat": 0
+        },
+        {
+          "suffix": "death",
+          "path": "sprites/enemies/Snake_Snake_Death.png",
+          "endFrame": 3,
+          "frameRate": 10,
+          "repeat": 0
+        }
       ]
     },
     {
@@ -41,10 +95,34 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "animations": [
-        { "suffix": "idle",   "path": "sprites/enemies/Paddle_Fish_PaddleFish_Idle.png",   "endFrame": 7, "frameRate": 8,  "repeat": -1 },
-        { "suffix": "run",    "path": "sprites/enemies/Paddle_Fish_PaddleFish_Run.png",    "endFrame": 7, "frameRate": 8,  "repeat": -1 },
-        { "suffix": "attack", "path": "sprites/enemies/Paddle_Fish_PaddleFish_Attack.png", "endFrame": 5, "frameRate": 14, "repeat": 0 },
-        { "suffix": "death",  "path": "sprites/enemies/Paddle_Fish_PaddleFish_Death.png",  "endFrame": 4, "frameRate": 10, "repeat": 0 }
+        {
+          "suffix": "idle",
+          "path": "sprites/enemies/Paddle_Fish_PaddleFish_Idle.png",
+          "endFrame": 7,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        {
+          "suffix": "run",
+          "path": "sprites/enemies/Paddle_Fish_PaddleFish_Run.png",
+          "endFrame": 7,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        {
+          "suffix": "attack",
+          "path": "sprites/enemies/Paddle_Fish_PaddleFish_Attack.png",
+          "endFrame": 5,
+          "frameRate": 14,
+          "repeat": 0
+        },
+        {
+          "suffix": "death",
+          "path": "sprites/enemies/Paddle_Fish_PaddleFish_Death.png",
+          "endFrame": 4,
+          "frameRate": 10,
+          "repeat": 0
+        }
       ]
     },
     {
@@ -53,10 +131,34 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "animations": [
-        { "suffix": "idle",   "path": "sprites/enemies/Harpoon_Fish_HarpoonFish_Idle.png", "endFrame": 7, "frameRate": 8,  "repeat": -1 },
-        { "suffix": "run",    "path": "sprites/enemies/Harpoon_Fish_HarpoonFish_Run.png",  "endFrame": 5, "frameRate": 8,  "repeat": -1 },
-        { "suffix": "attack", "path": "sprites/enemies/Harpoon_Fish_HarpoonFish_Throw.png", "endFrame": 7, "frameRate": 14, "repeat": 0 },
-        { "suffix": "death",  "path": "sprites/enemies/Harpoon_Fish_Harpoon_Death.png",     "endFrame": 3, "frameRate": 10, "repeat": 0 }
+        {
+          "suffix": "idle",
+          "path": "sprites/enemies/Harpoon_Fish_HarpoonFish_Idle.png",
+          "endFrame": 7,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        {
+          "suffix": "run",
+          "path": "sprites/enemies/Harpoon_Fish_HarpoonFish_Run.png",
+          "endFrame": 5,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        {
+          "suffix": "attack",
+          "path": "sprites/enemies/Harpoon_Fish_HarpoonFish_Throw.png",
+          "endFrame": 7,
+          "frameRate": 14,
+          "repeat": 0
+        },
+        {
+          "suffix": "death",
+          "path": "sprites/enemies/Harpoon_Fish_Harpoon_Death.png",
+          "endFrame": 3,
+          "frameRate": 10,
+          "repeat": 0
+        }
       ]
     },
     {
@@ -65,57 +167,105 @@
       "frameWidth": 32,
       "frameHeight": 32,
       "animations": [
-        { "suffix": "shoot", "path": "sprites/projectiles/SmallWaterGunsSpriteSheet.png", "endFrame": 3, "frameRate": 12, "repeat": 0 }
+        {
+          "suffix": "shoot",
+          "path": "sprites/projectiles/SmallWaterGunsSpriteSheet.png",
+          "endFrame": 3,
+          "frameRate": 12,
+          "repeat": 0
+        }
       ]
     }
   ],
 
   "images": [
-    { "key": "ocean",         "path": "sprites/terrain/ocean.png" },
-    { "key": "palm",         "path": "sprites/terrain/palm.png" },
-    { "key": "sandtower",    "path": "sprites/terrain/Sandtower.png" },
-    { "key": "shell-black",  "path": "sprites/terrain/black-shell.png" },
-    { "key": "shell-green",  "path": "sprites/terrain/green-shell.png" },
-    { "key": "shell-brown",  "path": "sprites/terrain/brown-shell.png" },
-    { "key": "shell-red",    "path": "sprites/terrain/red-shell.png" },
-    { "key": "shell-pink",   "path": "sprites/terrain/pink-shell.png" },
+    { "key": "ocean", "path": "sprites/terrain/ocean.png" },
+    { "key": "palm", "path": "sprites/terrain/palm.png" },
+    { "key": "sandtower", "path": "sprites/terrain/Sandtower.png" },
+    { "key": "shell-black", "path": "sprites/terrain/black-shell.png" },
+    { "key": "shell-green", "path": "sprites/terrain/green-shell.png" },
+    { "key": "shell-brown", "path": "sprites/terrain/brown-shell.png" },
+    { "key": "shell-red", "path": "sprites/terrain/red-shell.png" },
+    { "key": "shell-pink", "path": "sprites/terrain/pink-shell.png" },
     { "key": "shell-yellow", "path": "sprites/terrain/yellow-shell.png" },
-    { "key": "wall-h",       "path": "sprites/terrain/sand-wall-horizontal.png" },
-    { "key": "wall-v",       "path": "sprites/terrain/sand-wall-vertical.png" },
+    { "key": "wall-h", "path": "sprites/terrain/sand-wall-horizontal.png" },
+    { "key": "wall-v", "path": "sprites/terrain/sand-wall-vertical.png" },
 
-    { "key": "ui-hud",       "path": "sprites/ui/ui-test.png" },
-    { "key": "ui-phone",     "path": "sprites/ui/phone.png" },
-    { "key": "ui-sign",      "path": "sprites/ui/warning-sign.png" },
+    { "key": "ui-hud", "path": "sprites/ui/ui-test.png" },
+    { "key": "ui-phone", "path": "sprites/ui/phone.png" },
+    { "key": "ui-sign", "path": "sprites/ui/warning-sign.png" },
 
-    { "key": "turtle-avatar",     "path": "sprites/enemies/Turtle_Turtle Avatar.png" },
-    { "key": "snake-avatar",      "path": "sprites/enemies/Snake_Snake Avatar.png" },
-    { "key": "paddlefish-avatar", "path": "sprites/enemies/Paddle_Fish_Paddle Fish Avatar.png" },
-    { "key": "harpoonfish-avatar","path": "sprites/enemies/Harpoon_Fish_Harpoon Fish Avatar.png" },
-    { "key": "harpoonfish-sprite","path": "sprites/enemies/Harpoon_Fish_Harpoon.png" },
+    {
+      "key": "turtle-avatar",
+      "path": "sprites/enemies/Turtle_Turtle Avatar.png"
+    },
+    { "key": "snake-avatar", "path": "sprites/enemies/Snake_Snake Avatar.png" },
+    {
+      "key": "paddlefish-avatar",
+      "path": "sprites/enemies/Paddle_Fish_Paddle Fish Avatar.png"
+    },
+    {
+      "key": "harpoonfish-avatar",
+      "path": "sprites/enemies/Harpoon_Fish_Harpoon Fish Avatar.png"
+    },
+    {
+      "key": "harpoonfish-sprite",
+      "path": "sprites/enemies/Harpoon_Fish_Harpoon.png"
+    },
 
-    { "key": "proj-water",      "path": "sprites/projectiles/Projectile.png" },
-    { "key": "proj-beachball",  "path": "sprites/projectiles/attack_volleyball.png" },
-    { "key": "proj-coconut",    "path": "sprites/projectiles/coconut.png" },
-    { "key": "proj-bazooka",    "path": "sprites/projectiles/WaterGunsSpriteSheet.png" },
+    { "key": "proj-water", "path": "sprites/projectiles/Projectile.png" },
+    {
+      "key": "proj-beachball",
+      "path": "sprites/projectiles/attack_volleyball.png"
+    },
+    { "key": "proj-coconut", "path": "sprites/projectiles/coconut.png" },
+    {
+      "key": "proj-bazooka",
+      "path": "sprites/projectiles/WaterGunsSpriteSheet.png"
+    },
 
-    { "key": "ui-bar-big-base",   "path": "sprites/ui/bars/BigBar_Base.png" },
-    { "key": "ui-bar-big-fill",   "path": "sprites/ui/bars/BigBar_Fill.png" },
+    { "key": "ui-bar-big-base", "path": "sprites/ui/bars/BigBar_Base.png" },
+    { "key": "ui-bar-big-fill", "path": "sprites/ui/bars/BigBar_Fill.png" },
     { "key": "ui-bar-small-base", "path": "sprites/ui/bars/SmallBar_Base.png" },
     { "key": "ui-bar-small-fill", "path": "sprites/ui/bars/SmallBar_Fill.png" },
 
-    { "key": "ui-btn-blue",      "path": "sprites/ui/buttons/SmallBlueSquareButton_Regular.png" },
-    { "key": "ui-btn-red",       "path": "sprites/ui/buttons/SmallRedSquareButton_Regular.png" },
-    { "key": "ui-btn-tiny-blue", "path": "sprites/ui/buttons/TinySquareBlueButton.png" },
-    { "key": "ui-btn-tiny-red",  "path": "sprites/ui/buttons/TinySquareRedButton.png" },
+    {
+      "key": "ui-btn-blue",
+      "path": "sprites/ui/buttons/SmallBlueSquareButton_Regular.png"
+    },
+    {
+      "key": "ui-btn-red",
+      "path": "sprites/ui/buttons/SmallRedSquareButton_Regular.png"
+    },
+    {
+      "key": "ui-btn-tiny-blue",
+      "path": "sprites/ui/buttons/TinySquareBlueButton.png"
+    },
+    {
+      "key": "ui-btn-tiny-red",
+      "path": "sprites/ui/buttons/TinySquareRedButton.png"
+    },
 
-    { "key": "icon-heart",        "path": "sprites/ui/icons/Heart_Icon.png" },
-    { "key": "icon-gold",         "path": "sprites/ui/icons/Gold_Icon.png" },
-    { "key": "icon-build",        "path": "sprites/ui/icons/Build_Icon.png" },
-    { "key": "icon-defense",      "path": "sprites/ui/icons/Defense_Icon.png" },
-    { "key": "icon-damage",       "path": "sprites/ui/icons/Tower_Damage_Icon.png" },
-    { "key": "icon-range",        "path": "sprites/ui/icons/Tower_Range_Icon.png" },
-    { "key": "icon-attack-speed", "path": "sprites/ui/icons/Tower_Attack_Speed_Icon.png" },
-    { "key": "icon-play",         "path": "sprites/ui/icons/Play_Icon.png" },
-    { "key": "icon-exit",         "path": "sprites/ui/icons/Exit_Icon.png" }
+    { "key": "icon-heart", "path": "sprites/ui/icons/Heart_Icon.png" },
+    { "key": "icon-gold", "path": "sprites/ui/icons/Gold_Icon.png" },
+    { "key": "icon-build", "path": "sprites/ui/icons/Build_Icon.png" },
+    { "key": "icon-defense", "path": "sprites/ui/icons/Defense_Icon.png" },
+    { "key": "icon-damage", "path": "sprites/ui/icons/Tower_Damage_Icon.png" },
+    { "key": "icon-range", "path": "sprites/ui/icons/Tower_Range_Icon.png" },
+    {
+      "key": "icon-attack-speed",
+      "path": "sprites/ui/icons/Tower_Attack_Speed_Icon.png"
+    },
+    { "key": "icon-play", "path": "sprites/ui/icons/Play_Icon.png" },
+    { "key": "icon-exit", "path": "sprites/ui/icons/Exit_Icon.png" },
+
+    {
+      "key": "portrait-lifeguard",
+      "path": "../../assets/sprites/lifeguard-face.png"
+    },
+    {
+      "key": "ui-paper",
+      "path": "../../assets/sprites/ui/papers/RegularPaper.png"
+    }
   ]
 }

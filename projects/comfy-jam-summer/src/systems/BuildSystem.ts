@@ -10,6 +10,8 @@ export class BuildSystem {
   gridOffsetX: number;
   gridOffsetY: number;
   onTowerClick?: (x: number, y: number) => void;
+  onPlace?: (col: number, row: number, mode: "tower" | "wall") => void;
+  onDestroy?: (col: number, row: number) => void;
 
   constructor(scene: Phaser.Scene, gridOffsetX: number, gridOffsetY: number) {
     this.scene = scene;
@@ -52,6 +54,7 @@ export class BuildSystem {
     const key = tileKey(col, row);
     this.occupied.add(key);
     this.placedObjects.set(key, img);
+    this.onPlace?.(col, row, "tower");
   }
 
   private placeWall(col: number, row: number, horizontal: boolean): void {
@@ -64,6 +67,7 @@ export class BuildSystem {
     const key = tileKey(col, row);
     this.occupied.add(key);
     this.placedObjects.set(key, img);
+    this.onPlace?.(col, row, "wall");
   }
 
   private destroyAt(col: number, row: number): void {
@@ -74,6 +78,7 @@ export class BuildSystem {
     obj.destroy();
     this.placedObjects.delete(key);
     this.occupied.delete(key);
+    this.onDestroy?.(col, row);
   }
 
   isOccupied(col: number, row: number): boolean {
