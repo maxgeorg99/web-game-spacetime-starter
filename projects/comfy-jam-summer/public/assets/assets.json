@@ -175,6 +175,50 @@
           "repeat": 0
         }
       ]
+    },
+    {
+      "id": "water-ball",
+      "keyPrefix": "water-ball",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "animations": [
+        {
+          "suffix": "startup",
+          "path": "sprites/projectiles/Water Ball - Spritesheet/WaterBall - Startup and Infinite.png",
+          "endFrame": 24,
+          "frameRate": 16,
+          "repeat": -1
+        },
+        {
+          "suffix": "impact",
+          "path": "sprites/projectiles/Water Ball - Spritesheet/WaterBall - Impact.png",
+          "endFrame": 15,
+          "frameRate": 20,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "id": "water-blast",
+      "keyPrefix": "water-blast",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "animations": [
+        {
+          "suffix": "startup",
+          "path": "sprites/projectiles/Water Blast - Spritesheet/Water Blast - Startup and Infinite.png",
+          "endFrame": 11,
+          "frameRate": 16,
+          "repeat": -1
+        },
+        {
+          "suffix": "end",
+          "path": "sprites/projectiles/Water Blast - Spritesheet/Water Blast - End.png",
+          "endFrame": 8,
+          "frameRate": 20,
+          "repeat": 0
+        }
+      ]
     }
   ],
 
@@ -182,16 +226,46 @@
     { "key": "ocean", "path": "sprites/terrain/ocean.png" },
     { "key": "palm", "path": "sprites/terrain/palm.png" },
     { "key": "sandtower", "path": "sprites/terrain/Sandtower.png" },
-    { "key": "sandtower-wall-up", "path": "sprites/terrain/Sandtower-wall-up.png" },
-    { "key": "sandtower-wall-down", "path": "sprites/terrain/Sandtower-wall-down.png" },
-    { "key": "sandtower-wall-left", "path": "sprites/terrain/Sandtower-wall-left.png" },
-    { "key": "sandtower-wall-right", "path": "sprites/terrain/Sandtower-wall-right.png" },
-    { "key": "sandtower-wall-up-left", "path": "sprites/terrain/Sandtower-wall-up-left.png" },
-    { "key": "sandtower-wall-up-right", "path": "sprites/terrain/Sandtower-wall-up-right.png" },
-    { "key": "sandtower-wall-down-left", "path": "sprites/terrain/Sandtower-wall-down-left.png" },
-    { "key": "sandtower-wall-down-right", "path": "sprites/terrain/Sandtower-wall-down-right.png" },
-    { "key": "sandtower-wall-down-up", "path": "sprites/terrain/Sandtower-wall-down-up.png" },
-    { "key": "sandtower-wall-left-right", "path": "sprites/terrain/Sandtower-wall-left-right.png" },
+    {
+      "key": "sandtower-wall-up",
+      "path": "sprites/terrain/Sandtower-wall-up.png"
+    },
+    {
+      "key": "sandtower-wall-down",
+      "path": "sprites/terrain/Sandtower-wall-down.png"
+    },
+    {
+      "key": "sandtower-wall-left",
+      "path": "sprites/terrain/Sandtower-wall-left.png"
+    },
+    {
+      "key": "sandtower-wall-right",
+      "path": "sprites/terrain/Sandtower-wall-right.png"
+    },
+    {
+      "key": "sandtower-wall-up-left",
+      "path": "sprites/terrain/Sandtower-wall-up-left.png"
+    },
+    {
+      "key": "sandtower-wall-up-right",
+      "path": "sprites/terrain/Sandtower-wall-up-right.png"
+    },
+    {
+      "key": "sandtower-wall-down-left",
+      "path": "sprites/terrain/Sandtower-wall-down-left.png"
+    },
+    {
+      "key": "sandtower-wall-down-right",
+      "path": "sprites/terrain/Sandtower-wall-down-right.png"
+    },
+    {
+      "key": "sandtower-wall-down-up",
+      "path": "sprites/terrain/Sandtower-wall-down-up.png"
+    },
+    {
+      "key": "sandtower-wall-left-right",
+      "path": "sprites/terrain/Sandtower-wall-left-right.png"
+    },
     { "key": "shell-black", "path": "sprites/terrain/black-shell.png" },
     { "key": "shell-green", "path": "sprites/terrain/green-shell.png" },
     { "key": "shell-brown", "path": "sprites/terrain/brown-shell.png" },
@@ -232,6 +306,26 @@
     {
       "key": "proj-bazooka",
       "path": "sprites/projectiles/WaterGunsSpriteSheet.png"
+    },
+    {
+      "key": "proj-watergun",
+      "path": "sprites/projectiles/SmallWaterGunsSpriteSheet.png"
+    },
+    {
+      "key": "water-ball-startup",
+      "path": "sprites/projectiles/Water Ball - Spritesheet/WaterBall - Startup and Infinite.png"
+    },
+    {
+      "key": "water-ball-impact",
+      "path": "sprites/projectiles/Water Ball - Spritesheet/WaterBall - Impact.png"
+    },
+    {
+      "key": "water-blast-startup",
+      "path": "sprites/projectiles/Water Blast - Spritesheet/Water Blast - Startup and Infinite.png"
+    },
+    {
+      "key": "water-blast-end",
+      "path": "sprites/projectiles/Water Blast - Spritesheet/Water Blast - End.png"
     },
 
     { "key": "ui-bar-big-base", "path": "sprites/ui/bars/BigBar_Base.png" },

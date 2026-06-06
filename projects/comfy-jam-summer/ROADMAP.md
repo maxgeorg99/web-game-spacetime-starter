@@ -38,7 +38,7 @@ Win / Lose
 
 ### Subtasks
 
-- [ ] **1.1** Create `PathfindingSystem.ts`
+- [x] **1.1** Create `PathfindingSystem.ts`
   - `walkable: boolean[][]` — 20×16 grid, `false` = ocean/coast/occupied
   - `markBlocked(col, row)` / `markOpen(col, row)` — toggle walkability
   - `findPath(fromCol, fromRow, toCol, toRow): {col,row}[] | null` — BFS returning waypoint list (includes start). Returns `null` if no path
@@ -46,15 +46,15 @@ Win / Lose
   - `hasPathFromAnyEdge(toCol, toRow): boolean` — checks if at least one spawn tile on any edge can BFS to target
   - `canPlaceWall(col, row): boolean` — before placing a wall, verify at least one spawn edge still reaches the center
 
-- [ ] **1.2** Modify `BuildSystem.ts` — Structure HP
+- [x] **1.2** Modify `BuildSystem.ts` — Structure HP
   - `structureHp: Map<string, number>` — HP per placed object, keyed by `tileKey(col,row)`
   - Constants: `MAX_TOWER_HP = 100`, `MAX_WALL_HP = 60`
   - `damageStructure(col, row, amount): boolean` — reduce HP, return `true` if destroyed
   - On destroy: remove sprite, free cell, notify PathfindingSystem + TowerSystem
-  - HP bar visuals: small Phaser Graphics rectangle above each structure, green→yellow→red gradient
+  - HP bar visuals: small Phaser Graphics rectangle above each structure, green→yellow→red gradient (hidden when full)
   - `repairStructure(col, row, amount)` — restore HP (for future repair mechanic)
 
-- [ ] **1.3** Modify `BuildSystem.ts` — Pathfinding Integration
+- [x] **1.3** Modify `BuildSystem.ts` — Pathfinding Integration
   - Hold ref to `PathfindingSystem`
   - On `placeWall()` → `pathfinding.markBlocked(col,row)` + validate with `canPlaceWall()`
   - On `placeTower()` → `pathfinding.markBlocked(col,row)` + validate
@@ -62,7 +62,7 @@ Win / Lose
   - Reject placement if `!pathfinding.canPlaceWall(col,row)` — show red flash feedback
   - On occupancy change → notify PathfindingSystem to recalculate all active enemy paths
 
-- [ ] **1.4** Modify `Enemy.ts` — Path Following + Attack State
+- [x] **1.4** Modify `Enemy.ts` — Path Following + Attack State
   - Two states: `MOVING` (following waypoints) vs `ATTACKING` (targeting a structure)
   - Replace `dirX/dirY` with `path: {col,row}[]` waypoint array
   - `updateMoving(delta)`: move toward next waypoint world position, pop when within 4px
@@ -74,7 +74,7 @@ Win / Lose
   - When path is null → switch to ATTACK state, target nearest blocked structure
   - When structure destroyed → request new path from PathfindingSystem
 
-- [ ] **1.5** Enemy Attack Stats
+- [x] **1.5** Enemy Attack Stats
   | Type | Attack DPS |
   |---|---|
   | Paddlefish | 10 |
@@ -82,7 +82,7 @@ Win / Lose
   | Turtle | 5 |
   | Snake | 8 |
 
-- [ ] **1.6** Wire in `GameScene.ts`
+- [x] **1.6** Wire in `GameScene.ts`
   - Instantiate `PathfindingSystem`, pass to `BuildSystem` and `EnemySystem`
 
 ---
@@ -100,7 +100,7 @@ Win / Lose
 
 ### Subtasks
 
-- [ ] **2.1** Create `WeaponConfig.ts`
+- [x] **2.1** Create `WeaponConfig.ts`
   ```ts
   { name, icon, fireRate, damage, projectileSpeed, range, splash?, knockback? }
   ```
@@ -111,14 +111,14 @@ Win / Lose
   | Volleyball | 0.7s | 10 | 250 | 160px | Bounces to next target (max 2) |
   | Bazooka | 2.0s | 40 | 180 | 200px | Knockback 30px |
 
-- [ ] **2.2** Create `Tower.ts`
+- [x] **2.2** Create `Tower.ts`
   - `col, row, weaponType, aimingStrategy, lastFireTime, range`
   - `canFire(now): boolean` — check cooldown
   - `fire()` — reset `lastFireTime`
   - `aimingStrategy: "closest" | "farthest" | "mostHp" | "leastHp"`
   - `pickTarget(enemies: Enemy[]): Enemy | null` — filter by range, sort by strategy, return best
 
-- [ ] **2.3** Create `Projectile.ts`
+- [x] **2.3** Create `Projectile.ts`
   - `sprite, speed, damage, target: Enemy, splash?, knockback?`
   - Fires from tower position toward target position
   - `update(delta): boolean` — lerp toward target, check distance < 12px → deal damage, return `true` (dead)
@@ -127,7 +127,7 @@ Win / Lose
   - Knockback: push target away from impact point
   - Volleyball bounce: on hit, find next nearest enemy, re-target (max 2 bounces)
 
-- [ ] **2.4** Create `TowerSystem.ts`
+- [x] **2.4** Create `TowerSystem.ts`
   - `towers: Map<string, Tower>` keyed by grid tileKey
   - `addTower(col, row): Tower` — create tower with now weapon
   - `removeTower(col, row)` — remove from map, destroy
@@ -143,7 +143,7 @@ Win / Lose
   - Or: left-click weapon = assign, right-click weapon = cycle strategy for that weapon
   - Store selected strategy per tower in TowerSystem
 
-- [ ] **2.6** Wire in `GameScene.ts`
+- [x] **2.6** Wire in `GameScene.ts`
   - Instantiate `TowerSystem`, pass to `BuildSystem`
   - `BuildSystem.onTowerClick` → open WeaponWheel for that tower
   - `BuildSystem.onTowerPlace` → `TowerSystem.addTower(col, row)`
@@ -163,7 +163,7 @@ Win / Lose
 
 ### Subtasks
 
-- [ ] **3.1** Create `WaveConfig.ts`
+- [x] **3.1** Create `WaveConfig.ts`
   ```ts
   interface WaveEnemy {
     type: "paddlefish" | "harpoonfish" | "turtle" | "snake";
@@ -185,7 +185,7 @@ Win / Lose
   - Wave 5: 5 paddlefish + 3 harpoonfish from N+E, 4 turtles from W, build 10s, 75% reliability
   - Wave 10: massive mixed spawn from all 4 edges, build 5s, 65% reliability
 
-- [ ] **3.2** Create `WaveSystem.ts`
+- [x] **3.2** Create `WaveSystem.ts`
   - States: `BUILD_PHASE` → `SPAWNING` → `WAITING` → (loop)
   - `BUILD_PHASE` — countdown timer from `buildTimeSec`, player can place/destroy freely
   - `SPAWNING` — spawn enemies from configured edges with drip-feed timing (e.g., 800ms between each)
@@ -200,7 +200,7 @@ Win / Lose
     - If pass → return true direction + true counts
     - If fail → pick a wrong direction + optionally reduce displayed counts by 1-3
 
-- [ ] **3.3** Modify `EnemySystem.ts`
+- [x] **3.3** Modify `EnemySystem.ts`
   - Remove hardcoded spawn interval + type cycling + fixed spawn columns
   - New method: `spawnWaveBatch(enemies: WaveEnemy[], speedMult, hpMult)` — called by WaveSystem
   - Spawn enemies at random positions within configured edges
@@ -208,7 +208,7 @@ Win / Lose
   - Remove `EnemyType` interface duplication — import from shared config
   - Keep animation creation
 
-- [ ] **3.4** Modify `HudOverlay.ts` — Dynamic Wave Panel
+- [x] **3.4** Modify `HudOverlay.ts` — Dynamic Wave Panel
   - Add dynamic text objects for:
     - Wave number (e.g., "WAVE 3")
     - Direction intel (e.g., "INCOMING FROM NORTH")
@@ -219,12 +219,12 @@ Win / Lose
   - Show "BUILD PHASE" text during build phase, hide during combat
   - Shell counter becomes dynamic — decremented whenever an enemy reaches the inner ring (see 3.6)
 
-- [ ] **3.5** Wire in `GameScene.ts`
+- [x] **3.5** Wire in `GameScene.ts`
   - Instantiate `WaveSystem`, pass refs to `EnemySystem`, `HudOverlay`
   - Call `waveSystem.startNextWave()` on game start
   - `update()` calls `waveSystem.update(delta)`
 
-- [ ] **3.6** Shell Theft & Win/Lose Conditions
+- [x] **3.6** Shell Theft & Win/Lose Conditions
   - `shellCount: number` — starts at 15, tracked in WaveSystem or GameScene
   - When an enemy reaches the inner ring (`TARGET_COL`, `TARGET_ROW`) → steal 1 shell, decrement `shellCount`, destroy enemy
   - `shellCount <= 0` → game over (lose): stop spawning, show defeat screen / game_over dialog
@@ -238,7 +238,7 @@ Win / Lose
 
 ### Subtasks
 
-- [ ] **4.1** Define spawn points in `constants.ts`
+- [x] **4.1** Define spawn points in `constants.ts`
   ```ts
   export const SPAWN_EDGES: Record<string, { col: number; row: number }[]> = {
     north: [{ col: 7, row: 0 }, { col: 10, row: 0 }, { col: 13, row: 0 }],
@@ -259,7 +259,7 @@ Win / Lose
 
 ### Subtasks
 
-- [ ] **5.1** Intel lies in `WaveSystem.ts`
+- [x] **5.1** Intel lies in `WaveSystem.ts`
   - Per-wave `intelReliability` (0.65–0.85, decreasing over waves)
   - On wave start, roll: if fail, generate false intel
   - False direction: pick a random edge that is NOT in the actual spawn edges
@@ -267,13 +267,13 @@ Win / Lose
   - `getIntel()` returns the potentially-false data for HUD display
   - `getActualSpawns()` returns the real config for EnemySystem
 
-- [ ] **5.2** Display lies in `HudOverlay.ts`
+- [x] **5.2** Display lies in `HudOverlay.ts`
   - Panel shows intel direction text (may be wrong)
   - Enemy avatar counts from intel (may be undercounted)
   - Player only discovers truth when enemies arrive from unexpected directions
   - Visual: add a subtle "signal strength" icon that hints at reliability? (optional)
 
-- [ ] **5.3** Twist ideas (optional polish)
+- [x] **5.3** Twist ideas (optional polish)
   - "Decoy signal" — a wave that announces but no enemies come (rare, 5% chance)
   - "Double bluff" — intel says NORTH, enemies come NORTH (just kidding they're right)
   - Phone icon shakes/flashes when the intel is wrong
@@ -330,6 +330,7 @@ Chad the lifeguard — stupid but good-looking — gives the player instructions
   | `enemy_near_shell` | "Maybe there's a 'scare fish' button" — no such thing |
   | `game_over` | "I did tell you to build more walls" — walls wouldn't have saved you alone |
   | `sandwich_found` | "That's mine... you can have it. I already ate." — he didn't eat |
+  | `sandwich_found` | 🥪 **The Sandwich of Truth** — after finding and eating the sandwich, Chad always tells the truth (toggles `LIAR_MECHANIC` off for the remainder of the game) |
 
 - [X] **6.4** Wire into `GameScene.ts`
   - `DialogBox` instantiated after WeaponWheel
@@ -362,7 +363,7 @@ Chad the lifeguard — stupid but good-looking — gives the player instructions
 Towers are the smart piece — they have six directional variants that adapt their edges based on adjacent walls. Walls stay dumb and never change sprite. When a wall is placed or destroyed next to a tower, the tower swaps to the correct variant automatically. Connection eligibility is defined in a single `CONNECTION_RULES` table, so adding new building types requires no changes to the snapping logic itself.
 
 ### Assets
-Tower variants live in `public/assets/sprites/terrain/`. The base `Sandtower` is the isolated fallback; the six directional variants cover all valid wall connection combinations:
+Tower variants live in `public/assets/sprites/terrain/`. The base `Sandtower` is the isolated fallback; there are 10 directional variants covering all wall connection combinations:
 
 | File | When used |
 |---|---|
@@ -373,11 +374,13 @@ Tower variants live in `public/assets/sprites/terrain/`. The base `Sandtower` is
 | `Sandtower-wall-right` | Wall exits right only |
 | `Sandtower-wall-up-left` | Walls on top and left |
 | `Sandtower-wall-up-right` | Walls on top and right |
-
-> Note: `down-left` and `down-right` combos are not supported — horizontal walls only connect at tower-body height, not at the base.
+| `Sandtower-wall-down-left` | Walls on bottom and left |
+| `Sandtower-wall-down-right` | Walls on bottom and right |
+| `Sandtower-wall-down-up` | Walls on top and bottom |
+| `Sandtower-wall-left-right` | Walls on left and right |
 
 ### Subtasks
-- [ ] **7.1** Add `ObjectType` tracking to `BuildSystem`
+- [x] **7.1** Add `ObjectType` tracking to `BuildSystem`
   - Export `ObjectType = "tower" | "wall-h" | "wall-v"`
   - Add `typeMap: Map<string, ObjectType>` storing type per grid cell
   - Add `getType(col, row): ObjectType | null` accessor
@@ -385,18 +388,18 @@ Tower variants live in `public/assets/sprites/terrain/`. The base `Sandtower` is
   - Update `onPlace` callback signature to pass `ObjectType`
   - Store/remove type entries on place/destroy
 
-- [ ] **7.2** Create `SnapSystem.ts`
+- [x] **7.2** Create `SnapSystem.ts`
   - `CONNECTION_RULES: Record<ObjectType, ObjectType[]>`
     - `tower` → `["wall-h", "wall-v", "tower"]`
     - `wall-h` → `["tower", "wall-h"]`
     - `wall-v` → `["tower", "wall-v"]`
   - `resolveTextureKey(type, top, bottom, left, right): string` — maps the four connection booleans directly to a sprite key
-    - Tower: pick from the 7 variants above; unrecognised combos fall back to `"Sandtower"`
+    - Tower: pick from the 11 variants above; unrecognised combos fall back to best-fit 2-combo → single → `"Sandtower"`
     - Walls: always return the same key (walls never change sprite)
-  - `refresh(col, row)` — checks all four neighbours against `CONNECTION_RULES`, calls `resolveTextureKey()`, calls `sprite.setTexture()` on the cell and each affected neighbour
+  - `refresh(col, row)` — checks all four neighbours against `CONNECTION_RULES`, calls `applyVariant()` on the cell and each affected neighbour, sets display size (1.5x for connected, 1x base) and position nudge
 
-- [ ] **7.3** Wire into `GameScene.ts`
-  - Instantiate `SnapSystem` after `BuildSystem`
+- [x] **7.3** Wire into `GameScene.ts`
+  - Instantiate `SnapSystem` after `DialogBox`
   - Call `snapSystem.refresh(col, row)` in `onPlace` callback
   - Call `snapSystem.refresh(col, row)` in `onDestroy` callback (neighbours revert correctly when a connection is broken)
   

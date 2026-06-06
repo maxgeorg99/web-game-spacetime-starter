@@ -9,7 +9,7 @@ interface WeaponOption {
 const WEAPONS: WeaponOption[] = [
   { label: "volleyball", icon: "proj-beachball", color: 0xf7738e },
   { label: "coconut", icon: "proj-coconut", color: 0x5ab9a2 },
-  { label: "watergun", icon: "weapon-watergun-shoot", color: 0x367c50 },
+  { label: "watergun", icon: "proj-watergun", color: 0x367c50 },
   { label: "bazooka", icon: "proj-bazooka", color: 0x702d51 },
 ];
 

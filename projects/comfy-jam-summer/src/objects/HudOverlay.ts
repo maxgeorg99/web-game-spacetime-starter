@@ -4,11 +4,15 @@ import { BuildSystem } from "../systems/BuildSystem";
 
 type ToolChangeHandler = (mode: string) => void;
 
+export interface HudApi {
+  updateIntel(counts: { type: string; count: number }[]): void;
+}
+
 export function buildHud(
   scene: Phaser.Scene,
   buildSystem: BuildSystem,
   onToolChange: ToolChangeHandler,
-): void {
+): HudApi {
   const { width, height } = scene.scale;
   const D = DEPTH.hud;
 
@@ -49,13 +53,11 @@ export function buildHud(
   const panelH = 140;
   const panelX = 10;
 
-  // Warning sign background image.
   scene.add
     .image(panelX + panelW / 2, panelY, "ui-sign")
     .setDisplaySize(panelW, panelH)
     .setDepth(D);
 
-  // Small phone icon top-right, slightly rotated for playfulness.
   scene.add
     .image(panelX + panelW, panelY - panelH / 2 + 16, "ui-phone")
     .setOrigin(0.5)
@@ -64,12 +66,13 @@ export function buildHud(
     .setAlpha(0.85)
     .setRotation(-0.25);
 
-  const avatars: { key: string; count: number }[] = [
-    { key: "paddlefish-avatar", count: 3 },
-    { key: "harpoonfish-avatar", count: 2 },
-    { key: "turtle-avatar", count: 1 },
-    { key: "snake-avatar", count: 4 },
-  ];
+  const AVATAR_ORDER = ["paddlefish", "harpoonfish", "turtle", "snake"];
+  const AVATAR_KEY: Record<string, string> = {
+    paddlefish: "paddlefish-avatar",
+    harpoonfish: "harpoonfish-avatar",
+    turtle: "turtle-avatar",
+    snake: "snake-avatar",
+  };
 
   const cols = 2;
   const avatarSize = 48;
@@ -77,31 +80,34 @@ export function buildHud(
   const gapY = 0;
   const totalW = cols * avatarSize + (cols - 1) * gapX;
   const totalH =
-    Math.ceil(avatars.length / cols) * avatarSize +
-    (Math.ceil(avatars.length / cols) - 1) * gapY;
+    Math.ceil(AVATAR_ORDER.length / cols) * avatarSize +
+    (Math.ceil(AVATAR_ORDER.length / cols) - 1) * gapY;
   const startX = panelX + panelW / 2 - totalW / 1.5;
   const startY = panelY - totalH / 2 + 20;
 
-  for (let i = 0; i < avatars.length; i++) {
+  const countTexts: Record<string, Phaser.GameObjects.Text> = {};
+
+  for (let i = 0; i < AVATAR_ORDER.length; i++) {
     const col = i % cols;
     const row = Math.floor(i / cols);
     const cx = startX + col * (avatarSize + gapX) + avatarSize / 2;
     const cy = startY + row * (avatarSize + gapY) + avatarSize / 2;
 
     scene.add
-      .image(cx, cy, avatars[i].key)
+      .image(cx, cy, AVATAR_KEY[AVATAR_ORDER[i]])
       .setOrigin(0.5)
       .setDisplaySize(avatarSize, avatarSize)
       .setDepth(D);
 
-    scene.add
-      .text(cx + avatarSize / 2, cy, `x${avatars[i].count}`, {
+    const ct = scene.add
+      .text(cx + avatarSize / 2, cy, "x0", {
         ...FONT.label,
         color: COLORS.sandText,
         stroke: COLORS.blackStroke,
       })
       .setOrigin(0, 0.5)
       .setDepth(D);
+    countTexts[AVATAR_ORDER[i]] = ct;
   }
 
   // ---- Bottom toolbar (260×120) ----
@@ -127,4 +133,13 @@ export function buildHud(
       }
     }
   });
+
+  return {
+    updateIntel(counts) {
+      for (const { type, count } of counts) {
+        const t = countTexts[type];
+        if (t) t.setText(`x${count}`);
+      }
+    },
+  };
 }

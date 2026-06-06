@@ -9,6 +9,13 @@ export const ISLAND_RIGHT = GRID_COLS - 1 - ISLAND_MARGIN_X;
 export const ISLAND_TOP = ISLAND_MARGIN_Y;
 export const ISLAND_BOTTOM = GRID_ROWS - 1 - ISLAND_MARGIN_Y;
 
+export const SPAWN_EDGES: Record<string, { col: number; row: number }[]> = {
+  north: [{ col: 7, row: 0 }, { col: 10, row: 0 }, { col: 13, row: 0 }],
+  south: [{ col: 7, row: 15 }, { col: 10, row: 15 }, { col: 13, row: 15 }],
+  west:  [{ col: 0, row: 6 }, { col: 0, row: 8 }, { col: 0, row: 10 }],
+  east:  [{ col: 19, row: 6 }, { col: 19, row: 8 }, { col: 19, row: 10 }],
+};
+
 // Frame indices into beach_tiles.png (20 frames per row).
 export const SAND_FRAME = 148;
 export const COAST_NW = 127;

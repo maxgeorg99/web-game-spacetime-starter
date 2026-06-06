@@ -1,74 +1,154 @@
 import Phaser from "phaser";
 import { TILE_SIZE, DEPTH } from "../config/constants";
 
-export interface EnemyTypeConfig {
-  sheetKey: string;
-  animKey: string;
+export type EnemyType = "paddlefish" | "harpoonfish" | "turtle" | "snake";
+
+export enum EnemyState {
+  MOVING = "moving",
+  ATTACKING = "attacking",
+}
+
+export interface EnemyConfig {
+  type: EnemyType;
+  walkSheetKey: string;
+  walkAnimKey: string;
+  attackSheetKey: string;
+  attackAnimKey: string;
   hp: number;
   speed: number;
+  attackDamage: number;
   size: number;
 }
 
 export class Enemy {
   sprite: Phaser.GameObjects.Sprite;
-  speed: number;
+  config: EnemyConfig;
+  state: EnemyState = EnemyState.MOVING;
   hp: number;
-  private dirX: number;
-  private dirY: number;
-  private targetX: number;
-  private targetY: number;
+  speed: number;
+
+  private waypoints: { x: number; y: number }[] = [];
+  private waypointIndex = 0;
+  shouldRemove = false;
+
+  attackTarget: { col: number; row: number } | null = null;
+  attackDamage: number;
+
+  private walkSheetKey: string;
+  private walkAnimKey: string;
+  private attackSheetKey: string;
+  private attackAnimKey: string;
+  private onReachedDestination: (() => void) | null = null;
 
   constructor(
     scene: Phaser.Scene,
-    config: EnemyTypeConfig,
-    spawnCol: number,
-    spawnRow: number,
-    targetCol: number,
-    targetRow: number,
-    offsetX: number,
-    offsetY: number,
+    config: EnemyConfig,
+    spawnWorldX: number,
+    spawnWorldY: number,
   ) {
-    const x = offsetX + spawnCol * TILE_SIZE + TILE_SIZE / 2;
-    const y = offsetY + spawnRow * TILE_SIZE + TILE_SIZE / 2;
-
-    this.targetX = offsetX + targetCol * TILE_SIZE + TILE_SIZE / 2;
-    this.targetY = offsetY + targetRow * TILE_SIZE + TILE_SIZE / 2;
-
-    const dx = this.targetX - x;
-    const dy = this.targetY - y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    this.dirX = dx / dist;
-    this.dirY = dy / dist;
+    this.config = config;
+    this.walkSheetKey = config.walkSheetKey;
+    this.walkAnimKey = config.walkAnimKey;
+    this.attackSheetKey = config.attackSheetKey;
+    this.attackAnimKey = config.attackAnimKey;
+    this.speed = config.speed;
+    this.hp = config.hp;
+    this.attackDamage = config.attackDamage;
 
     this.sprite = scene.add
-      .sprite(x, y, config.sheetKey)
+      .sprite(spawnWorldX, spawnWorldY, config.walkSheetKey)
       .setDisplaySize(TILE_SIZE * config.size, TILE_SIZE * config.size)
       .setDepth(DEPTH.enemy);
 
-    // Default sprite faces right. Flip horizontally if moving left.
-    if (this.dirX < 0) {
-      this.sprite.setFlipX(true);
-    }
-
-    this.sprite.play(config.animKey);
-
-    this.speed = config.speed;
-    this.hp = config.hp;
+    this.sprite.play(config.walkAnimKey);
   }
 
-  update(delta: number): boolean {
-    const dx = this.targetX - this.sprite.x;
-    const dy = this.targetY - this.sprite.y;
+  setWaypoints(
+    worldWaypoints: { x: number; y: number }[],
+    onReached?: () => void,
+  ): void {
+    this.waypoints = worldWaypoints;
+    this.waypointIndex = 0;
+    this.state = EnemyState.MOVING;
+    this.shouldRemove = false;
+    this.attackTarget = null;
+    this.onReachedDestination = onReached ?? null;
+    this.playWalkAnim();
+    this.faceNextWaypoint();
+  }
+
+  startAttacking(target: { col: number; row: number }, targetWorldX: number): void {
+    this.attackTarget = target;
+    this.state = EnemyState.ATTACKING;
+    this.shouldRemove = false;
+    this.sprite.setFlipX(targetWorldX < this.sprite.x);
+    this.playAttackAnim();
+  }
+
+  update(delta: number): void {
+    if (this.state === EnemyState.MOVING) {
+      this.updateMoving(delta);
+    }
+  }
+
+  private updateMoving(delta: number): void {
+    if (this.waypoints.length === 0 || this.waypointIndex >= this.waypoints.length) {
+      if (this.onReachedDestination) {
+        this.onReachedDestination();
+        this.onReachedDestination = null;
+      } else {
+        this.shouldRemove = true;
+      }
+      return;
+    }
+
+    const target = this.waypoints[this.waypointIndex];
+    const dx = target.x - this.sprite.x;
+    const dy = target.y - this.sprite.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist < 4) {
-      this.sprite.destroy();
-      return true;
+      this.waypointIndex++;
+      if (this.waypointIndex >= this.waypoints.length) {
+        if (this.onReachedDestination) {
+          this.onReachedDestination();
+          this.onReachedDestination = null;
+        } else {
+          this.shouldRemove = true;
+        }
+        return;
+      }
+      this.faceNextWaypoint();
+      return;
     }
 
     const step = (this.speed * delta) / 1000;
-    this.sprite.x += this.dirX * step;
-    this.sprite.y += this.dirY * step;
-    return false;
+    this.sprite.x += (dx / dist) * step;
+    this.sprite.y += (dy / dist) * step;
+  }
+
+  private faceNextWaypoint(): void {
+    if (this.waypointIndex < this.waypoints.length) {
+      const wp = this.waypoints[this.waypointIndex];
+      this.sprite.setFlipX(wp.x < this.sprite.x);
+    }
+  }
+
+  private playWalkAnim(): void {
+    if (this.sprite.texture.key !== this.walkSheetKey) {
+      this.sprite.setTexture(this.walkSheetKey);
+    }
+    this.sprite.play(this.walkAnimKey);
+  }
+
+  private playAttackAnim(): void {
+    if (this.sprite.texture.key !== this.attackSheetKey) {
+      this.sprite.setTexture(this.attackSheetKey);
+    }
+    this.sprite.play(this.attackAnimKey);
+  }
+
+  destroy(): void {
+    this.sprite.destroy();
   }
 }
