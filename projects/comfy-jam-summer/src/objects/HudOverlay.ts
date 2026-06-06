@@ -32,19 +32,11 @@ export function buildHud(
     .setOrigin(0, 0.5)
     .setDepth(D);
 
-  // Shell icon + amount
+  // Shell icon (amount updated dynamically by GameScene).
   scene.add
     .image(100, 20, "shell-yellow")
     .setOrigin(0.5)
     .setDisplaySize(34, 34)
-    .setDepth(D);
-  scene.add
-    .text(116, 20, "15", {
-      ...FONT.hud,
-      color: COLORS.sandText,
-      stroke: COLORS.brownStroke,
-    })
-    .setOrigin(0, 0.5)
     .setDepth(D);
 
   // ---- Next-wave panel (top-left, shark-warning sign) ----

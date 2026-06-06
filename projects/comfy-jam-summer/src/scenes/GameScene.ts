@@ -48,6 +48,68 @@ export class GameScene extends Phaser.Scene {
     if (DIALOG_ENABLED) this.dialogBox.show(script);
   }
 
+  private sandwichFound = false;
+
+  private maybeDropSandwich(x: number, y: number): void {
+    if (this.sandwichFound) return;
+    if (Math.random() > 0.05) return;
+
+    this.sandwichFound = true;
+
+    const sandwich = this.add
+      .image(x, y, "sandwich")
+      .setDisplaySize(32, 32)
+      .setDepth(50)
+      .setInteractive({ useHandCursor: true });
+
+    // Float up animation.
+    this.tweens.add({
+      targets: sandwich,
+      y: y - 24,
+      duration: 600,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut",
+    });
+
+    sandwich.on("pointerdown", () => {
+      sandwich.destroy();
+      this.waveSystem.forceTruth = true;
+      this.showDialog(DIALOGS.sandwich_found);
+    });
+  }
+
+  private showRetry(): void {
+    const { width, height } = this.scale;
+
+    // Dark overlay.
+    const overlay = this.add
+      .graphics()
+      .setDepth(199);
+    overlay.fillStyle(0x000000, 0.55);
+    overlay.fillRect(0, 0, width, height);
+
+    // Retry button — centered, bigger.
+    const btn = this.add
+      .image(width / 2, height / 2 + 60, "ui-btn-red")
+      .setInteractive({ useHandCursor: true })
+      .setDisplaySize(180, 70)
+      .setDepth(200);
+
+    this.add
+      .text(width / 2, height / 2 + 60, "RETRY", {
+        fontFamily: '"Fredoka", system-ui, sans-serif',
+        fontSize: "26px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5)
+      .setDepth(201);
+
+    btn.on("pointerdown", () => {
+      this.scene.restart();
+    });
+  }
+
   create(): void {
     const { width, height } = this.scale;
     this.gridOffsetX = (width - GRID_COLS * TILE_SIZE) / 2;
@@ -70,6 +132,9 @@ export class GameScene extends Phaser.Scene {
 
     // 3c. Tower system (auto-attack loop, projectile management).
     this.towerSystem = new TowerSystem(this, this.gridOffsetX, this.gridOffsetY);
+    this.towerSystem.onEnemyKilled = (x, y) => {
+      this.maybeDropSandwich(x, y);
+    };
 
     // 4. Hover highlight.
     this.highlightSystem = new HighlightSystem(
@@ -135,6 +200,7 @@ export class GameScene extends Phaser.Scene {
       this.hudWaveText.setText("DEFEAT");
       this.hudTimerText.setText("");
       this.showDialog(DIALOGS.game_over);
+      this.showRetry();
     };
     this.waveSystem.onVictory = () => {
       this.hudWaveText.setText("VICTORY");
@@ -235,6 +301,9 @@ export class GameScene extends Phaser.Scene {
     this.ocean.tilePositionX += 0.3;
     this.ocean.tilePositionY += 0.15;
     this.highlightSystem.update(this.input.activePointer);
+    this.dialogBox.update(delta);
+
+    if (this.waveSystem.phase === "defeat" || this.waveSystem.phase === "victory") return;
 
     // Wave spawning — pull from queue.
     const queue = this.waveSystem.getSpawnQueue();

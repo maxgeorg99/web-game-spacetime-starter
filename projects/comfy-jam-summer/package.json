@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "zip": "npm run build && cd dist && zip -r ../web-build.zip .",
+    "itch": "npm run build && butler push dist/ maxgeorg99/sandcastle-td:html5",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

@@ -16,6 +16,8 @@ export class TowerSystem {
   private gridOffsetX: number;
   private gridOffsetY: number;
 
+  onEnemyKilled?: (x: number, y: number) => void;
+
   constructor(scene: Phaser.Scene, gridOffsetX: number, gridOffsetY: number) {
     this.scene = scene;
     this.gridOffsetX = gridOffsetX;
@@ -124,6 +126,9 @@ export class TowerSystem {
     // Clean up dead enemies.
     for (let i = enemies.length - 1; i >= 0; i--) {
       if (enemies[i].hp <= 0 && enemies[i].sprite.active) {
+        if (this.onEnemyKilled) {
+          this.onEnemyKilled(enemies[i].sprite.x, enemies[i].sprite.y);
+        }
         enemies[i].sprite.destroy();
       }
     }

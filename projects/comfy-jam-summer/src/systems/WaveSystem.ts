@@ -67,11 +67,13 @@ export class WaveSystem {
 
   /** Call when an enemy dies — decrement alive count. */
   notifyEnemyDied(): void {
+    if (this.phase === "defeat" || this.phase === "victory") return;
     this.enemiesAlive = Math.max(0, this.enemiesAlive - 1);
   }
 
   /** Call when an enemy reaches the inner ring — decrement shell count. */
   notifyEnemyReachedCenter(): void {
+    if (this.phase === "defeat" || this.phase === "victory") return;
     this.shellCount = Math.max(0, this.shellCount - 1);
     this.onShellChange?.(this.shellCount);
     if (this.shellCount <= 0) {

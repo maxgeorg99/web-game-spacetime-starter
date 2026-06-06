@@ -348,7 +348,7 @@ Chad the lifeguard — stupid but good-looking — gives the player instructions
   - `wave_clear` — trigger from WaveSystem when all enemies dead
   - `enemy_near_shell` — trigger when enemy enters inner ring
   - `game_over` — trigger when shells are destroyed
-  - `sandwich_found` — easter egg trigger
+  - `sandwich_found` — easter egg trigger ✅ (drops on 5% enemy kill, activates truth)
 
 ---
 

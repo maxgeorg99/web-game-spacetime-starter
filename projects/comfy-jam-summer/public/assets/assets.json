@@ -362,10 +362,12 @@
     },
     { "key": "icon-play", "path": "sprites/ui/icons/Play_Icon.png" },
     { "key": "icon-exit", "path": "sprites/ui/icons/Exit_Icon.png" },
+    { "key": "ui-start", "path": "sprites/ui/Start.png" },
+    { "key": "sandwich", "path": "sprites/sandwich.png" },
 
     {
       "key": "portrait-lifeguard",
-      "path": "../../assets/sprites/lifeguard-face.png"
+      "path": "sprites/lifeguard-face.png"
     },
     {
       "key": "ui-paper",
