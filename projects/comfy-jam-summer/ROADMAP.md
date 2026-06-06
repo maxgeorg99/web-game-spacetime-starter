@@ -123,12 +123,13 @@ TowerSystem (each frame)
 
 - [ ] **2.4** Create `TowerSystem.ts`
   - `towers: Map<string, Tower>` keyed by grid tileKey
-  - `addTower(col, row): Tower` — create tower with default weapon (Watergun) + default strategy (closest)
+  - `addTower(col, row): Tower` — create tower with now weapon
   - `removeTower(col, row)` — remove from map, destroy
   - `setWeapon(col, row, weapon: string)` — change tower weapon type
   - `setStrategy(col, row, strategy: string)` — change tower aiming strategy
   - `update(delta, enemies: Enemy[])` — for each tower, if cooldown ready → pick target → spawn Projectile
   - `projectiles: Projectile[]` — update all, remove dead ones
+  - draw selected weapon on top of the Sandtower sprite to show which weapon is used
 
 - [ ] **2.5** Modify `WeaponWheel.ts` — Per-Tower Weapon + Strategy Selection
   - Selection callback now passes `{ weaponLabel: string }`
@@ -279,11 +280,11 @@ Chad the lifeguard — stupid but good-looking — gives the player instructions
 
 ### Subtasks
 
-- [ ] **6.1** Add lifeguard assets to manifest
+- [X] **6.1** Add lifeguard assets to manifest
   - `portrait-lifeguard` → `assets/sprites/characters/classes/class_athlete_1.png`
   - `ui-paper` → `assets/sprites/ui/papers/RegularPaper.png`
 
-- [ ] **6.2** Create `DialogBox.ts`
+- [X] **6.2** Create `DialogBox.ts`
   - Retro RPG text box at bottom of screen (640×140px)
   - Dark background with colored accent bar + border (drawn with Phaser Graphics)
   - Portrait frame on left (72×72px) with border
@@ -298,7 +299,7 @@ Chad the lifeguard — stupid but good-looking — gives the player instructions
   - `update(delta)` — drives typewriter animation
   - Dialog does NOT block gameplay (separate click zone)
 
-- [ ] **6.3** Create `DialogConfig.ts`
+- [X] **6.3** Create `DialogConfig.ts`
   - `DialogTrigger` type: `"game_start" | "first_tower" | "first_wall" | "wave_incoming" | "wave_clear" | "enemy_near_shell" | "game_over" | "sandwich_found"`
   - `DIALOGS` map — each trigger maps to a `DialogScript` (speaker + pages)
 
@@ -316,18 +317,18 @@ Chad the lifeguard — stupid but good-looking — gives the player instructions
   | `game_over` | "I did tell you to build more walls" — walls wouldn't have saved you alone |
   | `sandwich_found` | "That's mine... you can have it. I already ate." — he didn't eat |
 
-- [ ] **6.4** Wire into `GameScene.ts`
+- [X] **6.4** Wire into `GameScene.ts`
   - `DialogBox` instantiated after WeaponWheel
   - `update()` calls `dialogBox.update(delta)`
   - `game_start` dialog fires 600ms after scene create
   - `first_tower` dialog fires on first tower placement (via `BuildSystem.onPlace`)
   - `first_wall` dialog fires on first wall placement (via `BuildSystem.onPlace`)
 
-- [ ] **6.5** Wire into `BuildSystem.ts`
+- [X] **6.5** Wire into `BuildSystem.ts`
   - Add `onPlace?: (col, row, mode)` callback — fires after tower/wall placed
   - Add `onDestroy?: (col, row)` callback — fires after object destroyed
 
-- [ ] **6.6** Future integration points
+- [X] **6.6** Future integration points
   - `wave_incoming` — trigger from WaveSystem when wave starts
   - `wave_clear` — trigger from WaveSystem when all enemies dead
   - `enemy_near_shell` — trigger when enemy enters inner ring
@@ -339,44 +340,52 @@ Chad the lifeguard — stupid but good-looking — gives the player instructions
 ## Phase 7 — Wall & Tower Snapping System
 
 ### New Files
-
 | File | Purpose |
 |---|---|
 | `src/systems/SnapSystem.ts` | Standalone system that resolves connected sprite variants for adjacent structures |
 
 ### Game Design
-When walls and towers are placed adjacent to each other, both objects swap to a connected sprite variant showing a seamless visual join. The system is context-aware and resolves automatically on place/destroy.
+Towers are the smart piece — they have six directional variants that adapt their edges based on adjacent walls. Walls stay dumb and never change sprite. When a wall is placed or destroyed next to a tower, the tower swaps to the correct variant automatically. Connection eligibility is defined in a single `CONNECTION_RULES` table, so adding new building types requires no changes to the snapping logic itself.
+
+### Assets
+Tower variants live in `public/assets/sprites/terrain/`. The base `Sandtower` is the isolated fallback; the six directional variants cover all valid wall connection combinations:
+
+| File | When used |
+|---|---|
+| `Sandtower` | No adjacent walls (default) |
+| `Sandtower-wall-up` | Wall exits top only |
+| `Sandtower-wall-down` | Wall exits bottom only |
+| `Sandtower-wall-left` | Wall exits left only |
+| `Sandtower-wall-right` | Wall exits right only |
+| `Sandtower-wall-up-left` | Walls on top and left |
+| `Sandtower-wall-up-right` | Walls on top and right |
+
+> Note: `down-left` and `down-right` combos are not supported — horizontal walls only connect at tower-body height, not at the base.
 
 ### Subtasks
-
 - [ ] **7.1** Add `ObjectType` tracking to `BuildSystem`
   - Export `ObjectType = "tower" | "wall-h" | "wall-v"`
   - Add `typeMap: Map<string, ObjectType>` storing type per grid cell
   - Add `getType(col, row): ObjectType | null` accessor
   - Add `getSprite(col, row): Phaser.GameObjects.Image | null` accessor
-  - Update `onPlace` callback signature to pass `ObjectType` instead of `"tower" | "wall"`
+  - Update `onPlace` callback signature to pass `ObjectType`
   - Store/remove type entries on place/destroy
 
 - [ ] **7.2** Create `SnapSystem.ts`
-  - `Variant = "isolated" | "top" | "bottom" | "both"`
-  - `CONNECTION_RULES: Record<ObjectType, ObjectType[]>` — which types can connect
-    - tower → tower, wall-h, wall-v
-    - wall-h → tower, wall-h
-    - wall-v → tower, wall-v
-  - `primaryAxis(type)` — returns the two opposing directions to check
-    - tower/wall-v → up/down `[[0,-1],[0,1]]`
-    - wall-h → left/right `[[-1,0],[1,0]]`
-  - `computeVariant(col, row, type)` — checks primary axis neighbors, returns variant
-  - `resolveTextureKey(type, variant)` — maps to sprite key
-    - `isolated` → original key (`sandtower`, `wall-h`, `wall-v`)
-    - connected → `{type}-{variant}` (e.g. `wall-h-top`, `tower-both`)
-  - `refresh(col, row)` — recomputes variant for cell + its axis neighbors, calls `sprite.setTexture()`
+  - `CONNECTION_RULES: Record<ObjectType, ObjectType[]>`
+    - `tower` → `["wall-h", "wall-v", "tower"]`
+    - `wall-h` → `["tower", "wall-h"]`
+    - `wall-v` → `["tower", "wall-v"]`
+  - `resolveTextureKey(type, top, bottom, left, right): string` — maps the four connection booleans directly to a sprite key
+    - Tower: pick from the 7 variants above; unrecognised combos fall back to `"Sandtower"`
+    - Walls: always return the same key (walls never change sprite)
+  - `refresh(col, row)` — checks all four neighbours against `CONNECTION_RULES`, calls `resolveTextureKey()`, calls `sprite.setTexture()` on the cell and each affected neighbour
 
 - [ ] **7.3** Wire into `GameScene.ts`
-  - Create `SnapSystem` after `DialogBox`
+  - Instantiate `SnapSystem` after `BuildSystem`
   - Call `snapSystem.refresh(col, row)` in `onPlace` callback
-  - Call `snapSystem.refresh(col, row)` in `onDestroy` callback
-
+  - Call `snapSystem.refresh(col, row)` in `onDestroy` callback (neighbours revert correctly when a connection is broken)
+  
 ---
 
 ## File Change Summary (All Phases)
