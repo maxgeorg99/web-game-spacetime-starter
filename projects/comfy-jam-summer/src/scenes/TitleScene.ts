@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { COLORS, FONT } from "../config/constants";
 
 export class TitleScene extends Phaser.Scene {
   constructor() {
@@ -14,40 +15,39 @@ export class TitleScene extends Phaser.Scene {
 
     this.add
       .text(width / 2, height / 2 - 100, "Sandcastle TD", {
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "52px",
-        color: "#e0d0a0",
+        ...FONT.title,
+        color: COLORS.sandText,
       })
       .setOrigin(0.5);
 
     this.add
       .text(width / 2, height / 2 - 40, "Protect the Pearl", {
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: FONT.family,
         fontSize: "24px",
-        color: "#b0c0c0",
+        color: COLORS.subtitle,
       })
       .setOrigin(0.5);
 
     const startText = this.add
       .text(width / 2, height / 2 + 60, "[ START ]", {
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: FONT.family,
         fontSize: "32px",
-        color: "#ffffff",
+        color: COLORS.white,
       })
       .setOrigin(0.5);
 
     startText.setInteractive({ useHandCursor: true });
-    startText.on("pointerover", () => startText.setColor("#e0d0a0"));
-    startText.on("pointerout", () => startText.setColor("#ffffff"));
+    startText.on("pointerover", () => startText.setColor(COLORS.titleHover));
+    startText.on("pointerout", () => startText.setColor(COLORS.white));
     startText.on("pointerdown", () => {
       this.scene.start("GameScene");
     });
 
     this.add
       .text(width / 2, height - 40, "Comfy Jam Summer 2025", {
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: FONT.family,
         fontSize: "16px",
-        color: "#5a7a8a",
+        color: COLORS.footer,
       })
       .setOrigin(0.5);
   }

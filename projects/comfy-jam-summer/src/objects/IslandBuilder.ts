@@ -10,6 +10,7 @@ import {
   SAND_FRAME,
   SHELL_KEYS,
   PALM_POSITIONS,
+  DEPTH,
 } from "../config/constants";
 import {
   isSand,
@@ -51,7 +52,7 @@ export function buildIsland(
       scene.add
         .image(x, y, Phaser.Math.RND.pick(SHELL_KEYS))
         .setDisplaySize(TILE_SIZE, TILE_SIZE)
-        .setDepth(1);
+        .setDepth(DEPTH.decoration);
     }
   }
 
@@ -61,7 +62,7 @@ export function buildIsland(
     scene.add
       .image(x, y, "palm")
       .setDisplaySize(TILE_SIZE * 3, TILE_SIZE * 3)
-      .setDepth(1);
+      .setDepth(DEPTH.decoration);
 
     buildSystem.occupied.add(tileKey(col, row));
     buildSystem.occupied.add(tileKey(col, row - 1));

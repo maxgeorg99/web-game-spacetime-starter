@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { COLORS, COLOR_NUM, FONT } from "../config/constants";
 import { ManifestEntry } from "../types";
 
 export class BootScene extends Phaser.Scene {
@@ -20,18 +21,18 @@ export class BootScene extends Phaser.Scene {
     const barH = 20;
 
     const bg = this.add.graphics();
-    bg.fillStyle(0x0a1a2a, 1);
+    bg.fillStyle(COLOR_NUM.bootBg, 1);
     bg.fillRoundedRect(width / 2 - barW / 2, height / 2 - barH / 2, barW, barH, 6);
-    bg.lineStyle(2, 0x3a5070, 1);
+    bg.lineStyle(2, COLOR_NUM.bootBorder, 1);
     bg.strokeRoundedRect(width / 2 - barW / 2, height / 2 - barH / 2, barW, barH, 6);
 
     const fill = this.add.graphics();
 
     const loadingText = this.add
       .text(width / 2, height / 2 + 30, "Loading...", {
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: FONT.family,
         fontSize: "18px",
-        color: "#e0d0a0",
+        color: COLORS.sandText,
       })
       .setOrigin(0.5);
 
@@ -39,7 +40,7 @@ export class BootScene extends Phaser.Scene {
       fill.clear();
       const fillW = (barW - 4) * value;
       if (fillW > 0) {
-        fill.fillStyle(0x6ac8e0, 1);
+        fill.fillStyle(COLOR_NUM.bootFill, 1);
         fill.fillRoundedRect(
           width / 2 - barW / 2 + 2,
           height / 2 - barH / 2 + 2,

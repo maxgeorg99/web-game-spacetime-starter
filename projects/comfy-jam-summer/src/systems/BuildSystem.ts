@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { ToolMode, TILE_SIZE } from "../config/constants";
+import { ToolMode, TILE_SIZE, DEPTH } from "../config/constants";
 import { tileKey, gridToWorld } from "../utils/gridUtils";
 
 export class BuildSystem {
@@ -43,7 +43,7 @@ export class BuildSystem {
     const img = this.scene.add
       .image(x, y, "sandtower")
       .setDisplaySize(TILE_SIZE, TILE_SIZE)
-      .setDepth(2)
+      .setDepth(DEPTH.structure)
       .setInteractive({ useHandCursor: true });
 
     img.on("pointerdown", () => {
@@ -62,7 +62,7 @@ export class BuildSystem {
     const img = this.scene.add
       .image(x, y, horizontal ? "wall-h" : "wall-v")
       .setDisplaySize(TILE_SIZE, TILE_SIZE)
-      .setDepth(2);
+      .setDepth(DEPTH.structure);
 
     const key = tileKey(col, row);
     this.occupied.add(key);

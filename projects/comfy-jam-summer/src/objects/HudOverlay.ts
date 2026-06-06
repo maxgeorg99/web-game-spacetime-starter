@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { COLORS, DEPTH, FONT } from "../config/constants";
 import { BuildSystem } from "../systems/BuildSystem";
 
 type ToolChangeHandler = (mode: string) => void;
@@ -9,6 +10,7 @@ export function buildHud(
   onToolChange: ToolChangeHandler,
 ): void {
   const { width, height } = scene.scale;
+  const D = DEPTH.hud;
 
   // ---- Resources bar (top-left) ----
   // Gold icon + amount
@@ -16,34 +18,30 @@ export function buildHud(
     .image(24, 20, "icon-gold")
     .setOrigin(0.5)
     .setDisplaySize(24, 24)
-    .setDepth(10);
+    .setDepth(D);
   scene.add
     .text(40, 20, "120", {
-      fontFamily: "system-ui, sans-serif",
-      fontSize: "16px",
-      color: "#e0c070",
-      stroke: "#3a2a10",
-      strokeThickness: 3,
+      ...FONT.hud,
+      color: COLORS.goldResource,
+      stroke: COLORS.brownStroke,
     })
     .setOrigin(0, 0.5)
-    .setDepth(10);
+    .setDepth(D);
 
   // Shell icon + amount
   scene.add
     .image(100, 20, "shell-yellow")
     .setOrigin(0.5)
     .setDisplaySize(34, 34)
-    .setDepth(10);
+    .setDepth(D);
   scene.add
     .text(116, 20, "15", {
-      fontFamily: "system-ui, sans-serif",
-      fontSize: "16px",
-      color: "#e0d0a0",
-      stroke: "#3a2a10",
-      strokeThickness: 3,
+      ...FONT.hud,
+      color: COLORS.sandText,
+      stroke: COLORS.brownStroke,
     })
     .setOrigin(0, 0.5)
-    .setDepth(10);
+    .setDepth(D);
 
   // ---- Next-wave panel (top-left, shark-warning sign) ----
   const panelY = 110;
@@ -55,14 +53,14 @@ export function buildHud(
   scene.add
     .image(panelX + panelW / 2, panelY, "ui-sign")
     .setDisplaySize(panelW, panelH)
-    .setDepth(10);
+    .setDepth(D);
 
   // Small phone icon top-right, slightly rotated for playfulness.
   scene.add
     .image(panelX + panelW, panelY - panelH / 2 + 16, "ui-phone")
     .setOrigin(0.5)
     .setDisplaySize(32, 28)
-    .setDepth(10)
+    .setDepth(D)
     .setAlpha(0.85)
     .setRotation(-0.25);
 
@@ -94,25 +92,23 @@ export function buildHud(
       .image(cx, cy, avatars[i].key)
       .setOrigin(0.5)
       .setDisplaySize(avatarSize, avatarSize)
-      .setDepth(10);
+      .setDepth(D);
 
     scene.add
-      .text(cx + avatarSize / 2 + 4, cy, `x${avatars[i].count}`, {
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "13px",
-        color: "#e0d0a0",
-        stroke: "#000000",
-        strokeThickness: 3,
+      .text(cx + avatarSize / 2, cy, `x${avatars[i].count}`, {
+        ...FONT.label,
+        color: COLORS.sandText,
+        stroke: COLORS.blackStroke,
       })
       .setOrigin(0, 0.5)
-      .setDepth(10);
+      .setDepth(D);
   }
 
   // ---- Bottom toolbar (260×120) ----
   const hudY = height - 60;
   const hudImg = scene.add
     .image(width / 2, hudY, "ui-hud")
-    .setDepth(10)
+    .setDepth(D)
     .setInteractive({ useHandCursor: true });
 
   const TOOL_REGIONS = [

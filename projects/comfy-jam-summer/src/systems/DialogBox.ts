@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { COLORS, COLOR_NUM, DEPTH, FONT } from "../config/constants";
 
 export interface DialogPage {
   text: string;
@@ -35,21 +36,28 @@ export class DialogBox {
   // Reusable shadow graphic.
   private shadow: Phaser.GameObjects.Graphics;
 
+  // Cached position for drawBoxBg reuse.
+  private cachedBoxX = 0;
+  private cachedBoxY = 0;
+
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
 
     const { width, height } = scene.scale;
-    const boxX = width / 2;
-    const boxY = height - this.boxH / 2 - 12;
+    this.cachedBoxX = width / 2;
+    this.cachedBoxY = height - this.boxH / 2 - 12;
 
-    this.container = scene.add.container(0, 0).setDepth(100).setAlpha(0);
+    this.container = scene.add
+      .container(0, 0)
+      .setDepth(DEPTH.dialog)
+      .setAlpha(0);
 
     // Drop shadow.
     this.shadow = scene.add.graphics().setAlpha(0.5);
-    this.shadow.fillStyle(0x000000, 1);
+    this.shadow.fillStyle(COLOR_NUM.black, 1);
     this.shadow.fillRoundedRect(
-      boxX - this.boxW / 2 + 4,
-      boxY - this.boxH / 2 + 4,
+      this.cachedBoxX - this.boxW / 2 + 4,
+      this.cachedBoxY - this.boxH / 2 + 4,
       this.boxW,
       this.boxH,
       8,
@@ -62,19 +70,20 @@ export class DialogBox {
     this.container.add(this.boxBg);
 
     // Portrait frame + portrait.
-    const portraitX = boxX - this.boxW / 2 + 14 + this.portraitSize / 2;
-    const portraitY = boxY;
+    const portraitX =
+      this.cachedBoxX - this.boxW / 2 + 14 + this.portraitSize / 2;
+    const portraitY = this.cachedBoxY;
 
     // Portrait background fill.
     const portraitFrame = scene.add.graphics();
-    portraitFrame.fillStyle(0x98d8a0, 0.35);
+    portraitFrame.fillStyle(COLOR_NUM.portraitBg, 0.35);
     portraitFrame.fillRect(
       portraitX - this.portraitSize / 2 - 2,
       portraitY - this.portraitSize / 2 - 2,
       this.portraitSize + 4,
       this.portraitSize + 4,
     );
-    portraitFrame.lineStyle(2, 0x5a9a8a, 1);
+    portraitFrame.lineStyle(2, COLOR_NUM.teal, 1);
     portraitFrame.strokeRect(
       portraitX - this.portraitSize / 2 - 2,
       portraitY - this.portraitSize / 2 - 2,
@@ -93,10 +102,10 @@ export class DialogBox {
     const nameY = portraitY - this.portraitSize / 2 + 4;
 
     this.nameText = scene.add.text(nameX, nameY, "", {
-      fontFamily: '"Fredoka", system-ui, sans-serif',
+      fontFamily: FONT.family,
       fontSize: "13px",
-      color: "#ffd700",
-      stroke: "#000000",
+      color: COLORS.gold,
+      stroke: COLORS.blackStroke,
       strokeThickness: 3,
     });
     this.container.add(this.nameText);
@@ -105,67 +114,68 @@ export class DialogBox {
     const textX = nameX;
     const textY = nameY + 22;
     this.bodyText = scene.add.text(textX, textY, "", {
-      fontFamily: '"Fredoka", system-ui, sans-serif',
+      fontFamily: FONT.family,
       fontSize: "14px",
-      color: "#ffffff",
+      color: COLORS.white,
       wordWrap: { width: this.boxW - 170 },
       lineSpacing: 4,
-      stroke: "#1a1a2e",
+      stroke: COLORS.navyStroke,
       strokeThickness: 2,
     });
     this.container.add(this.bodyText);
 
     // Continue hint.
     this.continueHint = scene.add
-      .text(boxX + this.boxW / 2 - 24, boxY + this.boxH / 2 - 14, "▼", {
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "14px",
-        color: "#ffd700",
-      })
+      .text(
+        this.cachedBoxX + this.boxW / 2 - 24,
+        this.cachedBoxY + this.boxH / 2 - 14,
+        "▼",
+        {
+          fontFamily: FONT.family,
+          fontSize: "14px",
+          color: COLORS.gold,
+        },
+      )
       .setOrigin(0.5)
       .setAlpha(0);
     this.container.add(this.continueHint);
 
     // Click anywhere to advance.
     const hitZone = scene.add
-      .zone(boxX, boxY, this.boxW, this.boxH)
+      .zone(this.cachedBoxX, this.cachedBoxY, this.boxW, this.boxH)
       .setInteractive({ useHandCursor: true });
     hitZone.on("pointerdown", () => this.advance());
     this.container.add(hitZone);
   }
 
   private drawBoxBg(): void {
-    const { width } = this.scene.scale;
-    const boxX = width / 2;
-    const boxY = this.scene.scale.height - this.boxH / 2 - 12;
-
     this.boxBg.clear();
 
     // Main fill.
-    this.boxBg.fillStyle(0x1a2a4a, 0.95);
+    this.boxBg.fillStyle(COLOR_NUM.dialogBg, 0.95);
     this.boxBg.fillRoundedRect(
-      boxX - this.boxW / 2,
-      boxY - this.boxH / 2,
+      this.cachedBoxX - this.boxW / 2,
+      this.cachedBoxY - this.boxH / 2,
       this.boxW,
       this.boxH,
       8,
     );
 
     // Accent bar at top.
-    this.boxBg.fillStyle(0x5a9a8a, 1);
+    this.boxBg.fillStyle(COLOR_NUM.teal, 1);
     this.boxBg.fillRoundedRect(
-      boxX - this.boxW / 2,
-      boxY - this.boxH / 2,
+      this.cachedBoxX - this.boxW / 2,
+      this.cachedBoxY - this.boxH / 2,
       this.boxW,
       3,
       { tl: 8, tr: 8, bl: 0, br: 0 },
     );
 
     // Border.
-    this.boxBg.lineStyle(2, 0x5a9a8a, 0.6);
+    this.boxBg.lineStyle(2, COLOR_NUM.teal, 0.6);
     this.boxBg.strokeRoundedRect(
-      boxX - this.boxW / 2,
-      boxY - this.boxH / 2,
+      this.cachedBoxX - this.boxW / 2,
+      this.cachedBoxY - this.boxH / 2,
       this.boxW,
       this.boxH,
       8,

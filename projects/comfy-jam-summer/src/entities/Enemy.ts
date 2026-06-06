@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { TILE_SIZE } from "../config/constants";
+import { TILE_SIZE, DEPTH } from "../config/constants";
 
 export interface EnemyTypeConfig {
   sheetKey: string;
@@ -43,7 +43,7 @@ export class Enemy {
     this.sprite = scene.add
       .sprite(x, y, config.sheetKey)
       .setDisplaySize(TILE_SIZE * config.size, TILE_SIZE * config.size)
-      .setDepth(3);
+      .setDepth(DEPTH.enemy);
 
     // Default sprite faces right. Flip horizontally if moving left.
     if (this.dirX < 0) {

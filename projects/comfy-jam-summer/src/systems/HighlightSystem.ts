@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { ToolMode, TILE_SIZE } from "../config/constants";
+import { ToolMode, TILE_SIZE, DEPTH, COLOR_NUM } from "../config/constants";
 import { isInteriorSand, worldToGrid } from "../utils/gridUtils";
 import { BuildSystem } from "./BuildSystem";
 
@@ -15,7 +15,7 @@ export class HighlightSystem {
     gridOffsetX: number,
     gridOffsetY: number,
   ) {
-    this.graphics = scene.add.graphics().setDepth(5);
+    this.graphics = scene.add.graphics().setDepth(DEPTH.highlight);
     this.buildSystem = buildSystem;
     this.gridOffsetX = gridOffsetX;
     this.gridOffsetY = gridOffsetY;
@@ -34,11 +34,11 @@ export class HighlightSystem {
 
     if (mode === "build-tower" || mode === "build-wall") {
       const ok = isInteriorSand(col, row) && !occupied;
-      this.graphics.fillStyle(ok ? 0x00ff00 : 0xff0000, 0.3);
+      this.graphics.fillStyle(ok ? COLOR_NUM.highlightOk : COLOR_NUM.highlightBad, 0.3);
       this.graphics.fillRect(x - TILE_SIZE / 2, y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE);
     } else if (mode === "destroy") {
       if (occupied) {
-        this.graphics.fillStyle(0xff0000, 0.4);
+        this.graphics.fillStyle(COLOR_NUM.highlightBad, 0.4);
         this.graphics.fillRect(x - TILE_SIZE / 2, y - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE);
       }
     }
