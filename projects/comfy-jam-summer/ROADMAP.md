@@ -9,7 +9,7 @@ WaveSystem (wave progression, liar intel, spawn config)
     │       │
     │       └─► PathfindingSystem (BFS on 20x16 obstacle grid)
     │
-    ├─► HudOverlay (dynamic panel: wave #, enemy counts, intel direction)
+    ├─► HudOverlay (dynamic panel: wave #, enemy counts, intel direction, shell counter)
     │
     └─► BuildSystem (placement ↔ pathfinding validation, structure HP)
     
@@ -18,6 +18,12 @@ TowerSystem (each frame)
     ├─► scans EnemySystem for targets in range
     ├─► selects target per tower's strategy (closest/farthest/mostHP/leastHP)
     └─► spawns Projectile toward target
+
+Win / Lose
+    │
+    ├─► Enemies that path to the inner ring steal a shell → shell count drops
+    ├─► Shells reach 0 → game over (lose)
+    └─► All waves cleared → victory
 ```
 
 ---
@@ -211,12 +217,20 @@ TowerSystem (each frame)
   - Method `updateWaveInfo(intel)` — refresh displayed counts + direction
   - Method `updateBuildTimer(secondsLeft)` — update countdown text
   - Show "BUILD PHASE" text during build phase, hide during combat
-  - Resource counters (gold/shells) remain static for now
+  - Shell counter becomes dynamic — decremented whenever an enemy reaches the inner ring (see 3.6)
 
 - [ ] **3.5** Wire in `GameScene.ts`
   - Instantiate `WaveSystem`, pass refs to `EnemySystem`, `HudOverlay`
   - Call `waveSystem.startNextWave()` on game start
   - `update()` calls `waveSystem.update(delta)`
+
+- [ ] **3.6** Shell Theft & Win/Lose Conditions
+  - `shellCount: number` — starts at 15, tracked in WaveSystem or GameScene
+  - When an enemy reaches the inner ring (`TARGET_COL`, `TARGET_ROW`) → steal 1 shell, decrement `shellCount`, destroy enemy
+  - `shellCount <= 0` → game over (lose): stop spawning, show defeat screen / game_over dialog
+  - All waves cleared (`currentWave > totalWaves` and no enemies remaining) → victory: show win screen
+  - Shell count display in HUD updates dynamically
+  - Enemy reaching inner ring also triggers `enemy_near_shell` dialog once per wave
 
 ---
 
