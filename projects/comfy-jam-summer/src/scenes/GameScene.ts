@@ -13,7 +13,10 @@ import { DialogBox } from "../systems/DialogBox";
 import { SnapSystem } from "../systems/SnapSystem";
 import { TowerSystem } from "../systems/TowerSystem";
 import { WaveSystem } from "../systems/WaveSystem";
+import { ShellSystem } from "../systems/ShellSystem";
 import { DIALOGS } from "../config/DialogConfig";
+import { WEAPON_COSTS, getEnemyReward } from "../logic/economy";
+import { EnemyType } from "../entities/Enemy";
 
 // ── Debug toggles ──────────────────────────────────────────────
 const DIALOG_ENABLED = true;
@@ -39,12 +42,15 @@ export class GameScene extends Phaser.Scene {
   private hudDirText!: Phaser.GameObjects.Text;
   private hudTimerText!: Phaser.GameObjects.Text;
   private hudShellText!: Phaser.GameObjects.Text;
+  private hudGoldText!: Phaser.GameObjects.Text;
+  private shellSystem!: ShellSystem;
 
   constructor() {
     super("GameScene");
   }
 
   private showDialog(script: typeof DIALOGS[keyof typeof DIALOGS]): void {
+    if ((window as any).__DIALOG_DISABLED) return;
     if (DIALOG_ENABLED) this.dialogBox.show(script);
   }
 
@@ -118,25 +124,49 @@ export class GameScene extends Phaser.Scene {
     // 1. Ocean background + water wobble filter.
     this.ocean = createOcean(this);
 
-    // 2. Build system (single source of truth for grid occupancy).
-    this.buildSystem = new BuildSystem(this, this.gridOffsetX, this.gridOffsetY);
+    // 2. Shell system — tracks active shells, enemies target these.
+    this.shellSystem = new ShellSystem(this, this.gridOffsetX, this.gridOffsetY);
 
-    // 2b. Pathfinding system (BFS on 20x16 sand grid).
+    // 2b. Wave system (created early so shell callbacks can reference it).
+    this.waveSystem = new WaveSystem();
+    this.waveSystem.forceTruth = !LIAR_MECHANIC;
+
+    // 3. Build system (single source of truth for grid occupancy).
+    this.buildSystem = new BuildSystem(this, this.gridOffsetX, this.gridOffsetY);
+    this.buildSystem.canAffordBuild = (cost: number) => this.waveSystem.gold >= cost;
+    this.buildSystem.onBuildCostPaid = (cost: number) => this.waveSystem.spendGold(cost);
+
+    // 3b. Pathfinding system (BFS on 20x16 sand grid) — created before shell wiring.
     const pathfinding = new PathfindingSystem(this.gridOffsetX, this.gridOffsetY);
 
-    // 3. Island terrain, shells, palms (marks palms in buildSystem.occupied).
-    buildIsland(this, this.buildSystem, this.gridOffsetX, this.gridOffsetY);
-
-    // 3b. Wire pathfinding → buildSystem (marks already-occupied palms as blocked).
-    this.buildSystem.setPathfinding(pathfinding);
-
-    // 3c. Tower system (auto-attack loop, projectile management).
-    this.towerSystem = new TowerSystem(this, this.gridOffsetX, this.gridOffsetY);
-    this.towerSystem.onEnemyKilled = (x, y) => {
-      this.maybeDropSandwich(x, y);
+    // Shell stolen → decrement lives, unblock cell.
+    this.shellSystem.onShellStolen = (col, row) => {
+      this.waveSystem.notifyEnemyReachedCenter();
+      this.buildSystem.occupied.delete(`${col},${row}`);
+      pathfinding.markOpen(col, row);
+    };
+    this.shellSystem.onAllShellsGone = () => {
+      if (this.waveSystem.phase !== "defeat" && this.waveSystem.phase !== "victory") {
+        this.waveSystem.phase = "defeat";
+        this.waveSystem.onGameOver?.();
+      }
     };
 
-    // 4. Hover highlight.
+    // 4. Island terrain, shells, palms (shells registered in shellSystem).
+    buildIsland(this, this.buildSystem, this.gridOffsetX, this.gridOffsetY, this.shellSystem);
+
+    // 4b. Wire pathfinding → buildSystem (marks already-occupied palms as blocked).
+    this.buildSystem.setPathfinding(pathfinding);
+
+    // 5. Tower system (auto-attack loop, projectile management).
+    this.towerSystem = new TowerSystem(this, this.gridOffsetX, this.gridOffsetY);
+    this.towerSystem.onEnemyKilled = (x, y, enemyType) => {
+      this.maybeDropSandwich(x, y);
+      const reward = getEnemyReward(enemyType as EnemyType);
+      this.waveSystem.earnGold(reward);
+    };
+
+    // 6. Hover highlight.
     this.highlightSystem = new HighlightSystem(
       this,
       this.buildSystem,
@@ -144,12 +174,12 @@ export class GameScene extends Phaser.Scene {
       this.gridOffsetY,
     );
 
-    // 5. HUD panels + toolbar.
-    const hudApi: HudApi = buildHud(this, this.buildSystem, (label) => {
-      console.log(label, "mode:", this.buildSystem.toolMode);
+    // 7. HUD panels + toolbar.
+    const hudApi: HudApi = buildHud(this, this.buildSystem, (_label) => {
+      // Tool mode changed — no-op in production.
     });
 
-    // 5b. Dynamic HUD overlay — wave info, direction, timer, shell count.
+    // 7b. Dynamic HUD overlay — wave info, direction, timer, shell count.
     this.hudWaveText = this.add.text(width - 16, 16, "WAVE 1", {
       fontFamily: '"Fredoka", system-ui, sans-serif',
       fontSize: "22px",
@@ -174,7 +204,7 @@ export class GameScene extends Phaser.Scene {
       strokeThickness: 2,
     }).setOrigin(1, 0).setDepth(10);
 
-    this.hudShellText = this.add.text(116, 20, "15", {
+    this.hudShellText = this.add.text(116, 20, `${this.shellSystem.activeCount}`, {
       fontFamily: '"Fredoka", system-ui, sans-serif',
       fontSize: "16px",
       color: "#e0d0a0",
@@ -182,9 +212,16 @@ export class GameScene extends Phaser.Scene {
       strokeThickness: 3,
     }).setOrigin(0, 0.5).setDepth(10);
 
-    // 5c. Wave system (wave progression, intel, shell tracking).
-    this.waveSystem = new WaveSystem();
-    this.waveSystem.forceTruth = !LIAR_MECHANIC;
+    // Gold text — dynamic, updated via onGoldChange.
+    this.hudGoldText = this.add.text(40, 20, "120", {
+      fontFamily: '"Fredoka", system-ui, sans-serif',
+      fontSize: "16px",
+      color: "#e0c070",
+      stroke: "#3a2a10",
+      strokeThickness: 3,
+    }).setOrigin(0, 0.5).setDepth(10);
+
+    // 7c. Wave system callbacks.
     this.waveSystem.onWaveStart = (wave, intel) => {
       this.hudWaveText.setText(`WAVE ${wave}`);
       this.hudDirText.setText(`INCOMING: ${intel.direction.toUpperCase()}`);
@@ -193,8 +230,11 @@ export class GameScene extends Phaser.Scene {
     this.waveSystem.onBuildTimer = (sec) => {
       this.hudTimerText.setText(sec > 0 ? `Build: ${sec}s` : "");
     };
-    this.waveSystem.onShellChange = (shells) => {
-      this.hudShellText.setText(`${shells}`);
+    this.waveSystem.onShellChange = (_shells) => {
+      this.hudShellText.setText(`${this.shellSystem.activeCount}`);
+    };
+    this.waveSystem.onGoldChange = (gold) => {
+      this.hudGoldText.setText(`${gold}`);
     };
     this.waveSystem.onGameOver = () => {
       this.hudWaveText.setText("DEFEAT");
@@ -207,19 +247,23 @@ export class GameScene extends Phaser.Scene {
       this.hudTimerText.setText("");
     };
 
-    // 6. Enemy spawner.
-    this.enemySystem = new EnemySystem(this, this.gridOffsetX, this.gridOffsetY);
-    this.enemySystem.setPathfinding(pathfinding);
-    this.enemySystem.setBuildSystem(this.buildSystem);
+    // 8. Enemy spawner.
+    this.enemySystem = new EnemySystem(this, this.gridOffsetX, this.gridOffsetY, pathfinding, this.buildSystem, this.shellSystem);
     this.enemySystem.onEnemyDied = () => this.waveSystem.notifyEnemyDied();
     this.enemySystem.onEnemyReachedCenter = () => this.waveSystem.notifyEnemyReachedCenter();
 
     // 7. Weapon wheel for towers.
-    this.weaponWheel = new WeaponWheel(this, (label) => {
-      if (this.selectedTowerCol >= 0) {
-        this.towerSystem.setWeapon(this.selectedTowerCol, this.selectedTowerRow, label);
-      }
-    });
+    if (!(window as any).__WEAPON_WHEEL_DISABLED) {
+      this.weaponWheel = new WeaponWheel(this, (label) => {
+        if (this.selectedTowerCol >= 0) {
+          const cost = WEAPON_COSTS[label] ?? 0;
+          if (!this.waveSystem.spendGold(cost)) return;
+          this.towerSystem.setWeapon(this.selectedTowerCol, this.selectedTowerRow, label);
+        }
+      });
+    } else {
+      this.weaponWheel = new WeaponWheel(this, () => {});
+    }
 
     // 8. Dialog box for lifeguard commentary.
     this.dialogBox = new DialogBox(this);
@@ -295,31 +339,72 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(2000, () => {
       this.waveSystem.startNextWave();
     });
+
+    // Signal test mode readiness after first render.
+    this.events.once("render", () => {
+      if ((window as any).__TEST__) {
+        (window as any).__TEST__.ready = true;
+        (window as any).__TEST__.sceneKey = "GameScene";
+      }
+    });
   }
 
   update(time: number, delta: number): void {
-    this.ocean.tilePositionX += 0.3;
-    this.ocean.tilePositionY += 0.15;
-    this.highlightSystem.update(this.input.activePointer);
-    this.dialogBox.update(delta);
+    try {
+      this.ocean.tilePositionX += 0.3;
+      this.ocean.tilePositionY += 0.15;
+      this.highlightSystem.update(this.input.activePointer);
 
-    if (this.waveSystem.phase === "defeat" || this.waveSystem.phase === "victory") return;
+      if (this.waveSystem.phase === "defeat" || this.waveSystem.phase === "victory") return;
 
-    // Wave spawning — pull from queue.
-    const queue = this.waveSystem.getSpawnQueue();
-    for (const item of queue) {
-      this.enemySystem.spawnFromEdge(
-        item.type as any,
-        item.edge,
-        this.waveSystem.getSpeedMult(),
-        this.waveSystem.getHpMult(),
-      );
+      // Wave spawning — pull from queue.
+      const queue = this.waveSystem.getSpawnQueue();
+      for (const item of queue) {
+        this.enemySystem.spawnFromEdge(
+          item.type as any,
+          item.edge,
+          this.waveSystem.getSpeedMult(),
+          this.waveSystem.getHpMult(),
+        );
+      }
+
+      this.enemySystem.update(delta);
+      this.towerSystem.update(time, delta, this.enemySystem.getEnemies());
+      this.dialogBox.update(delta);
+
+      this.waveSystem.update(delta, this.enemySystem.getEnemies().length);
+
+      // Expose test mode state snapshot.
+      if ((window as any).__TEST__) {
+        (window as any).__TEST__.frameCount++;
+        (window as any).__TEST__.state = {
+          phase: this.waveSystem.phase,
+          wave: this.waveSystem.currentWave + 1,
+          shellCount: this.shellSystem.activeCount,
+          enemyCount: this.enemySystem.getEnemies().length,
+          towerCount: this.buildSystem.getOccupiedCells().length,
+          toolMode: this.buildSystem.toolMode,
+          dialogVisible: this.dialogBox.visible,
+        };
+      }
+    } catch (err) {
+      console.error("Game loop crashed:", err);
+      this.scene.pause();
+      this.showErrorScreen();
     }
+  }
 
-    this.enemySystem.update(delta);
-    this.towerSystem.update(time, delta, this.enemySystem.getEnemies());
-    this.dialogBox.update(delta);
+  private showErrorScreen(): void {
+    const { width, height } = this.scale;
+    const bg = this.add.graphics().setDepth(300);
+    bg.fillStyle(0x000000, 0.8);
+    bg.fillRect(0, 0, width, height);
 
-    this.waveSystem.update(delta, this.enemySystem.getEnemies().length);
+    this.add.text(width / 2, height / 2, "Something went wrong.\nPlease refresh the page.", {
+      fontFamily: '"Fredoka", system-ui, sans-serif',
+      fontSize: "22px",
+      color: "#ffffff",
+      align: "center",
+    }).setOrigin(0.5).setDepth(301);
   }
 }

@@ -86,9 +86,10 @@ export const DIALOGS: Record<DialogTrigger, DialogScript> = {
   sandwich_found: {
     speaker: LIFEGUARD,
     pages: [
-      sg("Whoa, you found a sandwich! That's mine actually. I was saving it."),
-      sg("It's a ham and cheese. I think. Might be tuna. Hard to tell — it's been in my cooler since June."),
-      sg("You know what, you can have it. I already ate. (He did not already eat.)"),
+      sg("DUDE. You found it. THE SANDWICH OF TRUTH. I thought it was just a myth they tell rookies at lifeguard school."),
+      sg("Legend says whoever holds the Sandwich of Truth can see through ALL lies. Even my intel reports."),
+      sg("From now on, every wave forecast I give you will be 100% accurate. No more guessing. You're welcome."),
+      sg("I can't believe it was just sitting there in the sand this whole time. That's beach magic, bro."),
     ],
   },
 };

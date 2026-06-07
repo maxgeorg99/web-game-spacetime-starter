@@ -20,12 +20,14 @@ import {
   gridToWorld,
 } from "../utils/gridUtils";
 import { BuildSystem } from "../systems/BuildSystem";
+import { ShellSystem } from "../systems/ShellSystem";
 
 export function buildIsland(
   scene: Phaser.Scene,
   buildSystem: BuildSystem,
   offsetX: number,
   offsetY: number,
+  shellSystem?: ShellSystem,
 ): void {
   // Sand and coast tiles.
   for (let row = 0; row < GRID_ROWS; row++) {
@@ -48,11 +50,17 @@ export function buildIsland(
       if (!isInteriorSand(col, row)) continue;
       if (Math.random() > 0.2) continue;
 
-      const { x, y } = gridToWorld(col, row, offsetX, offsetY, TILE_SIZE);
-      scene.add
-        .image(x, y, Phaser.Math.RND.pick(SHELL_KEYS))
-        .setDisplaySize(TILE_SIZE, TILE_SIZE)
-        .setDepth(DEPTH.decoration);
+      const textureKey = Phaser.Math.RND.pick(SHELL_KEYS);
+      if (shellSystem) {
+        shellSystem.addShell(col, row, textureKey);
+        buildSystem.occupied.add(tileKey(col, row));
+      } else {
+        const { x, y } = gridToWorld(col, row, offsetX, offsetY, TILE_SIZE);
+        scene.add
+          .image(x, y, textureKey)
+          .setDisplaySize(TILE_SIZE, TILE_SIZE)
+          .setDepth(DEPTH.decoration);
+      }
     }
   }
 

@@ -1,6 +1,11 @@
 import Phaser from "phaser";
 import { COLORS, DEPTH, FONT } from "../config/constants";
 import { BuildSystem } from "../systems/BuildSystem";
+import { BUILD_COSTS } from "../logic/economy";
+
+const INTEL_PANEL_Y = 110;
+const INTEL_PANEL_W = 180;
+const INTEL_PANEL_H = 140;
 
 type ToolChangeHandler = (mode: string) => void;
 
@@ -17,19 +22,11 @@ export function buildHud(
   const D = DEPTH.hud;
 
   // ---- Resources bar (top-left) ----
-  // Gold icon + amount
+  // Gold icon (amount updated dynamically by GameScene).
   scene.add
     .image(24, 20, "icon-gold")
     .setOrigin(0.5)
     .setDisplaySize(24, 24)
-    .setDepth(D);
-  scene.add
-    .text(40, 20, "120", {
-      ...FONT.hud,
-      color: COLORS.goldResource,
-      stroke: COLORS.brownStroke,
-    })
-    .setOrigin(0, 0.5)
     .setDepth(D);
 
   // Shell icon (amount updated dynamically by GameScene).
@@ -40,9 +37,9 @@ export function buildHud(
     .setDepth(D);
 
   // ---- Next-wave panel (top-left, shark-warning sign) ----
-  const panelY = 110;
-  const panelW = 180;
-  const panelH = 140;
+  const panelY = INTEL_PANEL_Y;
+  const panelW = INTEL_PANEL_W;
+  const panelH = INTEL_PANEL_H;
   const panelX = 10;
 
   scene.add
@@ -104,10 +101,47 @@ export function buildHud(
 
   // ---- Bottom toolbar (260×120) ----
   const hudY = height - 60;
+  const toolbarLeft = width / 2 - 130;
   const hudImg = scene.add
     .image(width / 2, hudY, "ui-hud")
     .setDepth(D)
     .setInteractive({ useHandCursor: true });
+
+  // Cost labels below button names (inside toolbar area).
+  const labelY = hudY + 16;
+
+  const toolCosts = [
+    { x: toolbarLeft + 43, cost: BUILD_COSTS.tower },
+    { x: toolbarLeft + 130, cost: BUILD_COSTS.wall },
+    { x: toolbarLeft + 217, cost: BUILD_COSTS.destroy },
+  ];
+
+  for (const tool of toolCosts) {
+    if (tool.cost > 0) {
+      scene.add
+        .text(tool.x - 8, labelY, `${tool.cost}`, {
+          ...FONT.label,
+          color: COLORS.goldResource,
+          stroke: COLORS.brownStroke,
+        })
+        .setOrigin(1, 0.5)
+        .setDepth(D);
+      scene.add
+        .image(tool.x - 4, labelY, "icon-gold")
+        .setOrigin(0, 0.5)
+        .setDisplaySize(13, 13)
+        .setDepth(D);
+    } else {
+      scene.add
+        .text(tool.x, labelY, "-", {
+          ...FONT.label,
+          color: COLORS.goldResource,
+          stroke: COLORS.brownStroke,
+        })
+        .setOrigin(0.5)
+        .setDepth(D);
+    }
+  }
 
   const TOOL_REGIONS = [
     { limit: 87, mode: "build-tower", label: "build tower" },

@@ -25,6 +25,7 @@ export class Enemy {
   config: EnemyConfig;
   state: EnemyState = EnemyState.MOVING;
   hp: number;
+  maxHp: number;
   speed: number;
 
   private waypoints: { x: number; y: number }[] = [];
@@ -40,12 +41,16 @@ export class Enemy {
   private attackAnimKey: string;
   private onReachedDestination: (() => void) | null = null;
 
+  private hpBar: Phaser.GameObjects.Graphics | null = null;
+  private scene: Phaser.Scene;
+
   constructor(
     scene: Phaser.Scene,
     config: EnemyConfig,
     spawnWorldX: number,
     spawnWorldY: number,
   ) {
+    this.scene = scene;
     this.config = config;
     this.walkSheetKey = config.walkSheetKey;
     this.walkAnimKey = config.walkAnimKey;
@@ -53,6 +58,7 @@ export class Enemy {
     this.attackAnimKey = config.attackAnimKey;
     this.speed = config.speed;
     this.hp = config.hp;
+    this.maxHp = config.hp;
     this.attackDamage = config.attackDamage;
 
     this.sprite = scene.add
@@ -89,6 +95,7 @@ export class Enemy {
     if (this.state === EnemyState.MOVING) {
       this.updateMoving(delta);
     }
+    this.drawHpBar();
   }
 
   private updateMoving(delta: number): void {
@@ -148,7 +155,40 @@ export class Enemy {
     this.sprite.play(this.attackAnimKey);
   }
 
+  private drawHpBar(): void {
+    if (!this.sprite.active) return;
+    if (this.hp >= this.maxHp) {
+      if (this.hpBar) {
+        this.hpBar.clear();
+      }
+      return;
+    }
+
+    if (!this.hpBar) {
+      this.hpBar = this.scene.add.graphics().setDepth(DEPTH.enemy + 1);
+    }
+
+    const barW = 20;
+    const barH = 3;
+    const bx = this.sprite.x - barW / 2;
+    const by = this.sprite.y - (TILE_SIZE * this.config.size) / 2 - 6;
+    const ratio = this.hp / this.maxHp;
+
+    this.hpBar.clear();
+    this.hpBar.fillStyle(0x000000, 0.5);
+    this.hpBar.fillRect(bx, by, barW, barH);
+
+    const color = ratio > 0.5 ? 0x44cc44 : ratio > 0.25 ? 0xcccc44 : 0xcc4444;
+    const fillW = Math.max(0, ratio * barW);
+    this.hpBar.fillStyle(color, 1);
+    this.hpBar.fillRect(bx, by, fillW, barH);
+  }
+
   destroy(): void {
+    if (this.hpBar) {
+      this.hpBar.destroy();
+      this.hpBar = null;
+    }
     this.sprite.destroy();
   }
 }

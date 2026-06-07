@@ -2,48 +2,71 @@ import Phaser from "phaser";
 import { ToolMode, TILE_SIZE, DEPTH } from "../config/constants";
 import { tileKey, gridToWorld } from "../utils/gridUtils";
 import { PathfindingSystem } from "./PathfindingSystem";
-
-export const MAX_TOWER_HP = 100;
-export const MAX_WALL_HP = 60;
+import { GridState, ObjectType } from "../state/GridState";
+import { EventBus } from "../events/GameEvents";
+import { BUILD_COSTS } from "../logic/economy";
 
 const HP_BAR_W = 24;
 const HP_BAR_H = 4;
 const HP_BAR_OFFSET_Y = -TILE_SIZE / 2 - 6;
 
 export type PlacementMode = "tower" | "wall";
-export type ObjectType = "tower" | "wall-h" | "wall-v";
+export type { ObjectType };
 
 export class BuildSystem {
   private scene: Phaser.Scene;
-  toolMode: ToolMode = "none";
-  occupied: Set<string> = new Set();
+  gridState: GridState = new GridState();
   private placedObjects: Map<string, Phaser.GameObjects.Image> = new Map();
-  private typeMap: Map<string, ObjectType> = new Map();
-  private structureHp: Map<string, number> = new Map();
   private hpBars: Map<string, Phaser.GameObjects.Graphics> = new Map();
   private pathfinding: PathfindingSystem | null = null;
   gridOffsetX: number;
   gridOffsetY: number;
+  private eventBus: EventBus;
 
   onTowerClick?: (x: number, y: number) => void;
   onPlace?: (col: number, row: number, mode: ObjectType) => void;
   onDestroy?: (col: number, row: number, type: ObjectType) => void;
   /** Called when ANY occupancy changes — EnemySystem uses this to recalc paths. */
   onOccupancyChange?: () => void;
+  /** Returning false blocks placement. */
+  canAffordBuild?: (cost: number) => boolean;
+  /** Called after successful placement to deduct cost. */
+  onBuildCostPaid?: (cost: number) => void;
 
-  constructor(scene: Phaser.Scene, gridOffsetX: number, gridOffsetY: number) {
+  constructor(scene: Phaser.Scene, gridOffsetX: number, gridOffsetY: number, eventBus?: EventBus) {
     this.scene = scene;
     this.gridOffsetX = gridOffsetX;
     this.gridOffsetY = gridOffsetY;
+    this.eventBus = eventBus ?? new EventBus();
+  }
+
+  get toolMode(): ToolMode {
+    return this.gridState.toolMode;
+  }
+
+  set toolMode(mode: ToolMode) {
+    this.gridState.toolMode = mode;
+  }
+
+  get occupied(): Set<string> {
+    return this.gridState.occupied;
+  }
+
+  set occupied(v: Set<string>) {
+    this.gridState.occupied = v;
   }
 
   setPathfinding(pathfinding: PathfindingSystem): void {
     this.pathfinding = pathfinding;
-    pathfinding.markOccupiedSet(this.occupied);
+    pathfinding.markOccupiedSet(this.gridState.occupied);
   }
 
   setToolMode(mode: ToolMode): void {
-    this.toolMode = this.toolMode === mode ? "none" : mode;
+    if (this.toolMode === mode) {
+      this.gridState.setToolMode("none");
+    } else {
+      this.gridState.setToolMode(mode);
+    }
   }
 
   handleGridClick(col: number, row: number, pointer: Phaser.Input.Pointer): void {
@@ -52,7 +75,7 @@ export class BuildSystem {
       return;
     }
 
-    if (this.occupied.has(tileKey(col, row))) return;
+    if (this.gridState.isOccupied(col, row)) return;
 
     if (this.toolMode === "build-tower") {
       this.placeStructure(col, row, "tower");
@@ -64,6 +87,13 @@ export class BuildSystem {
   // ── Placement ───────────────────────────────────────────────────
 
   private placeStructure(col: number, row: number, mode: PlacementMode, horizontal = true): void {
+    // Affordability check.
+    const cost = mode === "tower" ? BUILD_COSTS.tower : BUILD_COSTS.wall;
+    if (this.canAffordBuild && !this.canAffordBuild(cost)) {
+      this.flashRed(col, row);
+      return;
+    }
+
     // Pathfinding validation.
     if (this.pathfinding) {
       if (!this.pathfinding.canPlaceWall(col, row)) {
@@ -72,6 +102,8 @@ export class BuildSystem {
       }
       this.pathfinding.markBlocked(col, row);
     }
+
+    this.onBuildCostPaid?.(cost);
 
     const key = tileKey(col, row);
     const { x, y } = gridToWorld(col, row, this.gridOffsetX, this.gridOffsetY, TILE_SIZE);
@@ -99,15 +131,13 @@ export class BuildSystem {
       });
     }
 
-    this.occupied.add(key);
+    this.gridState.placeStructure(col, row, objType);
     this.placedObjects.set(key, img);
-    this.typeMap.set(key, objType);
 
-    // HP init.
-    const maxHp = mode === "tower" ? MAX_TOWER_HP : MAX_WALL_HP;
-    this.structureHp.set(key, maxHp);
+    const maxHp = this.gridState.getMaxHp(key);
     this.drawHpBar(col, row, maxHp, maxHp);
 
+    this.eventBus.emit({ type: "STRUCTURE_PLACED", col, row, structureType: objType });
     this.onPlace?.(col, row, objType);
     this.onOccupancyChange?.();
   }
@@ -116,13 +146,15 @@ export class BuildSystem {
 
   private destroyAt(col: number, row: number): void {
     const key = tileKey(col, row);
-    const obj = this.placedObjects.get(key);
-    if (!obj) return;
 
-    obj.destroy();
-    this.placedObjects.delete(key);
-    this.occupied.delete(key);
-    this.structureHp.delete(key);
+    const objectType = this.gridState.getType(col, row) ?? "tower";
+
+    if (this.placedObjects.has(key)) {
+      this.placedObjects.get(key)!.destroy();
+      this.placedObjects.delete(key);
+    }
+
+    this.gridState.destroyStructure(col, row);
 
     const bar = this.hpBars.get(key);
     if (bar) {
@@ -130,13 +162,11 @@ export class BuildSystem {
       this.hpBars.delete(key);
     }
 
-    const objectType = this.typeMap.get(key) ?? "tower";
-    this.typeMap.delete(key);
-
     if (this.pathfinding) {
       this.pathfinding.markOpen(col, row);
     }
 
+    this.eventBus.emit({ type: "STRUCTURE_DESTROYED", col, row });
     this.onDestroy?.(col, row, objectType);
     this.onOccupancyChange?.();
   }
@@ -153,49 +183,61 @@ export class BuildSystem {
    * Returns true if the structure was destroyed.
    */
   damageStructure(col: number, row: number, amount: number): boolean {
-    const key = tileKey(col, row);
-    if (!this.structureHp.has(key)) return false;
+    const result = this.gridState.damageStructure(col, row, amount);
 
-    const current = this.structureHp.get(key)!;
-    const newHp = Math.max(0, current - amount);
-    this.structureHp.set(key, newHp);
-
-    this.drawHpBar(col, row, newHp, this.getMaxHp(key));
-
-    if (newHp <= 0) {
-      this.destroyAt(col, row);
+    if (result.destroyed) {
+      // Clean up sprites without touching gridState again
+      const key = tileKey(col, row);
+      const obj = this.placedObjects.get(key);
+      if (obj) {
+        obj.destroy();
+        this.placedObjects.delete(key);
+      }
+      const bar = this.hpBars.get(key);
+      if (bar) {
+        bar.destroy();
+        this.hpBars.delete(key);
+      }
+      if (this.pathfinding) {
+        this.pathfinding.markOpen(col, row);
+      }
+      this.eventBus.emit({ type: "STRUCTURE_DESTROYED", col, row });
+      this.onDestroy?.(col, row, this.gridState.getType(col, row) ?? "tower");
+      this.onOccupancyChange?.();
       return true;
     }
+
+    this.drawHpBar(col, row, result.hp, result.maxHp);
+    this.eventBus.emit({ type: "STRUCTURE_DAMAGED", col, row, hp: result.hp, maxHp: result.maxHp });
     return false;
   }
 
   repairStructure(col: number, row: number, amount: number): void {
-    const key = tileKey(col, row);
-    if (!this.structureHp.has(key)) return;
+    const structure = this.gridState.getStructure(col, row);
+    if (!structure) return;
 
-    const maxHp = this.getMaxHp(key);
-    const newHp = Math.min(maxHp, this.structureHp.get(key)! + amount);
-    this.structureHp.set(key, newHp);
-    this.drawHpBar(col, row, newHp, maxHp);
+    const newHp = Math.min(structure.maxHp, structure.hp + amount);
+    structure.hp = newHp;
+    this.drawHpBar(col, row, newHp, structure.maxHp);
   }
 
   getHp(col: number, row: number): number {
-    return this.structureHp.get(tileKey(col, row)) ?? 0;
+    return this.gridState.getStructure(col, row)?.hp ?? 0;
   }
 
   /** True if a damageable structure (tower or wall, not a palm) occupies this cell. */
   hasStructure(col: number, row: number): boolean {
-    return this.structureHp.has(tileKey(col, row));
+    return this.gridState.hasStructure(col, row);
   }
 
   // ── Queries ─────────────────────────────────────────────────────
 
   isOccupied(col: number, row: number): boolean {
-    return this.occupied.has(tileKey(col, row));
+    return this.gridState.isOccupied(col, row);
   }
 
   getType(col: number, row: number): ObjectType | null {
-    return this.typeMap.get(tileKey(col, row)) ?? null;
+    return this.gridState.getType(col, row);
   }
 
   getSprite(col: number, row: number): Phaser.GameObjects.Image | null {
@@ -204,22 +246,10 @@ export class BuildSystem {
 
   /** Returns cells occupied by damageable structures (towers/walls, excludes palms). */
   getOccupiedCells(): { col: number; row: number }[] {
-    const cells: { col: number; row: number }[] = [];
-    for (const key of this.structureHp.keys()) {
-      const [c, r] = key.split(",").map(Number);
-      cells.push({ col: c, row: r });
-    }
-    return cells;
+    return this.gridState.getOccupiedCells();
   }
 
   // ── HP bar visuals ──────────────────────────────────────────────
-
-  private getMaxHp(key: string): number {
-    const obj = this.placedObjects.get(key);
-    // Heuristic: towers use sandtower texture.
-    if (obj?.texture?.key === "sandtower") return MAX_TOWER_HP;
-    return MAX_WALL_HP;
-  }
 
   private drawHpBar(col: number, row: number, hp: number, maxHp: number): void {
     const key = tileKey(col, row);

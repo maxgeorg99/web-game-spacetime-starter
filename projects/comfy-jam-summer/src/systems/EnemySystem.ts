@@ -1,94 +1,46 @@
 import Phaser from "phaser";
 import { GRID_COLS, GRID_ROWS, TILE_SIZE, SPAWN_EDGES } from "../config/constants";
 import { isSand, worldToGrid } from "../utils/gridUtils";
-import { Enemy, EnemyState, EnemyType, EnemyConfig } from "../entities/Enemy";
+import { Enemy, EnemyState, EnemyType } from "../entities/Enemy";
+import { ENEMY_CONFIGS } from "../config/EnemyConfig";
 import { PathfindingSystem, TARGET_COL, TARGET_ROW } from "./PathfindingSystem";
 import { BuildSystem } from "./BuildSystem";
-
-export const ENEMY_ATTACK_DPS: Record<EnemyType, number> = {
-  paddlefish: 10,
-  harpoonfish: 15,
-  turtle: 5,
-  snake: 8,
-};
-
-const ENEMY_CONFIGS: Record<EnemyType, EnemyConfig> = {
-  paddlefish: {
-    type: "paddlefish",
-    walkSheetKey: "enemy-paddlefish-run",
-    walkAnimKey: "paddlefish-walk",
-    attackSheetKey: "enemy-paddlefish-attack",
-    attackAnimKey: "paddlefish-attack",
-    hp: 30,
-    speed: 50,
-    attackDamage: ENEMY_ATTACK_DPS.paddlefish,
-    size: 1.4,
-  },
-  harpoonfish: {
-    type: "harpoonfish",
-    walkSheetKey: "enemy-harpoonfish-run",
-    walkAnimKey: "harpoonfish-walk",
-    attackSheetKey: "enemy-harpoonfish-attack",
-    attackAnimKey: "harpoonfish-attack",
-    hp: 50,
-    speed: 55,
-    attackDamage: ENEMY_ATTACK_DPS.harpoonfish,
-    size: 1.4,
-  },
-  turtle: {
-    type: "turtle",
-    walkSheetKey: "enemy-turtle-walk",
-    walkAnimKey: "turtle-walk",
-    attackSheetKey: "enemy-turtle-attack",
-    attackAnimKey: "turtle-attack",
-    hp: 80,
-    speed: 25,
-    attackDamage: ENEMY_ATTACK_DPS.turtle,
-    size: 1.6,
-  },
-  snake: {
-    type: "snake",
-    walkSheetKey: "enemy-snake-run",
-    walkAnimKey: "snake-walk",
-    attackSheetKey: "enemy-snake-attack",
-    attackAnimKey: "snake-attack",
-    hp: 20,
-    speed: 70,
-    attackDamage: ENEMY_ATTACK_DPS.snake,
-    size: 1.2,
-  },
-};
+import { ShellSystem } from "./ShellSystem";
 
 export class EnemySystem {
   private scene: Phaser.Scene;
   private enemies: Enemy[] = [];
-  private pathfinding!: PathfindingSystem;
-  private buildSystem!: BuildSystem;
+  private pathfinding: PathfindingSystem;
+  private buildSystem: BuildSystem;
+  private shellSystem: ShellSystem;
   private offsetX: number;
   private offsetY: number;
 
   onEnemyDied?: () => void;
   onEnemyReachedCenter?: () => void;
 
-  constructor(scene: Phaser.Scene, offsetX: number, offsetY: number) {
+  constructor(
+    scene: Phaser.Scene,
+    offsetX: number,
+    offsetY: number,
+    pathfinding: PathfindingSystem,
+    buildSystem: BuildSystem,
+    shellSystem: ShellSystem,
+  ) {
     this.scene = scene;
     this.offsetX = offsetX;
     this.offsetY = offsetY;
-    this.createAllAnims();
-  }
-
-  setPathfinding(pathfinding: PathfindingSystem): void {
     this.pathfinding = pathfinding;
-  }
-
-  setBuildSystem(buildSystem: BuildSystem): void {
     this.buildSystem = buildSystem;
+    this.shellSystem = shellSystem;
+    this.createAllAnims();
   }
 
   // ── Wave-based Spawning ──────────────────────────────────────────
 
   update(delta: number): void {
     for (const enemy of this.enemies) {
+      if (enemy.shouldRemove || enemy.hp <= 0) continue;
       enemy.update(delta);
 
       if (enemy.state === EnemyState.ATTACKING && enemy.attackTarget) {
@@ -108,9 +60,22 @@ export class EnemySystem {
 
     for (const enemy of this.enemies) {
       if (enemy.shouldRemove && enemy.state === EnemyState.MOVING) {
-        // Reached the center — shell stolen.
-        this.onEnemyReachedCenter?.();
+        // Enemy reached waypoint end — check if it stole a shell.
+        const { col, row } = worldToGrid(
+          enemy.sprite.x,
+          enemy.sprite.y,
+          this.offsetX,
+          this.offsetY,
+          TILE_SIZE,
+        );
+        const stoleShell = this.shellSystem.tryStealShell(col, row);
+        if (stoleShell) {
+          this.onEnemyReachedCenter?.();
+        }
       }
+    }
+
+    for (const enemy of this.enemies) {
       if (enemy.shouldRemove && enemy.sprite.active) {
         enemy.destroy();
       }
@@ -141,13 +106,16 @@ export class EnemySystem {
 
     const sandEntry = this.findNearestSand(slot.col, slot.row);
     const entryX = this.offsetX + sandEntry.col * TILE_SIZE + TILE_SIZE / 2;
+    const entryY = this.offsetY + sandEntry.row * TILE_SIZE + TILE_SIZE / 2;
 
-    const path = this.pathfinding.findPath(sandEntry.col, sandEntry.row, TARGET_COL, TARGET_ROW);
+    // Pathfind to nearest shell (or fall back to center).
+    const target = this.findBestTarget(spawnX, spawnY);
+    const path = this.pathfinding.findPath(sandEntry.col, sandEntry.row, target.col, target.row);
 
     if (path) {
       const worldPath = this.pathfinding.pathToWorld(path);
       if (sandEntry.col !== slot.col || sandEntry.row !== slot.row) {
-        worldPath.unshift({ x: entryX, y: spawnY });
+        worldPath.unshift({ x: entryX, y: entryY });
       }
       enemy.setWaypoints(worldPath);
     } else {
@@ -176,6 +144,13 @@ export class EnemySystem {
   }
 
   // ── internal ────────────────────────────────────────────────────
+
+  /** Find the best target for an enemy — nearest shell or fallback to center. */
+  private findBestTarget(worldX: number, worldY: number): { col: number; row: number } {
+    const shell = this.shellSystem.findNearestGrid(worldX, worldY);
+    if (shell) return shell;
+    return { col: TARGET_COL, row: TARGET_ROW };
+  }
 
   /** Find the nearest sand cell toward the center from a spawn position. */
   private findNearestSand(col: number, row: number): { col: number; row: number } {
@@ -206,13 +181,14 @@ export class EnemySystem {
 
   /** Core repathing logic from a given grid position. */
   private repathFrom(enemy: Enemy, col: number, row: number): void {
-    const path = this.pathfinding.findPath(col, row, TARGET_COL, TARGET_ROW);
+    const target = this.findBestTarget(enemy.sprite.x, enemy.sprite.y);
+    const path = this.pathfinding.findPath(col, row, target.col, target.row);
     if (path) {
       enemy.setWaypoints(this.pathfinding.pathToWorld(path));
       return;
     }
 
-    const reachable = this.pathfinding.findNearestReachable(col, row, TARGET_COL, TARGET_ROW);
+    const reachable = this.pathfinding.findNearestReachable(col, row, target.col, target.row);
 
     if (reachable.col !== col || reachable.row !== row) {
       const reachPath = this.pathfinding.findPath(col, row, reachable.col, reachable.row);
@@ -235,9 +211,9 @@ export class EnemySystem {
    * blocks further progress toward the target.
    */
   private engageNearestStructure(enemy: Enemy, fromCol: number, fromRow: number): void {
-    // Check the cell in the direction toward the center first (the actual blocker).
-    const dCol = Math.sign(TARGET_COL - fromCol);
-    const dRow = Math.sign(TARGET_ROW - fromRow);
+    const target = this.findBestTarget(enemy.sprite.x, enemy.sprite.y);
+    const dCol = Math.sign(target.col - fromCol);
+    const dRow = Math.sign(target.row - fromRow);
 
     const priority: { col: number; row: number }[] = [];
     if (dCol !== 0) priority.push({ col: fromCol + dCol, row: fromRow });
@@ -252,7 +228,6 @@ export class EnemySystem {
       }
     }
 
-    // Fallback: check all 4 cardinal neighbors for any damageable structure.
     const neighbors = [
       { dc: 0, dr: -1 }, { dc: 0, dr: 1 },
       { dc: -1, dr: 0 }, { dc: 1, dr: 0 },
@@ -267,7 +242,6 @@ export class EnemySystem {
       }
     }
 
-    // No adjacent damageable structure — blocked by palms or edge. Cannot progress.
     enemy.shouldRemove = true;
   }
 

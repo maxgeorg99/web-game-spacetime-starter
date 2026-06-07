@@ -20,10 +20,12 @@ export class WaveSystem {
   private enemiesAlive = 0;
   private currentDef: WaveDef | null = null;
   shellCount = 15;
+  gold = 120;
 
   onWaveStart?: (wave: number, intel: WaveIntel) => void;
   onBuildTimer?: (secondsLeft: number) => void;
   onShellChange?: (shells: number) => void;
+  onGoldChange?: (gold: number) => void;
   onGameOver?: () => void;
   onVictory?: () => void;
 
@@ -71,15 +73,23 @@ export class WaveSystem {
     this.enemiesAlive = Math.max(0, this.enemiesAlive - 1);
   }
 
+  spendGold(amount: number): boolean {
+    if (this.gold < amount) return false;
+    this.gold -= amount;
+    this.onGoldChange?.(this.gold);
+    return true;
+  }
+
+  earnGold(amount: number): void {
+    this.gold += amount;
+    this.onGoldChange?.(this.gold);
+  }
+
   /** Call when an enemy reaches the inner ring — decrement shell count. */
   notifyEnemyReachedCenter(): void {
     if (this.phase === "defeat" || this.phase === "victory") return;
     this.shellCount = Math.max(0, this.shellCount - 1);
     this.onShellChange?.(this.shellCount);
-    if (this.shellCount <= 0) {
-      this.phase = "defeat";
-      this.onGameOver?.();
-    }
   }
 
   /** Queries for EnemySystem — returns the list of enemies to spawn. */
@@ -134,7 +144,7 @@ export class WaveSystem {
     this.spawnTimer += delta;
     if (this.spawnTimer >= this.spawnInterval && this.spawnQueue.length > 0) {
       this.spawnTimer -= this.spawnInterval;
-      this.spawnQueue.pop();
+      this.spawnQueue.shift();
     }
 
     // All enemies dispatched → switch to fighting.

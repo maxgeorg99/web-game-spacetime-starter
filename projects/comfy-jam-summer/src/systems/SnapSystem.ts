@@ -127,6 +127,6 @@ export class SnapSystem {
 
   private isWallAt(col: number, row: number): boolean {
     const type = this.buildSystem.getType(col, row);
-    return type === "wall-h" || type === "wall-v" || type === "tower";
+    return type === "wall-h" || type === "wall-v";
   }
 }

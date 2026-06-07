@@ -164,9 +164,11 @@ export class PathfindingSystem {
   canPlaceWall(col: number, row: number): boolean {
     const wasWalkable = this.walkable[col]?.[row];
     this.walkable[col][row] = false;
-    const ok = this.hasPathFromAnyEdge(TARGET_COL, TARGET_ROW);
-    this.walkable[col][row] = wasWalkable ?? false;
-    return ok;
+    try {
+      return this.hasPathFromAnyEdge(TARGET_COL, TARGET_ROW);
+    } finally {
+      this.walkable[col][row] = wasWalkable ?? false;
+    }
   }
 
   /**
