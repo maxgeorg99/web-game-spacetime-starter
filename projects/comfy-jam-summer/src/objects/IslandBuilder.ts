@@ -53,7 +53,6 @@ export function buildIsland(
       const textureKey = Phaser.Math.RND.pick(SHELL_KEYS);
       if (shellSystem) {
         shellSystem.addShell(col, row, textureKey);
-        buildSystem.occupied.add(tileKey(col, row));
       } else {
         const { x, y } = gridToWorld(col, row, offsetX, offsetY, TILE_SIZE);
         scene.add

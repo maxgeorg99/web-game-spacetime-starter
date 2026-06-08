@@ -32,6 +32,8 @@ export class BuildSystem {
   canAffordBuild?: (cost: number) => boolean;
   /** Called after successful placement to deduct cost. */
   onBuildCostPaid?: (cost: number) => void;
+  /** Check if a shell exists at this cell (shells block building but not movement). */
+  isShellAt?: (col: number, row: number) => boolean;
 
   constructor(scene: Phaser.Scene, gridOffsetX: number, gridOffsetY: number, eventBus?: EventBus) {
     this.scene = scene;
@@ -76,6 +78,7 @@ export class BuildSystem {
     }
 
     if (this.gridState.isOccupied(col, row)) return;
+    if (this.isShellAt?.(col, row)) return;
 
     if (this.toolMode === "build-tower") {
       this.placeStructure(col, row, "tower");
@@ -233,7 +236,7 @@ export class BuildSystem {
   // ── Queries ─────────────────────────────────────────────────────
 
   isOccupied(col: number, row: number): boolean {
-    return this.gridState.isOccupied(col, row);
+    return this.gridState.isOccupied(col, row) || (this.isShellAt?.(col, row) ?? false);
   }
 
   getType(col: number, row: number): ObjectType | null {

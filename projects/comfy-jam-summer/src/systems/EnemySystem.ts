@@ -60,7 +60,8 @@ export class EnemySystem {
 
     for (const enemy of this.enemies) {
       if (enemy.shouldRemove && enemy.state === EnemyState.MOVING) {
-        // Enemy reached waypoint end — check if it stole a shell.
+        // Enemy reached waypoint end — try stealing a shell.
+        // Notification handled by ShellSystem.onShellStolen callback chain.
         const { col, row } = worldToGrid(
           enemy.sprite.x,
           enemy.sprite.y,
@@ -68,10 +69,7 @@ export class EnemySystem {
           this.offsetY,
           TILE_SIZE,
         );
-        const stoleShell = this.shellSystem.tryStealShell(col, row);
-        if (stoleShell) {
-          this.onEnemyReachedCenter?.();
-        }
+        this.shellSystem.tryStealShell(col, row);
       }
     }
 

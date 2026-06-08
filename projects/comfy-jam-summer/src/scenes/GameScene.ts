@@ -133,6 +133,9 @@ export class GameScene extends Phaser.Scene {
 
     // 3. Build system (single source of truth for grid occupancy).
     this.buildSystem = new BuildSystem(this, this.gridOffsetX, this.gridOffsetY);
+    this.buildSystem.isShellAt = (col: number, row: number) => {
+      return this.shellSystem.shells.some((s) => s.col === col && s.row === row && s.sprite.active);
+    };
     this.buildSystem.canAffordBuild = (cost: number) => this.waveSystem.gold >= cost;
     this.buildSystem.onBuildCostPaid = (cost: number) => this.waveSystem.spendGold(cost);
 
@@ -140,10 +143,8 @@ export class GameScene extends Phaser.Scene {
     const pathfinding = new PathfindingSystem(this.gridOffsetX, this.gridOffsetY);
 
     // Shell stolen → decrement lives, unblock cell.
-    this.shellSystem.onShellStolen = (col, row) => {
+    this.shellSystem.onShellStolen = (_col, _row) => {
       this.waveSystem.notifyEnemyReachedCenter();
-      this.buildSystem.occupied.delete(`${col},${row}`);
-      pathfinding.markOpen(col, row);
     };
     this.shellSystem.onAllShellsGone = () => {
       if (this.waveSystem.phase !== "defeat" && this.waveSystem.phase !== "victory") {
@@ -250,7 +251,6 @@ export class GameScene extends Phaser.Scene {
     // 8. Enemy spawner.
     this.enemySystem = new EnemySystem(this, this.gridOffsetX, this.gridOffsetY, pathfinding, this.buildSystem, this.shellSystem);
     this.enemySystem.onEnemyDied = () => this.waveSystem.notifyEnemyDied();
-    this.enemySystem.onEnemyReachedCenter = () => this.waveSystem.notifyEnemyReachedCenter();
 
     // 7. Weapon wheel for towers.
     if (!(window as any).__WEAPON_WHEEL_DISABLED) {
