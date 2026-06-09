@@ -44,22 +44,36 @@ export function buildIsland(
     }
   }
 
-  // Scatter shells on interior sand.
+  // Build set of cells blocked by palm trees (each palm occupies its tile + tile above + tile below).
+  const palmBlocked = new Set<string>();
+  for (const [col, row] of PALM_POSITIONS) {
+    palmBlocked.add(tileKey(col, row));
+    palmBlocked.add(tileKey(col, row - 1));
+    palmBlocked.add(tileKey(col, row + 1));
+  }
+
+  // Scatter exactly 15 shells on random interior sand cells (excluding palm-blocked cells).
+  const candidates: { col: number; row: number }[] = [];
   for (let row = ISLAND_TOP; row <= ISLAND_BOTTOM; row++) {
     for (let col = ISLAND_LEFT; col <= ISLAND_RIGHT; col++) {
-      if (!isInteriorSand(col, row)) continue;
-      if (Math.random() > 0.2) continue;
-
-      const textureKey = Phaser.Math.RND.pick(SHELL_KEYS);
-      if (shellSystem) {
-        shellSystem.addShell(col, row, textureKey);
-      } else {
-        const { x, y } = gridToWorld(col, row, offsetX, offsetY, TILE_SIZE);
-        scene.add
-          .image(x, y, textureKey)
-          .setDisplaySize(TILE_SIZE, TILE_SIZE)
-          .setDepth(DEPTH.decoration);
+      if (isInteriorSand(col, row) && !palmBlocked.has(tileKey(col, row))) {
+        candidates.push({ col, row });
       }
+    }
+  }
+  Phaser.Math.RND.shuffle(candidates);
+  const shellCount = Math.min(15, candidates.length);
+  for (let i = 0; i < shellCount; i++) {
+    const { col, row } = candidates[i];
+    const textureKey = Phaser.Math.RND.pick(SHELL_KEYS);
+    if (shellSystem) {
+      shellSystem.addShell(col, row, textureKey);
+    } else {
+      const { x, y } = gridToWorld(col, row, offsetX, offsetY, TILE_SIZE);
+      scene.add
+        .image(x, y, textureKey)
+        .setDisplaySize(TILE_SIZE, TILE_SIZE)
+        .setDepth(DEPTH.decoration);
     }
   }
 

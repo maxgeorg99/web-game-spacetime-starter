@@ -364,6 +364,8 @@
     { "key": "icon-exit", "path": "sprites/ui/icons/Exit_Icon.png" },
     { "key": "ui-start", "path": "sprites/ui/Start.png" },
     { "key": "sandwich", "path": "sprites/sandwich.png" },
+    { "key": "ui-victory", "path": "sprites/ui/Victory.png" },
+    { "key": "ui-defeat", "path": "sprites/ui/Defeat.png" },
 
     {
       "key": "portrait-lifeguard",

@@ -130,6 +130,7 @@ export class EnemySystem {
   /** Called when grid occupancy changes — recalculates paths for all active enemies. */
   recalculateAllPaths(): void {
     for (const enemy of this.enemies) {
+      if (enemy.shouldRemove) continue;
       const { col, row } = worldToGrid(
         enemy.sprite.x,
         enemy.sprite.y,

@@ -85,35 +85,64 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private showRetry(): void {
+  private showDefeat(): void {
     const { width, height } = this.scale;
 
-    // Dark overlay.
-    const overlay = this.add
-      .graphics()
-      .setDepth(199);
-    overlay.fillStyle(0x000000, 0.55);
-    overlay.fillRect(0, 0, width, height);
+    this.add
+      .image(width / 2, height / 2, "ui-defeat")
+      .setOrigin(0.5)
+      .setDepth(98);
 
-    // Retry button — centered, bigger.
-    const btn = this.add
-      .image(width / 2, height / 2 + 60, "ui-btn-red")
+    this.showDialog(DIALOGS.game_over);
+
+    const btnY = height / 2 + 160;
+
+    const retryBtn = this.add
+      .image(width / 2, btnY, "ui-btn-red")
       .setInteractive({ useHandCursor: true })
-      .setDisplaySize(180, 70)
+      .setDisplaySize(200, 60)
       .setDepth(200);
 
     this.add
-      .text(width / 2, height / 2 + 60, "RETRY", {
+      .text(width / 2, btnY, "RETRY", {
         fontFamily: '"Fredoka", system-ui, sans-serif',
-        fontSize: "26px",
+        fontSize: "22px",
         color: "#ffffff",
       })
       .setOrigin(0.5)
       .setDepth(201);
 
-    btn.on("pointerdown", () => {
-      this.scene.restart();
-    });
+    retryBtn.on("pointerdown", () => this.scene.restart());
+  }
+
+  private showVictory(): void {
+    const { width, height } = this.scale;
+
+    this.add
+      .image(width / 2, height / 2, "ui-victory")
+      .setOrigin(0.5)
+      .setDepth(98);
+
+    this.showDialog(DIALOGS.game_victory);
+
+    const btnY = height / 2 + 140;
+
+    const playAgainBtn = this.add
+      .image(width / 2, btnY, "ui-btn-red")
+      .setInteractive({ useHandCursor: true })
+      .setDisplaySize(240, 60)
+      .setDepth(200);
+
+    this.add
+      .text(width / 2, btnY, "PLAY AGAIN", {
+        fontFamily: '"Fredoka", system-ui, sans-serif',
+        fontSize: "22px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5)
+      .setDepth(201);
+
+    playAgainBtn.on("pointerdown", () => this.scene.restart());
   }
 
   create(): void {
@@ -142,9 +171,10 @@ export class GameScene extends Phaser.Scene {
     // 3b. Pathfinding system (BFS on 20x16 sand grid) — created before shell wiring.
     const pathfinding = new PathfindingSystem(this.gridOffsetX, this.gridOffsetY);
 
-    // Shell stolen → decrement lives, unblock cell.
+    // Shell stolen → decrement lives, re-route enemies to next shell.
     this.shellSystem.onShellStolen = (_col, _row) => {
       this.waveSystem.notifyEnemyReachedCenter();
+      this.enemySystem.recalculateAllPaths();
     };
     this.shellSystem.onAllShellsGone = () => {
       if (this.waveSystem.phase !== "defeat" && this.waveSystem.phase !== "victory") {
@@ -240,12 +270,12 @@ export class GameScene extends Phaser.Scene {
     this.waveSystem.onGameOver = () => {
       this.hudWaveText.setText("DEFEAT");
       this.hudTimerText.setText("");
-      this.showDialog(DIALOGS.game_over);
-      this.showRetry();
+      this.showDefeat();
     };
     this.waveSystem.onVictory = () => {
       this.hudWaveText.setText("VICTORY");
       this.hudTimerText.setText("");
+      this.showVictory();
     };
 
     // 8. Enemy spawner.
@@ -355,6 +385,9 @@ export class GameScene extends Phaser.Scene {
       this.ocean.tilePositionY += 0.15;
       this.highlightSystem.update(this.input.activePointer);
 
+      // Dialog must update even during defeat/victory so typewriter keeps ticking.
+      this.dialogBox.update(delta);
+
       if (this.waveSystem.phase === "defeat" || this.waveSystem.phase === "victory") return;
 
       // Wave spawning — pull from queue.
@@ -370,8 +403,6 @@ export class GameScene extends Phaser.Scene {
 
       this.enemySystem.update(delta);
       this.towerSystem.update(time, delta, this.enemySystem.getEnemies());
-      this.dialogBox.update(delta);
-
       this.waveSystem.update(delta, this.enemySystem.getEnemies().length);
 
       // Expose test mode state snapshot.

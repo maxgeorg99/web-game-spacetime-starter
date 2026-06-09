@@ -65,6 +65,8 @@ export const A = {
 
   // UI
   UI_START: "ui-start",
+  UI_VICTORY: "ui-victory",
+  UI_DEFEAT: "ui-defeat",
   UI_BTN_RED: "ui-btn-red",
   UI_HUD: "ui-hud",
   UI_SIGN: "ui-sign",
