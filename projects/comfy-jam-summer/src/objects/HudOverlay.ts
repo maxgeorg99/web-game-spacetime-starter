@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { COLORS, DEPTH, FONT } from "../config/constants";
 import { BuildSystem } from "../systems/BuildSystem";
 import { BUILD_COSTS } from "../logic/economy";
+import { AudioManager } from "../audio/AudioManager";
 
 const INTEL_PANEL_Y = 110;
 const INTEL_PANEL_W = 180;
@@ -17,6 +18,7 @@ export function buildHud(
   scene: Phaser.Scene,
   buildSystem: BuildSystem,
   onToolChange: ToolChangeHandler,
+  audio: AudioManager,
 ): HudApi {
   const { width, height } = scene.scale;
   const D = DEPTH.hud;
@@ -53,7 +55,28 @@ export function buildHud(
     .setDisplaySize(32, 28)
     .setDepth(D)
     .setAlpha(0.85)
-    .setRotation(-0.25);
+    .setRotation(-0.25)
+    .setInteractive({ useHandCursor: true })
+    .on("pointerdown", () => {
+      const muted = audio.isMuted;
+      audio.setEnabled(muted);
+      if (muted) {
+        slash.clear();
+      } else {
+        drawSlash();
+      }
+    });
+
+  // Mute slash overlay drawn diagonally across the phone.
+  const phoneX = panelX + panelW;
+  const phoneY = panelY - panelH / 2 + 16;
+  const slash = scene.add.graphics().setDepth(D + 1);
+  const drawSlash = () => {
+    slash.clear();
+    slash.lineStyle(3, 0xff3333, 0.9);
+    slash.lineBetween(phoneX - 12, phoneY - 14, phoneX + 12, phoneY + 14);
+    slash.lineBetween(phoneX - 12, phoneY + 14, phoneX + 12, phoneY - 14);
+  };
 
   const AVATAR_ORDER = ["paddlefish", "harpoonfish", "turtle", "snake"];
   const AVATAR_KEY: Record<string, string> = {

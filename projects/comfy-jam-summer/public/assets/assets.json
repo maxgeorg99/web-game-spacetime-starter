@@ -375,5 +375,24 @@
       "key": "ui-paper",
       "path": "../../assets/sprites/ui/papers/RegularPaper.png"
     }
+  ],
+
+  "audio": [
+    { "key": "music-game", "path": "sounds/music/DavidKBD - Tropical Pack - 04 - Rockin' the Waves - Surf Rock.ogg" },
+    { "key": "music-title", "path": "sounds/music/title.mp3" },
+    { "key": "sting-win", "path": "sounds/music/win_sting.mp3" },
+    { "key": "sting-lose", "path": "sounds/music/game_over_sting.mp3" },
+    { "key": "sfx-click", "path": "sounds/sfx/ui/click.mp3" },
+    { "key": "sfx-build", "path": "sounds/sfx/ui/choose.mp3" },
+    { "key": "sfx-wave", "path": "sounds/sfx/ui/alert_event.mp3" },
+    { "key": "sfx-shell-stolen", "path": "sounds/sfx/ui/wrong.mp3" },
+    { "key": "sfx-death", "path": "sounds/sfx/monsters/monster_death.mp3" },
+    { "key": "sfx-shoot-water", "path": "sounds/sfx/combat/Harpoon.mp3" },
+    { "key": "sfx-shoot-coconut", "path": "sounds/sfx/combat/Bonk.mp3" },
+    { "key": "sfx-shoot-volley", "path": "sounds/sfx/combat/player_damage.mp3" },
+    { "key": "sfx-shoot-bazooka", "path": "sounds/sfx/combat/thunder.mp3" },
+    { "key": "sfx-viper", "path": "sounds/sfx/combat/Viper.mp3" },
+    { "key": "sfx-structure-hit", "path": "sounds/sfx/environment/structure_broken.mp3" },
+    { "key": "sfx-destroy", "path": "sounds/sfx/environment/tower_destroy.mp3" }
   ]
 }

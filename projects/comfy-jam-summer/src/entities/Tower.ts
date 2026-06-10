@@ -9,6 +9,7 @@ export class Tower {
   worldX: number;
   worldY: number;
   weapon: WeaponDef | null = null;
+  weaponKey = "";
   aimingStrategy: AimingStrategy;
   lastFireTime = 0;
 
@@ -26,8 +27,9 @@ export class Tower {
     this.aimingStrategy = aimingStrategy;
   }
 
-  setWeapon(weapon: WeaponDef): void {
+  setWeapon(weapon: WeaponDef, key: string): void {
     this.weapon = weapon;
+    this.weaponKey = key;
     this.lastFireTime = 0;
   }
 

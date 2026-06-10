@@ -1,42 +1,64 @@
-export class AudioManager {
-  private scene: { sound: Phaser.Sound.BaseSoundManager | { play(_k: string): void; add(_k: string): void } };
-  private loaded: Set<string> = new Set();
-  private enabled = true;
-  private volume = 1.0;
+import Phaser from "phaser";
 
-  constructor(scene: { sound: Phaser.Sound.BaseSoundManager | { play: (_k: string) => void; add: (_k: string) => void } }) {
+export class AudioManager {
+  private scene: Phaser.Scene;
+  private enabled = true;
+  private musicVolume = 0.45;
+  private sfxVolume = 0.6;
+  private currentMusic: Phaser.Sound.BaseSound | null = null;
+  private pendingMusicKey: string | null = null;
+
+  constructor(scene: Phaser.Scene) {
     this.scene = scene;
   }
 
-  setEnabled(enabled: boolean): void {
-    this.enabled = enabled;
-  }
-
-  setVolume(volume: number): void {
-    this.volume = Math.max(0, Math.min(1, volume));
-  }
-
-  play(key: string): void {
+  playMusic(key: string, loop = true): void {
+    this.pendingMusicKey = key;
     if (!this.enabled) return;
-    try {
-      this.scene.sound.play(key, { volume: this.volume });
-    } catch {
-      // Sound not loaded — silently skip
+    this.stopMusic();
+    this.currentMusic = this.scene.sound.add(key, { loop, volume: this.musicVolume });
+    this.currentMusic.play();
+  }
+
+  stopMusic(): void {
+    if (this.currentMusic) {
+      this.currentMusic.stop();
+      this.currentMusic.destroy();
+      this.currentMusic = null;
     }
   }
 
   playSfx(key: string): void {
-    this.play(key);
+    if (!this.enabled) return;
+    try {
+      this.scene.sound.play(key, { volume: this.sfxVolume });
+    } catch {
+      // Sound not loaded
+    }
   }
 
-  preload(key: string): void {
-    if (!this.loaded.has(key)) {
-      try {
-        this.scene.sound.add(key);
-        this.loaded.add(key);
-      } catch {
-        // Not yet loaded
-      }
+  setMusicVolume(v: number): void {
+    this.musicVolume = Math.max(0, Math.min(1, v));
+    if (this.currentMusic) {
+      (this.currentMusic as any).setVolume?.(this.musicVolume);
     }
+  }
+
+  setSfxVolume(v: number): void {
+    this.sfxVolume = Math.max(0, Math.min(1, v));
+  }
+
+  setEnabled(enabled: boolean): void {
+    const wasMuted = !this.enabled;
+    this.enabled = enabled;
+    if (!enabled) {
+      this.stopMusic();
+    } else if (wasMuted && this.pendingMusicKey) {
+      this.playMusic(this.pendingMusicKey);
+    }
+  }
+
+  get isMuted(): boolean {
+    return !this.enabled;
   }
 }

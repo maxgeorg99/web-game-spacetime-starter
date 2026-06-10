@@ -17,6 +17,7 @@ export class TowerSystem {
   private gridOffsetY: number;
 
   onEnemyKilled?: (x: number, y: number, enemyType: string) => void;
+  onFire?: (weaponKey: string) => void;
 
   constructor(scene: Phaser.Scene, gridOffsetX: number, gridOffsetY: number) {
     this.scene = scene;
@@ -74,7 +75,7 @@ export class TowerSystem {
     const weapon = WEAPONS[weaponKey];
     if (!weapon) return;
 
-    tower.setWeapon(weapon);
+    tower.setWeapon(weapon, weaponKey);
     this.drawWeaponIcon(col, row, weapon);
   }
 
@@ -101,6 +102,7 @@ export class TowerSystem {
       tower.fire(time);
 
       if (tower.weapon.beam) {
+        this.onFire?.(tower.weaponKey);
         this.spawnBeam(tower, target, enemies);
       } else {
         const proj = new Projectile(

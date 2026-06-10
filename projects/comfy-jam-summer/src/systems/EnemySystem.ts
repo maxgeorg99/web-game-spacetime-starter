@@ -18,6 +18,7 @@ export class EnemySystem {
 
   onEnemyDied?: () => void;
   onEnemyReachedCenter?: () => void;
+  onStructureDamaged?: () => void;
 
   constructor(
     scene: Phaser.Scene,
@@ -50,6 +51,7 @@ export class EnemySystem {
           enemy.attackTarget.row,
           dmg,
         );
+        this.onStructureDamaged?.();
         if (destroyed) {
           this.repathEnemy(enemy);
         }

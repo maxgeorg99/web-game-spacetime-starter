@@ -17,10 +17,18 @@ import { ShellSystem } from "../systems/ShellSystem";
 import { DIALOGS } from "../config/DialogConfig";
 import { WEAPON_COSTS, getEnemyReward } from "../logic/economy";
 import { EnemyType } from "../entities/Enemy";
+import { AudioManager } from "../audio/AudioManager";
 
 // ── Debug toggles ──────────────────────────────────────────────
 const DIALOG_ENABLED = true;
 const LIAR_MECHANIC = true;
+
+const SFX_SHOOT: Record<string, string> = {
+  watergun: "sfx-shoot-water",
+  coconut: "sfx-shoot-coconut",
+  volleyball: "sfx-shoot-volley",
+  bazooka: "sfx-shoot-bazooka",
+};
 // ────────────────────────────────────────────────────────────────
 
 export class GameScene extends Phaser.Scene {
@@ -44,6 +52,7 @@ export class GameScene extends Phaser.Scene {
   private hudShellText!: Phaser.GameObjects.Text;
   private hudGoldText!: Phaser.GameObjects.Text;
   private shellSystem!: ShellSystem;
+  private audio!: AudioManager;
 
   constructor() {
     super("GameScene");
@@ -87,6 +96,8 @@ export class GameScene extends Phaser.Scene {
 
   private showDefeat(): void {
     const { width, height } = this.scale;
+    this.audio.stopMusic();
+    this.audio.playSfx("sting-lose");
 
     this.add
       .image(width / 2, height / 2, "ui-defeat")
@@ -117,6 +128,8 @@ export class GameScene extends Phaser.Scene {
 
   private showVictory(): void {
     const { width, height } = this.scale;
+    this.audio.stopMusic();
+    this.audio.playSfx("sting-win");
 
     this.add
       .image(width / 2, height / 2, "ui-victory")
@@ -175,6 +188,7 @@ export class GameScene extends Phaser.Scene {
     this.shellSystem.onShellStolen = (_col, _row) => {
       this.waveSystem.notifyEnemyReachedCenter();
       this.enemySystem.recalculateAllPaths();
+      this.audio.playSfx("sfx-shell-stolen");
     };
     this.shellSystem.onAllShellsGone = () => {
       if (this.waveSystem.phase !== "defeat" && this.waveSystem.phase !== "victory") {
@@ -182,6 +196,9 @@ export class GameScene extends Phaser.Scene {
         this.waveSystem.onGameOver?.();
       }
     };
+
+    // 3c. Audio manager.
+    this.audio = new AudioManager(this);
 
     // 4. Island terrain, shells, palms (shells registered in shellSystem).
     buildIsland(this, this.buildSystem, this.gridOffsetX, this.gridOffsetY, this.shellSystem);
@@ -195,6 +212,11 @@ export class GameScene extends Phaser.Scene {
       this.maybeDropSandwich(x, y);
       const reward = getEnemyReward(enemyType as EnemyType);
       this.waveSystem.earnGold(reward);
+      this.audio.playSfx("sfx-death");
+    };
+    this.towerSystem.onFire = (weaponKey) => {
+      const key = SFX_SHOOT[weaponKey] ?? "sfx-shoot-water";
+      this.audio.playSfx(key);
     };
 
     // 6. Hover highlight.
@@ -208,7 +230,7 @@ export class GameScene extends Phaser.Scene {
     // 7. HUD panels + toolbar.
     const hudApi: HudApi = buildHud(this, this.buildSystem, (_label) => {
       // Tool mode changed — no-op in production.
-    });
+    }, this.audio);
 
     // 7b. Dynamic HUD overlay — wave info, direction, timer, shell count.
     this.hudWaveText = this.add.text(width - 16, 16, "WAVE 1", {
@@ -257,6 +279,7 @@ export class GameScene extends Phaser.Scene {
       this.hudWaveText.setText(`WAVE ${wave}`);
       this.hudDirText.setText(`INCOMING: ${intel.direction.toUpperCase()}`);
       hudApi.updateIntel(intel.counts);
+      if (wave > 1) this.audio.playSfx("sfx-wave");
     };
     this.waveSystem.onBuildTimer = (sec) => {
       this.hudTimerText.setText(sec > 0 ? `Build: ${sec}s` : "");
@@ -281,6 +304,7 @@ export class GameScene extends Phaser.Scene {
     // 8. Enemy spawner.
     this.enemySystem = new EnemySystem(this, this.gridOffsetX, this.gridOffsetY, pathfinding, this.buildSystem, this.shellSystem);
     this.enemySystem.onEnemyDied = () => this.waveSystem.notifyEnemyDied();
+    this.enemySystem.onStructureDamaged = () => this.audio.playSfx("sfx-structure-hit");
 
     // 7. Weapon wheel for towers.
     if (!(window as any).__WEAPON_WHEEL_DISABLED) {
@@ -311,6 +335,7 @@ export class GameScene extends Phaser.Scene {
     // Trigger dialogs on first placement + snap refresh + tower lifecycle.
     this.buildSystem.onPlace = (col, row, mode) => {
       snapSystem.refresh(col, row);
+      this.audio.playSfx("sfx-build");
 
       if (mode === "tower") {
         this.towerSystem.addTower(col, row);
@@ -326,6 +351,7 @@ export class GameScene extends Phaser.Scene {
 
     this.buildSystem.onDestroy = (col, row, type) => {
       snapSystem.refresh(col, row);
+      this.audio.playSfx("sfx-destroy");
       if (type === "tower") {
         this.towerSystem.removeTower(col, row);
         if (this.selectedTowerCol === col && this.selectedTowerRow === row) {
@@ -364,6 +390,9 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(600, () => {
       this.showDialog(DIALOGS.game_start);
     });
+
+    // Start background music.
+    this.audio.playMusic("music-game");
 
     // Start first wave after intro.
     this.time.delayedCall(2000, () => {

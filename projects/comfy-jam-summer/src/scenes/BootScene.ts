@@ -83,5 +83,9 @@ export class BootScene extends Phaser.Scene {
     for (const img of manifest.images) {
       this.load.image(img.key, `assets/${img.path}`);
     }
+
+    for (const audio of manifest.audio ?? []) {
+      this.load.audio(audio.key, `assets/${audio.path}`);
+    }
   }
 }

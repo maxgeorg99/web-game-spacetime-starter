@@ -2,7 +2,6 @@ import { ObjectType, BuildSystem } from "./BuildSystem";
 import { TILE_SIZE } from "../config/constants";
 import { gridToWorld } from "../utils/gridUtils";
 
-const CONNECTED_SCALE = 1.5;
 const POSITION_NUDGE = TILE_SIZE * 0.25;
 
 /**
@@ -72,26 +71,29 @@ export class SnapSystem {
     if (!sprite) return;
 
     const isConnectedTower = type === "tower" && texKey !== "sandtower";
-    const size = TILE_SIZE * (isConnectedTower ? CONNECTED_SCALE : 1);
 
     if (sprite.texture.key !== texKey) {
       sprite.setTexture(texKey);
     }
-    sprite.setDisplaySize(size, size);
 
-    // Nudge position so the tower portion of the connected sprite aligns
-    // with the tile center. Push away from connecting walls.
     if (isConnectedTower) {
+      // Uniform scale so tower portion fills TILE_SIZE. Connected sprites are ~35 px
+      // wide where the tower is; scale = TILE_SIZE / frameWidth preserves aspect ratio.
+      const scale = TILE_SIZE / sprite.frame.width;
+      sprite.setDisplaySize(sprite.frame.width * scale, sprite.frame.height * scale);
+
+      // Nudge away from connecting walls so the tower center aligns with the tile center.
       let nx = 0;
       let ny = 0;
-      if (this.isWallAt(col, row - 1)) ny -= POSITION_NUDGE;
-      if (this.isWallAt(col, row + 1)) ny += POSITION_NUDGE;
-      if (this.isWallAt(col - 1, row)) nx -= POSITION_NUDGE;
-      if (this.isWallAt(col + 1, row)) nx += POSITION_NUDGE;
+      if (this.isWallAt(col, row - 1)) ny += POSITION_NUDGE;
+      if (this.isWallAt(col, row + 1)) ny -= POSITION_NUDGE;
+      if (this.isWallAt(col - 1, row)) nx += POSITION_NUDGE;
+      if (this.isWallAt(col + 1, row)) nx -= POSITION_NUDGE;
 
       const { x, y } = gridToWorld(col, row, this.gridOffsetX, this.gridOffsetY, TILE_SIZE);
       sprite.setPosition(x + nx, y + ny);
     } else {
+      sprite.setDisplaySize(TILE_SIZE, TILE_SIZE);
       const { x, y } = gridToWorld(col, row, this.gridOffsetX, this.gridOffsetY, TILE_SIZE);
       sprite.setPosition(x, y);
     }

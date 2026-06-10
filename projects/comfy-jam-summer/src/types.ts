@@ -15,4 +15,5 @@ export interface ManifestSpritesheet {
 export interface ManifestEntry {
   spritesheets: ManifestSpritesheet[];
   images: Array<{ key: string; path: string }>;
+  audio: Array<{ key: string; path: string }>;
 }
