@@ -2,7 +2,8 @@ local Game = require('game')
 local function hex(s: string): Color
     return Color.rgb(tonumber(string.sub(s,2,3),16) or 0,tonumber(string.sub(s,4,5),16) or 0,tonumber(string.sub(s,6,7),16) or 0)
 end
-type Board = {state: Game.State, time: number, hover: number, vm: ViewModel?, tower: Image?, enemies: {[string]: Image}, castle: Image?, sampler: ImageSampler}
+type Board = {state: Game.State, time: number, hover: number, vm: ViewModel?, tower: Image?, enemies: {[string]: Image}, castle: Image?, sampler: ImageSampler,lastX: {[number]: number}, lastY: {[number]: number},
+    flip: {[number]: boolean} }
 local function iso(x: number,y: number): Vector return Vector.xy(434+(x-y)*42,208+(x+y)*22) end
 local function polygon(r: Renderer, points: {Vector}, color: Color)
     local p=Path.new();p:moveTo(points[1]);for i=2,#points do p:lineTo(points[i]) end;p:close()
@@ -14,10 +15,14 @@ end
 local function diamond(r: Renderer,x: number,y: number,w: number,h: number,c: Color)
     polygon(r,{Vector.xy(x,y-h),Vector.xy(x+w,y),Vector.xy(x,y+h),Vector.xy(x-w,y)},c)
 end
-local function sprite(self: Board,r: Renderer,img: Image?,x: number,y: number,scale: number,frame: number,fw: number)
+local function sprite(self: Board,r: Renderer,img: Image?,x: number,y: number,scale: number,frame: number,fw: number,flipX: boolean?)    if not img then return end
     if not img then return end
     r:save()
-    local m=Mat2D.identity();m.xx=scale;m.yy=scale;m.tx=x-fw*scale/2;m.ty=y-img.height*scale
+    local m=Mat2D.identity()
+    m.xx=if flipX then -scale else scale
+    m.yy=scale
+    m.tx=if flipX then x+fw*scale/2 else x-fw*scale/2
+    m.ty=y-img.height*scale
     r:transform(m)
     local clip=Path.new();clip:moveTo(Vector.xy(0,0));clip:lineTo(Vector.xy(fw,0));clip:lineTo(Vector.xy(fw,img.height));clip:lineTo(Vector.xy(0,img.height));clip:close();r:clipPath(clip)
     local offset=Mat2D.identity();offset.tx=-frame*fw;r:transform(offset)
@@ -46,7 +51,24 @@ local function advance(self: Board,seconds: number): boolean
     self.time+=seconds
     -- Fixed-size substeps prevent large frames skipping simulation events.
     local left=math.min(seconds,0.25)
-    while left>0 do local dt=math.min(left,1/60);Game.step(self.state,dt);left-=dt end
+    while left>0 do
+        local dt=math.min(left,1/60)
+        Game.step(self.state,dt)
+
+        for _,e in self.state.enemies do
+            local oldX=self.lastX[e.id]
+            local oldY=self.lastY[e.id]
+
+            if oldX and oldY then
+                self.flip[e.id]=e.x<oldX or e.y>oldY
+            end
+
+            self.lastX[e.id]=e.x
+            self.lastY[e.id]=e.y
+        end
+
+        left-=dt
+    end
     sync(self);return true
 end
 local function hit(x: number,y: number): number
@@ -105,8 +127,7 @@ local function draw(self: Board,r: Renderer)
             local enemy=o.enemy
             if enemy then
                 local spec=Game.enemyTypes[enemy.kind]
-                sprite(self,r,self.enemies[enemy.kind],v.x,v.y+22,spec.scale,math.floor(self.time*10+enemy.id)%spec.frames,spec.frameSize)
-            end
+                sprite(self,r,self.enemies[enemy.kind],v.x,v.y+22,spec.scale,math.floor(self.time*10+enemy.id)%spec.frames,spec.frameSize,self.flip[enemy.id])            end
             local e=o.enemy;if e then rect(r,v.x-14,v.y-37,28,4,hex('#283E3B'));rect(r,v.x-14,v.y-37,28*e.hp/e.maxHp,4,hex('#E7A077')) end
         end
     end
@@ -117,5 +138,23 @@ local function draw(self: Board,r: Renderer)
     end
 end
 return function(context: Context): Layout<Board>
-    return {state=Game.new(),time=0,hover=0,vm=nil,tower=nil,enemies={},castle=nil,sampler=ImageSampler('clamp','clamp','nearest'),init=init,advance=advance,draw=draw,pointerDown=pointerDown,pointerMove=pointerMove,pointerExit=pointerExit}
+    return {
+        state=Game.new(),
+        time=0,
+        hover=0,
+        vm=nil,
+        tower=nil,
+        enemies={},
+        castle=nil,
+        sampler=ImageSampler('clamp','clamp','nearest'),
+        lastX={},
+        lastY={},
+        flip={},
+        init=init,
+        advance=advance,
+        draw=draw,
+        pointerDown=pointerDown,
+        pointerMove=pointerMove,
+        pointerExit=pointerExit
+    }
 end
