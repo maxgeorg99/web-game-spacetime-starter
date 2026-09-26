@@ -1,0 +1,136 @@
+<Rive version="1" kind="fragment">
+<ScriptAsset file="game.luau" isModule="true" name="game" id="0:90"/>
+<ScriptAsset file="board.luau" name="board" id="0:91"/>
+<FontAsset file="../../../assets/fonts/FiraSans-Regular.ttf" name="Fira Sans" id="0:30"/>
+<FontAsset file="../../../assets/fonts/FiraSans-Bold.ttf" name="Fira Sans Bold" id="0:31"/>
+<ImageAsset file="../../../assets/sprites/buildings/Blue_Tower.png" samplerFilter="1" name="tower" id="0:60"/>
+<ImageAsset file="../../../assets/sprites/buildings/Blue_Castle.png" samplerFilter="1" name="castle" id="0:61"/>
+<ImageAsset file="../../../assets/sprites/enemies/Skull_Skull_Run.png" samplerFilter="1" name="skull" id="0:62"/>
+<ImageAsset file="../../../assets/sprites/enemies/Skull_Skull Avatar.png" samplerFilter="1" name="skullPortrait" id="0:80"/>
+<ImageAsset file="../../../assets/sprites/enemies/Snake_Snake_Run.png" samplerFilter="1" name="snake" id="0:71"/>
+<ImageAsset file="../../../assets/sprites/enemies/Snake_Snake Avatar.png" samplerFilter="1" name="snakePortrait" id="0:81"/>
+<ImageAsset file="../../../assets/sprites/enemies/Spider_Spider_Run.png" samplerFilter="1" name="spider" id="0:72"/>
+<ImageAsset file="../../../assets/sprites/enemies/Spider_Spider Avatar.png" samplerFilter="1" name="spiderPortrait" id="0:82"/>
+<ImageAsset file="../../../assets/sprites/enemies/Turtle_Turtle_Walk.png" samplerFilter="1" name="turtle" id="0:73"/>
+<ImageAsset file="../../../assets/sprites/enemies/Turtle_Turtle Avatar.png" samplerFilter="1" name="turtlePortrait" id="0:83"/>
+<ViewModel name="Defense" id="0:40" defaultInstanceId="0:41">
+<ViewModelPropertyString name="gold" id="0:45"/>
+<ViewModelPropertyString name="lives" id="0:46"/>
+<ViewModelPropertyString name="wave" id="0:47"/>
+<ViewModelPropertyString name="status" id="0:48"/>
+<ViewModelPropertyString name="action" id="0:49"/>
+<ViewModelPropertyString name="remaining" id="0:50"/>
+<ViewModelPropertyString name="skullCount" id="0:300"/>
+<ViewModelPropertyString name="skullStats" id="0:301"/>
+<ViewModelPropertyNumber name="skullVisible" id="0:302"/>
+<ViewModelPropertyString name="snakeCount" id="0:303"/>
+<ViewModelPropertyString name="snakeStats" id="0:304"/>
+<ViewModelPropertyNumber name="snakeVisible" id="0:305"/>
+<ViewModelPropertyString name="spiderCount" id="0:306"/>
+<ViewModelPropertyString name="spiderStats" id="0:307"/>
+<ViewModelPropertyNumber name="spiderVisible" id="0:308"/>
+<ViewModelPropertyString name="turtleCount" id="0:309"/>
+<ViewModelPropertyString name="turtleStats" id="0:310"/>
+<ViewModelPropertyNumber name="turtleVisible" id="0:311"/>
+<ViewModelPropertyString name="previewTitle" id="0:320"/>
+<ViewModelInstance name="Default" id="0:41" exports="true">
+<ViewModelInstanceString propertyValue="150" viewModelPropertyId="0:45"/>
+<ViewModelInstanceString propertyValue="10 / 10" viewModelPropertyId="0:46"/>
+<ViewModelInstanceString propertyValue="0 / 3" viewModelPropertyId="0:47"/>
+<ViewModelInstanceString propertyValue="Place towers on the golden pads." viewModelPropertyId="0:48"/>
+<ViewModelInstanceString propertyValue="START WAVE  1" viewModelPropertyId="0:49"/>
+<ViewModelInstanceString propertyValue="Prepare your defense" viewModelPropertyId="0:50"/>
+<ViewModelInstanceString propertyValue="Skull" viewModelPropertyId="0:300"/>
+<ViewModelInstanceString propertyValue="" viewModelPropertyId="0:301"/>
+<ViewModelInstanceNumber propertyValue="0" viewModelPropertyId="0:302"/>
+<ViewModelInstanceString propertyValue="Snake" viewModelPropertyId="0:303"/>
+<ViewModelInstanceString propertyValue="" viewModelPropertyId="0:304"/>
+<ViewModelInstanceNumber propertyValue="0" viewModelPropertyId="0:305"/>
+<ViewModelInstanceString propertyValue="Spider" viewModelPropertyId="0:306"/>
+<ViewModelInstanceString propertyValue="" viewModelPropertyId="0:307"/>
+<ViewModelInstanceNumber propertyValue="0" viewModelPropertyId="0:308"/>
+<ViewModelInstanceString propertyValue="Turtle" viewModelPropertyId="0:309"/>
+<ViewModelInstanceString propertyValue="" viewModelPropertyId="0:310"/>
+<ViewModelInstanceNumber propertyValue="0" viewModelPropertyId="0:311"/>
+<ViewModelInstanceString propertyValue="NEXT WAVE" viewModelPropertyId="0:320"/>
+</ViewModelInstance></ViewModel>
+<Artboard name="Little Keep" id="0:2" width="1100" height="760" styleId="0:5" defaultStateMachineId="0:7" viewModelId="0:40" viewModelInstanceId="0:41">
+<LayoutComponentStyle name="Artboard Style" id="0:5"/>
+<Node name="Skull preview" x="40" y="134"><DataBindContext sourcePathIds="0:40-0:302" propertyKey="18"/>
+<Image name="Skull portrait" assetId="0:80" x="25" y="23" scaleX="0.18" scaleY="0.18"/>
+<Text name="skull0" x="51" y="5"><TextStylePaint id="0:400" fontSize="15" fontAssetId="0:30"><Fill><SolidColor colorValue="FFF1E8D0"/></Fill></TextStylePaint><TextValueRun styleId="0:400" text=""><DataBindContext sourcePathIds="0:40-0:300" propertyKey="268"/></TextValueRun></Text>
+<Text name="skull1" x="51" y="27"><TextStylePaint id="0:401" fontSize="11" fontAssetId="0:30"><Fill><SolidColor colorValue="FFA6B5AD"/></Fill></TextStylePaint><TextValueRun styleId="0:401" text=""><DataBindContext sourcePathIds="0:40-0:301" propertyKey="268"/></TextValueRun></Text>
+<Shape><Rectangle width="184" height="48" originX="0" originY="0" cornerRadiusTL="6"/><Fill><SolidColor colorValue="FF263D3C"/></Fill></Shape></Node>
+<Node name="Snake preview" x="234" y="134"><DataBindContext sourcePathIds="0:40-0:305" propertyKey="18"/>
+<Image name="Snake portrait" assetId="0:81" x="25" y="23" scaleX="0.18" scaleY="0.18"/>
+<Text name="snake0" x="51" y="5"><TextStylePaint id="0:402" fontSize="15" fontAssetId="0:30"><Fill><SolidColor colorValue="FFF1E8D0"/></Fill></TextStylePaint><TextValueRun styleId="0:402" text=""><DataBindContext sourcePathIds="0:40-0:303" propertyKey="268"/></TextValueRun></Text>
+<Text name="snake1" x="51" y="27"><TextStylePaint id="0:403" fontSize="11" fontAssetId="0:30"><Fill><SolidColor colorValue="FFA6B5AD"/></Fill></TextStylePaint><TextValueRun styleId="0:403" text=""><DataBindContext sourcePathIds="0:40-0:304" propertyKey="268"/></TextValueRun></Text>
+<Shape><Rectangle width="184" height="48" originX="0" originY="0" cornerRadiusTL="6"/><Fill><SolidColor colorValue="FF263D3C"/></Fill></Shape></Node>
+<Node name="Spider preview" x="428" y="134"><DataBindContext sourcePathIds="0:40-0:308" propertyKey="18"/>
+<Image name="Spider portrait" assetId="0:82" x="25" y="23" scaleX="0.18" scaleY="0.18"/>
+<Text name="spider0" x="51" y="5"><TextStylePaint id="0:404" fontSize="15" fontAssetId="0:30"><Fill><SolidColor colorValue="FFF1E8D0"/></Fill></TextStylePaint><TextValueRun styleId="0:404" text=""><DataBindContext sourcePathIds="0:40-0:306" propertyKey="268"/></TextValueRun></Text>
+<Text name="spider1" x="51" y="27"><TextStylePaint id="0:405" fontSize="11" fontAssetId="0:30"><Fill><SolidColor colorValue="FFA6B5AD"/></Fill></TextStylePaint><TextValueRun styleId="0:405" text=""><DataBindContext sourcePathIds="0:40-0:307" propertyKey="268"/></TextValueRun></Text>
+<Shape><Rectangle width="184" height="48" originX="0" originY="0" cornerRadiusTL="6"/><Fill><SolidColor colorValue="FF263D3C"/></Fill></Shape></Node>
+<Node name="Turtle preview" x="622" y="134"><DataBindContext sourcePathIds="0:40-0:311" propertyKey="18"/>
+<Image name="Turtle portrait" assetId="0:83" x="25" y="23" scaleX="0.18" scaleY="0.18"/>
+<Text name="turtle0" x="51" y="5"><TextStylePaint id="0:406" fontSize="15" fontAssetId="0:30"><Fill><SolidColor colorValue="FFF1E8D0"/></Fill></TextStylePaint><TextValueRun styleId="0:406" text=""><DataBindContext sourcePathIds="0:40-0:309" propertyKey="268"/></TextValueRun></Text>
+<Text name="turtle1" x="51" y="27"><TextStylePaint id="0:407" fontSize="11" fontAssetId="0:30"><Fill><SolidColor colorValue="FFA6B5AD"/></Fill></TextStylePaint><TextValueRun styleId="0:407" text=""><DataBindContext sourcePathIds="0:40-0:310" propertyKey="268"/></TextValueRun></Text>
+<Shape><Rectangle width="184" height="48" originX="0" originY="0" cornerRadiusTL="6"/><Fill><SolidColor colorValue="FF263D3C"/></Fill></Shape></Node>
+<Text name="Wave preview title" x="40" y="109"><TextStylePaint id="0:420" fontSize="12" fontAssetId="0:31"><Fill><SolidColor colorValue="FFD1B878"/></Fill></TextStylePaint><TextValueRun styleId="0:420" text="NEXT WAVE"><DataBindContext sourcePathIds="0:40-0:320" propertyKey="268"/></TextValueRun></Text>
+<Text name="LITTLE KEEP" x="40" y="30"><TextStylePaint id="0:102" fontSize="32" fontAssetId="0:31"><Fill><SolidColor colorValue="FFF1E8D0"/></Fill></TextStylePaint><TextValueRun styleId="0:102" text="LITTLE KEEP">
+</TextValueRun></Text>
+<Text name="A small island. One road. Hold the line." x="42" y="73"><TextStylePaint id="0:104" fontSize="16" fontAssetId="0:30"><Fill><SolidColor colorValue="FFA6B5AD"/></Fill></TextStylePaint><TextValueRun styleId="0:104" text="A small island. One road. Hold the line.">
+</TextValueRun></Text>
+<Text name="ISOMETRIC  /  01" x="656" y="43"><TextStylePaint id="0:106" fontSize="13" fontAssetId="0:30"><Fill><SolidColor colorValue="FFD1B878"/></Fill></TextStylePaint><TextValueRun styleId="0:106" text="ISOMETRIC  /  01">
+</TextValueRun></Text>
+<Text name="status" x="40" y="673" width="755" sizingValue="autoHeight" wrapValue="wrap"><TextStylePaint id="0:108" fontSize="18" fontAssetId="0:30"><Fill><SolidColor colorValue="FFE8D9B9"/></Fill></TextStylePaint><TextValueRun styleId="0:108" text="Place towers on the golden pads.">
+<DataBindContext sourcePathIds="0:40-0:48" propertyKey="268"/>
+</TextValueRun></Text>
+<Text name="CLICK A GOLDEN PAD TO BUILD  ·  HOVER TO SEE RANGE" x="40" y="715"><TextStylePaint id="0:110" fontSize="12" fontAssetId="0:30"><Fill><SolidColor colorValue="FF8EA79B"/></Fill></TextStylePaint><TextValueRun styleId="0:110" text="CLICK A GOLDEN PAD TO BUILD  ·  HOVER TO SEE RANGE">
+</TextValueRun></Text>
+<Text name="THE DEFENSE" x="860" y="40"><TextStylePaint id="0:112" fontSize="13" fontAssetId="0:31"><Fill><SolidColor colorValue="FFD1B878"/></Fill></TextStylePaint><TextValueRun styleId="0:112" text="THE DEFENSE">
+</TextValueRun></Text>
+<Text name="GOLD" x="860" y="89"><TextStylePaint id="0:114" fontSize="12" fontAssetId="0:30"><Fill><SolidColor colorValue="FFA6B5AD"/></Fill></TextStylePaint><TextValueRun styleId="0:114" text="GOLD">
+</TextValueRun></Text>
+<Text name="gold" x="860" y="112"><TextStylePaint id="0:116" fontSize="28" fontAssetId="0:31"><Fill><SolidColor colorValue="FFF1E8D0"/></Fill></TextStylePaint><TextValueRun styleId="0:116" text="150">
+<DataBindContext sourcePathIds="0:40-0:45" propertyKey="268"/>
+</TextValueRun></Text>
+<Text name="KEEP" x="974" y="89"><TextStylePaint id="0:118" fontSize="12" fontAssetId="0:30"><Fill><SolidColor colorValue="FFA6B5AD"/></Fill></TextStylePaint><TextValueRun styleId="0:118" text="KEEP">
+</TextValueRun></Text>
+<Text name="lives" x="974" y="112"><TextStylePaint id="0:120" fontSize="28" fontAssetId="0:31"><Fill><SolidColor colorValue="FFF1E8D0"/></Fill></TextStylePaint><TextValueRun styleId="0:120" text="10 / 10">
+<DataBindContext sourcePathIds="0:40-0:46" propertyKey="268"/>
+</TextValueRun></Text>
+<Text name="WAVE" x="860" y="185"><TextStylePaint id="0:122" fontSize="12" fontAssetId="0:30"><Fill><SolidColor colorValue="FFA6B5AD"/></Fill></TextStylePaint><TextValueRun styleId="0:122" text="WAVE">
+</TextValueRun></Text>
+<Text name="wave" x="860" y="208"><TextStylePaint id="0:124" fontSize="28" fontAssetId="0:31"><Fill><SolidColor colorValue="FFF1E8D0"/></Fill></TextStylePaint><TextValueRun styleId="0:124" text="0 / 3">
+<DataBindContext sourcePathIds="0:40-0:47" propertyKey="268"/>
+</TextValueRun></Text>
+<Text name="remaining" x="860" y="253"><TextStylePaint id="0:126" fontSize="14" fontAssetId="0:30"><Fill><SolidColor colorValue="FFA6B5AD"/></Fill></TextStylePaint><TextValueRun styleId="0:126" text="Prepare your defense">
+<DataBindContext sourcePathIds="0:40-0:50" propertyKey="268"/>
+</TextValueRun></Text>
+<Text name="ARCHER TOWER" x="860" y="315"><TextStylePaint id="0:128" fontSize="18" fontAssetId="0:31"><Fill><SolidColor colorValue="FFF1E8D0"/></Fill></TextStylePaint><TextValueRun styleId="0:128" text="ARCHER TOWER">
+</TextValueRun></Text>
+<Text name="50 gold" x="860" y="350"><TextStylePaint id="0:130" fontSize="23" fontAssetId="0:31"><Fill><SolidColor colorValue="FFE4C77E"/></Fill></TextStylePaint><TextValueRun styleId="0:130" text="50 gold">
+</TextValueRun></Text>
+<Text name="25 damage  /  0.5s
+Range: 2.5 tiles
+Targets the leading enemy" x="860" y="393" width="205" sizingValue="autoHeight" wrapValue="wrap"><TextStylePaint id="0:132" fontSize="14" fontAssetId="0:30"><Fill><SolidColor colorValue="FFA6B5AD"/></Fill></TextStylePaint><TextValueRun styleId="0:132" text="25 damage  /  0.5s
+Range: 2.5 tiles
+Targets the leading enemy">
+</TextValueRun></Text>
+<Text name="action" x="881" y="558"><TextStylePaint id="0:134" fontSize="14" fontAssetId="0:31"><Fill><SolidColor colorValue="FF1B302C"/></Fill></TextStylePaint><TextValueRun styleId="0:134" text="START WAVE  1">
+<DataBindContext sourcePathIds="0:40-0:49" propertyKey="268"/>
+</TextValueRun></Text>
+<Text name="RESET" x="921" y="625"><TextStylePaint id="0:136" fontSize="13" fontAssetId="0:31"><Fill><SolidColor colorValue="FFC1CFC6"/></Fill></TextStylePaint><TextValueRun styleId="0:136" text="RESET">
+</TextValueRun></Text>
+<Text name="3 WAVES · 5 BUILD PADS" x="860" y="686"><TextStylePaint id="0:138" fontSize="12" fontAssetId="0:30"><Fill><SolidColor colorValue="FF8EA79B"/></Fill></TextStylePaint><TextValueRun styleId="0:138" text="3 WAVES · 5 BUILD PADS">
+</TextValueRun></Text>
+<Shape x="860" y="542"><Rectangle width="200" height="52" originX="0" originY="0" cornerRadiusTL="8"/><Fill><SolidColor colorValue="FFDCC58B"/></Fill></Shape>
+<Shape x="860" y="613"><Rectangle width="200" height="42" originX="0" originY="0" cornerRadiusTL="8"/><Fill><SolidColor colorValue="FF30453F"/></Fill></Shape>
+<Shape x="860" y="292"><Rectangle width="200" height="1" originX="0" originY="0" cornerRadiusTL="0"/><Fill><SolidColor colorValue="FF3A4B44"/></Fill></Shape>
+<Shape x="860" y="484"><Rectangle width="200" height="1" originX="0" originY="0" cornerRadiusTL="0"/><Fill><SolidColor colorValue="FF3A4B44"/></Fill></Shape>
+<Shape x="830" y="0"><Rectangle width="270" height="760" originX="0" originY="0" cornerRadiusTL="0"/><Fill><SolidColor colorValue="FF21362F"/></Fill></Shape>
+<LayoutComponent width="1100" height="760" styleId="0:11" name="Playfield"><LayoutComponentStyle layoutWidthScaleType="fill" layoutHeightScaleType="fill" widthUnitsValue="auto" heightUnitsValue="auto" id="0:11"/><ScriptedLayout scriptAssetId="0:91" name="Board"/></LayoutComponent>
+<Fill name="Background"><SolidColor colorValue="FF192D30"/></Fill>
+<StateMachine name="Play" id="0:7"><StateMachineLayer><EntryState><StateTransition stateToId="0:12"/></EntryState><AnimationState x="200" y="0" animationId="0:6" id="0:12"/></StateMachineLayer></StateMachine><LinearAnimation duration="60" name="Idle" id="0:6"/>
+</Artboard></Rive>
