@@ -1,232 +1,81 @@
-Get a SpacetimeDB Bun app running in under 5 minutes.
+# Little Keep
 
-## Prerequisites
+Cooperative isometric tower defense built with a scripted Rive scene and an authoritative SpacetimeDB module. Three 19×19 battlefields, twelve waves, four tower types, ten enemy species, and up to eight players in a shared room.
 
-- [Bun](https://bun.sh/) installed
-- [SpacetimeDB CLI](https://spacetimedb.com/install) installed
+## Published deployment
 
-Install the [SpacetimeDB CLI](https://spacetimedb.com/install) before continuing.
+- itch.io project: https://maxgeorg99.itch.io/little-keep
+- Maincloud database: `maxgeorg99-little-keep`
+- WebSocket endpoint: `wss://maincloud.spacetimedb.com`
+- Dashboard: https://spacetimedb.com/maxgeorg99-little-keep
 
----
+itch.io serves static files. Browsers connect directly to Maincloud; no Bun server is required in production. On the itch.io edit page, the project must be HTML and the `html5` upload must have **This file will be played in the browser** enabled. Set visibility to Public when publishing.
 
-## Create your project
+Players enter the same room code. Gold, towers, keep health, waves and enemies are shared. Empty rooms pause and expire after 30 minutes. Moving to the next battlefield resets towers, gold and keep health; campaign kills carry over.
 
-Run the `spacetime dev` command to create a new project with a SpacetimeDB module and Bun client.
+## Local development
 
-This will start the local SpacetimeDB server, publish your module, and generate TypeScript bindings.
+From this directory, use three terminals:
 
-```bash
-spacetime dev --template bun-ts
+```sh
+spacetime start
 ```
 
-
-
-## Explore the project structure
-
-Your project contains both server and client code.
-
-Edit `spacetimedb/src/index.ts` to add tables and reducers. Edit `src/main.ts` to build your Bun client.
-
-```
-my-spacetime-app/
-├── spacetimedb/          # Your SpacetimeDB module
-│   └── src/
-│       └── index.ts      # Server-side logic
-├── src/
-│   ├── main.ts           # Bun client script
-│   └── module_bindings/  # Auto-generated types
-└── package.json
+```sh
+spacetime publish rive-td --server local --module-path spacetimedb --yes
 ```
 
-
-
-## Understand tables and reducers
-
-Open `spacetimedb/src/index.ts` to see the module code. The template includes a `person` table and two reducers: `add` to insert a person, and `sayHello` to greet everyone.
-
-Tables store your data. Reducers are functions that modify data — they're the only way to write to the database.
-
-```typescript
-import { schema, table, t } from 'spacetimedb/server';
-
-const spacetimedb = schema({
-  person: table(
-    { public: true },
-    {
-      name: t.string(),
-    }
-  ),
-});
-export default spacetimedb;
-
-export const add = spacetimedb.reducer(
-  { name: t.string() },
-  (ctx, { name }) => {
-    ctx.db.person.insert({ name });
-  }
-);
-
-export const sayHello = spacetimedb.reducer(ctx => {
-  for (const person of ctx.db.person.iter()) {
-    console.info(`Hello, ${person.name}!`);
-  }
-  console.info('Hello, World!');
-});
+```sh
+SPACETIMEDB_HOST=ws://127.0.0.1:3000 SPACETIMEDB_DB_NAME=rive-td bun run dev
 ```
 
+Open http://127.0.0.1:5173 in multiple tabs. The browser requires `public/little-keep.riv`, created by the signing command below. Start and publish against the same local server: starting with a different `--data-dir` creates a separate database installation.
 
+For an offline, independent native game:
 
-## Run the client
-
-In a new terminal, run the Bun client. It will connect to SpacetimeDB and start an interactive CLI where you can add people and query the database.
-
-```bash
-# Run with auto-reload during development
-bun run dev
-
-# Or run once
-
-bun run start
-
+```sh
+~/.rive/bin/rive ../td --fit=contain
 ```
 
+Native previews do not synchronize. Multiplayer is provided by the browser host and the scene's `snapshot` / `command` view-model properties.
 
+## Release to itch.io
 
-## Use the interactive CLI
-
-The client provides a command-line interface to interact with your SpacetimeDB module. Type a name to add a person, or use the built-in commands.
-
+```sh
+bun run typecheck
+bun run test
+bun run publish:cloud
+~/.rive/bin/rive login                 # only if not already signed in
+bun run rive:sign
+bun run build:itch
+butler push dist/itch maxgeorg99/little-keep:html5 --userversion 0.1.0
 ```
 
-Connecting to SpacetimeDB...
-URI: ws://localhost:3000
-Module: bun-ts
+`dist/itch` contains only `index.html`, `client.js`, `config.json`, the signed `.riv`, and Rive's WASM files. Assets use relative URLs for itch.io iframe paths. The public configuration contains no credentials. Signing currently adds Rive's watermark because the project is not bound to a Rive editor file.
 
-Connected to SpacetimeDB!
-Identity: abc123def456...
+`ITCH_DATABASE` overrides the Maincloud database baked into the static build. Local `.env` settings deliberately do not override the production endpoint. Room invites include the itch.io page URL and room code because itch.io does not forward a page query into the game's iframe.
 
-Current people (0):
-(none yet)
+## Validation
 
-Commands:
-<name> - Add a person with that name
-list - Show all people
-hello - Greet everyone (check server logs)
-Ctrl+C - Quit
+```sh
+bun run typecheck
+bun run test
+bun run test:multiplayer               # local server + published module required
+TEST_SPACETIME_URI=wss://maincloud.spacetimedb.com TEST_SPACETIME_DB=maxgeorg99-little-keep bun run test:multiplayer
+~/.rive/bin/rive ../td --verify
+~/.rive/bin/rive ../td --test
+```
 
-> Alice
-> [Added] Alice
+The multiplayer test creates temporary rooms and checks contested purchases, shared combat, late joins, reconnects and empty-room pausing. Test rooms expire automatically.
 
-> Bob
-> [Added] Bob
+## Source layout
 
-> list
-> People in database:
+- `shared/catalog.ts`: tower/enemy stats, maps and waves; generates `../td/catalog.luau`.
+- `shared/game.ts`: deterministic server simulation and Rive snapshot encoder.
+- `spacetimedb/src/index.ts`: rooms, membership, command validation and scheduled combat ticks.
+- `src/client.ts`: Rive host, subscriptions and room UI.
+- `src/main.ts`: local development server only.
+- `scripts/build-itch.ts`: static release packaging.
+- `../td/`: native Rive scene, renderer and offline Luau simulation.
 
-- Alice
-- Bob
-
-> hello
-> Called sayHello reducer (check server logs)
-
-````
-
-
-
-## Understand the client code
-
-Open `src/main.ts` to see the Bun client. It uses `DbConnection.builder()` to connect to SpacetimeDB, subscribes to tables, and sets up the interactive CLI using Bun's native APIs.
-
-Unlike browser apps, Bun stores the authentication token in a file using `Bun.file()` and `Bun.write()`.
-
-```typescript
-import { DbConnection } from './module_bindings/index.js';
-
-// Build and establish connection
-DbConnection.builder()
-  .withUri(HOST)
-  .withDatabaseName(DB_NAME)
-  .withToken(await loadToken())  // Load saved token from file
-  .onConnect((conn, identity, token) => {
-    console.log('Connected! Identity:', identity.toHexString());
-    saveToken(token);  // Save token for future connections
-
-    // Subscribe to all tables
-    conn.subscriptionBuilder()
-      .onApplied((ctx) => {
-        // Show current data, start CLI
-        setupCLI(conn);
-      })
-      .subscribeToAllTables();
-
-    // Listen for table changes
-    conn.db.person.onInsert((ctx, person) => {
-      console.log(`[Added] ${person.name}`);
-    });
-  })
-  .build();
-````
-
-
-
-## Test with the SpacetimeDB CLI
-
-You can also use the SpacetimeDB CLI to call reducers and query your data directly. Changes made via the CLI will appear in your Bun client in real-time.
-
-```bash
-# Call the add reducer to insert a person
-spacetime call add Charlie
-
-# Query the person table
-
-spacetime sql "SELECT \* FROM person"
-name
-
----
-
-"Alice"
-"Bob"
-"Charlie"
-
-# Call sayHello to greet everyone
-
-spacetime call say_hello
-
-# View the module logs
-
-spacetime logs
-2025-01-13T12:00:00.000000Z INFO: Hello, Alice!
-2025-01-13T12:00:00.000000Z INFO: Hello, Bob!
-2025-01-13T12:00:00.000000Z INFO: Hello, Charlie!
-2025-01-13T12:00:00.000000Z INFO: Hello, World!
-
-````
-
-
-
-## Bun-specific features
-
-**Native WebSocket:** Bun has built-in WebSocket support, so no additional packages like `undici` are needed.
-
-**Built-in TypeScript:** Bun runs TypeScript directly without transpilation, making startup faster and eliminating the need for `tsx` or `ts-node`.
-
-**Environment variables:** Bun automatically loads `.env` files. Configure the connection using `SPACETIMEDB_HOST` and `SPACETIMEDB_DB_NAME` environment variables.
-
-**File APIs:** The template uses `Bun.file()` and `Bun.write()` for token persistence, which are faster than Node.js `fs` operations.
-
-```bash
-# Configure via environment variables
-SPACETIMEDB_HOST=ws://localhost:3000 \
-SPACETIMEDB_DB_NAME=my-app \
-bun run start
-
-# Or create a .env file (Bun loads it automatically)
-echo "SPACETIMEDB_HOST=ws://localhost:3000" > .env
-echo "SPACETIMEDB_DB_NAME=my-app" >> .env
-bun run start
-````
-
-## Next steps
-
-- See the [Chat App Tutorial](https://spacetimedb.com/docs/tutorials/chat-app) for a complete example
-- Read the [TypeScript SDK Reference](https://spacetimedb.com/docs/clients/typescript) for detailed API docs
+Run `bun run catalog` after catalog or scene-generator changes, then verify the Rive scene. Use `bun run rive:sign` before building a new browser release. Generated SpacetimeDB bindings are refreshed with `bun run spacetime:generate`.

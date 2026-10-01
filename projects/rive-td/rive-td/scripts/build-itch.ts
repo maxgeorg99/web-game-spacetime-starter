@@ -1,0 +1,12 @@
+import { mkdir, copyFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+const root=resolve(import.meta.dir,'..'),out=resolve(root,'dist/itch');
+const database=process.env.ITCH_DATABASE??'maxgeorg99-little-keep';
+const source=resolve(root,'public/little-keep.riv');
+if(!await Bun.file(source).exists())throw Error('Run bun run rive:sign first. A signed Rive scene is required.');
+await mkdir(out,{recursive:true});
+const result=await Bun.build({entrypoints:[resolve(root,'src/client.ts')],target:'browser',outdir:out,minify:true});
+if(!result.success)throw new AggregateError(result.logs,'Static client build failed');
+for(const [from,to] of [['index.html','index.html'],['public/little-keep.riv','little-keep.riv'],['node_modules/@rive-app/webgl2/rive.wasm','rive.wasm'],['node_modules/@rive-app/webgl2/rive_fallback.wasm','rive_fallback.wasm']])await copyFile(resolve(root,from),resolve(out,to));
+await Bun.write(resolve(out,'config.json'),JSON.stringify({uri:'wss://maincloud.spacetimedb.com',database,riveReady:true,pageUrl:'https://maxgeorg99.itch.io/little-keep'},null,2)+'\n');
+console.log(`Static itch.io build: ${out}\nMaincloud database: ${database}`);

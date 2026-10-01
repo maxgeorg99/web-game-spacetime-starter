@@ -11,8 +11,11 @@
     "catalog": "bun scripts/catalog.ts && bun scripts/scene.ts",
     "rive:sign": "bun run catalog && bun scripts/sign.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p spacetimedb/tsconfig.json",
-    "test": "bun test tests/game.test.ts",
-    "test:multiplayer": "bun test tests/multiplayer.test.ts"
+    "test": "bun test tests/game.test.ts tests/connection-health.test.ts",
+    "test:multiplayer": "bun test tests/multiplayer.test.ts",
+    "build:itch": "bun scripts/build-itch.ts",
+    "publish:cloud": "spacetime publish maxgeorg99-little-keep --server maincloud --module-path spacetimedb --yes",
+    "push:itch": "butler push dist/itch maxgeorg99/little-keep:html5"
   },
   "dependencies": {
     "@rive-app/webgl2": "^2.44.0",
