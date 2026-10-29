@@ -14,8 +14,8 @@ for (const name of names) {
     stdout: 'ignore',
     stderr: 'ignore',
   });
-  child.stdin.write(process.env[name]!.trim());
-  child.stdin.end();
+  await child.stdin.write(process.env[name]!.trim());
+  await child.stdin.end();
   if ((await child.exited) !== 0) {
     throw Error(`Could not set ${name}. Check gh authentication and repository access.`);
   }
@@ -35,8 +35,8 @@ for (const [name, value] of Object.entries({
     stdout: 'ignore',
     stderr: 'ignore',
   });
-  child.stdin.write(value);
-  child.stdin.end();
+  await child.stdin.write(value);
+  await child.stdin.end();
   if ((await child.exited) !== 0) {
     throw Error(`Could not set ${name}.`);
   }

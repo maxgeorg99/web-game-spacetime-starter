@@ -13,8 +13,8 @@ const child = Bun.spawn(
     stderr: 'ignore',
   },
 );
-child.stdin.write(token);
-child.stdin.end();
+await child.stdin.write(token);
+await child.stdin.end();
 if ((await child.exited) !== 0) {
   throw Error('Could not configure Vercel. Check CLI login and project link.');
 }
