@@ -1,0 +1,40 @@
+import type { TowerDef } from './types';
+export const towers = [
+  {
+    id: 'watchtower',
+    projectile: { art: 'arrow', speed: 7 },
+    name: 'Watchtower',
+    description: 'Quick arrows. A dependable first line.',
+    art: 'archer',
+    cost: 50,
+    damage: 14,
+    range: 2.6,
+    cooldown: 0.7,
+    splash: 0,
+  },
+  {
+    id: 'catapult',
+    projectile: { art: 'rock', speed: 4 },
+    name: 'Catapult',
+    description: 'Heavy stones strike clustered enemies.',
+    art: 'cannon',
+    cost: 90,
+    damage: 30,
+    range: 2.9,
+    cooldown: 1.8,
+    splash: 0.85,
+  },
+  {
+    id: 'sentinel',
+    projectile: { art: 'arrow', speed: 9 },
+    name: 'Sentinel',
+    description: 'Long-range shots punish sturdy raiders.',
+    art: 'barracks',
+    cost: 120,
+    damage: 46,
+    range: 3.5,
+    cooldown: 1.5,
+    splash: 0,
+  },
+] as const satisfies readonly TowerDef[];
+export type TowerId = (typeof towers)[number]['id'];

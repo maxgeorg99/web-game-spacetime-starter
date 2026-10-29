@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#c6d3d6" />
+    <title>Windward Keep · Tile Tower Defense</title>
+    <link rel="icon" href="%BASE_URL%art/keep.png" />
+  </head>
+  <body data-screen="menu">
+    <main class="game-shell">
+      <section id="session-menu" class="session-menu" aria-label="Multiplayer sessions">
+        <div class="session-panel">
+          <img class="menu-keep" src="%BASE_URL%art/keep.png" alt="" />
+          <h1>Windward Keep</h1>
+          <p id="menu-status" role="status">Connecting…</p>
+          <div class="session-form">
+            <label
+              >Captain name<input
+                id="captain-name"
+                maxlength="24"
+                placeholder="Your name"
+                autocomplete="nickname" /></label
+            ><button id="captain-save">Save</button>
+          </div>
+          <h2>Worlds</h2>
+          <div id="session-list"></div>
+          <div class="session-form">
+            <label
+              >New world<input
+                id="session-name"
+                maxlength="40"
+                placeholder="Name your world" /></label
+            ><button id="session-create">Create</button>
+          </div>
+          <p id="menu-error" role="alert"></p>
+          <button id="coordinator-retry">Reconnect</button>
+          <p id="world-status" role="status"></p>
+          <div id="world-actions" hidden>
+            <button id="world-retry">Rejoin world</button
+            ><button id="world-back">Back to sessions</button>
+          </div>
+        </div>
+      </section>
+      <div
+        id="game"
+        role="img"
+        aria-label="Island battlefield. Choose a tower below and click a meadow to build."
+      ></div>
+      <header class="hud">
+        <div class="resource-hud">
+          <img class="keep-icon" src="%BASE_URL%art/keep.png" alt="Keep" />
+          <div id="resources"></div>
+        </div>
+        <div class="wave-hud">
+          <div class="wave-number"><span id="wave-number"></span></div>
+          <button id="start" class="primary">Start wave ▷</button>
+          <button
+            id="catalog-open"
+            class="icon-button"
+            aria-label="Open field guide"
+            title="Field guide"
+          >
+            ?
+          </button>
+          <details class="settings">
+            <summary aria-label="Game settings" title="Game settings">☰</summary>
+            <div class="floating-panel">
+              <strong>Windward Keep</strong>
+              <button id="audio-mute" type="button" aria-pressed="false">Mute sound</button>
+              <label class="audio-setting"
+                >Effects <input id="audio-effects" type="range" min="0" max="100" value="55"
+              /></label>
+              <label class="audio-setting"
+                >Music <input id="audio-music" type="range" min="0" max="100" value="15"
+              /></label>
+              <p id="connection"></p>
+              <button id="sessions-open">Sessions</button>
+            </div>
+          </details>
+        </div>
+      </header>
+      <section id="wave-preview" class="wave-panel" aria-label="Wave preview">
+        <div class="wave-caption">
+          <span id="phase"></span>
+          <h2 id="wave-title"></h2>
+        </div>
+        <p id="wave-description"></p>
+        <div id="wave-units"></div>
+      </section>
+      <aside id="selection-panel" class="floating-panel selection-panel" hidden>
+        <button id="selection-close" class="close-button" aria-label="Close tower panel">×</button>
+        <div id="selection"></div>
+      </aside>
+      <p id="notice" role="status" aria-live="polite"></p>
+      <aside
+        id="world-navigation"
+        class="world-navigation"
+        aria-label="World islands"
+        hidden
+      ></aside>
+      <div id="world-controls" class="world-controls" hidden>
+        <span>Drag to fly · Scroll to zoom · Arrow keys to pan</span
+        ><button id="world-home">My island</button><button id="world-overview">World view</button>
+      </div>
+      <section class="bottom-hud">
+        <div class="play-hint">
+          <p id="instruction"></p>
+          <span id="army-count"></span>
+        </div>
+        <div id="draft" hidden>
+          <h2>Expand your island</h2>
+          <div id="draft-cards"></div>
+        </div>
+        <div id="action-dock" class="action-dock">
+          <div class="dock-tabs">
+            <button id="tab-build" class="active" aria-pressed="true">Build</button
+            ><button id="tab-send" aria-pressed="false">Recruit</button><span id="income"></span>
+          </div>
+          <div id="build-tray" class="card-tray"></div>
+          <div id="send-tray" hidden>
+            <div class="expedition-controls">
+              <label
+                >Opponent
+                <select id="opponent"></select></label
+              ><label
+                >Troops <input id="passengers" type="number" min="1" max="6" value="1"
+              /></label>
+            </div>
+            <div id="send-cards" class="card-tray"></div>
+            <p id="flight-status"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <dialog id="catalog">
+      <div class="catalog-head">
+        <h2>Field guide</h2>
+        <button id="catalog-close" aria-label="Close field guide">×</button>
+      </div>
+      <div id="catalog-content"></div>
+    </dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

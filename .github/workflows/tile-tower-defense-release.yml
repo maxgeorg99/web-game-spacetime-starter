@@ -1,0 +1,70 @@
+name: Release Tile Tower Defense
+on:
+  push:
+    branches: [main]
+    paths:
+      - "projects/tile-tower-defense/**"
+      - ".github/workflows/tile-tower-defense-release.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: tile-tower-defense-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: projects/tile-tower-defense
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      SPACETIME_ADMIN_TOKEN: ${{ secrets.SPACETIME_ADMIN_TOKEN }}
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      VITE_PROVISIONER_URL: ${{ vars.VITE_PROVISIONER_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.12"
+      - name: Require release configuration
+        run: |
+          for name in VERCEL_ORG_ID VERCEL_PROJECT_ID VERCEL_TOKEN SPACETIME_ADMIN_TOKEN BUTLER_API_KEY VITE_PROVISIONER_URL; do
+            test -n "${!name}" || { echo "Configure $name before releasing."; exit 1; }
+          done
+          case "$VITE_PROVISIONER_URL" in https://*/api/provision) ;; *) echo 'Set the production HTTPS provisioner URL.'; exit 1 ;; esac
+      - run: bun install --frozen-lockfile
+      - run: bun run format:check
+      - run: bun run lint
+      - run: bun run test
+      - name: Build itch.io release
+        run: bun run build:itch
+      - name: Install SpacetimeDB CLI
+        run: |
+          curl --fail --silent --show-error --location https://install.spacetimedb.com -o /tmp/install-spacetime.sh
+          sh /tmp/install-spacetime.sh --yes
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/spacetime" version install 2.10.2
+          "$HOME/.local/bin/spacetime" version use 2.10.2
+      - name: Publish coordinator without resetting saves
+        run: |
+          spacetime login --token "$SPACETIME_ADMIN_TOKEN" > /dev/null
+          spacetime publish tiled-tower-defense --server maincloud --module-path coordinator --delete-data=never --yes=remote,skip-login
+      - name: Deploy Vercel production
+        # Remote build uses vercel.json; only Vercel's stored production secret reaches the function.
+        run: bunx vercel@50.38.2 deploy --prod --yes --token "$VERCEL_TOKEN"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tiled-tower-defense-html5
+          path: projects/tile-tower-defense/dist/
+          if-no-files-found: error
+      - name: Install Butler
+        run: |
+          curl --fail --location https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default -o /tmp/butler.zip
+          unzip -q /tmp/butler.zip -d /tmp/butler
+          chmod +x /tmp/butler/butler
+      - name: Publish itch.io after backend deployment succeeds
+        run: /tmp/butler/butler push dist maxgeorg99/tiled-tower-defense:html5 --userversion "$GITHUB_SHA"

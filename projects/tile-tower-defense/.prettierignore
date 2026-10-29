@@ -1,0 +1,12 @@
+node_modules
+dist
+src/module_bindings
+spacetimedb/dist
+bun.lock
+
+.local
+
+src/coordinator_bindings
+coordinator/dist
+
+.vercel

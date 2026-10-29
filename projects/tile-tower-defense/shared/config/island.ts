@@ -1,0 +1,60 @@
+import type { TileDef } from './types';
+export const tiles = [
+  {
+    id: 'meadow',
+    name: 'Meadow',
+    description: 'Open ground for a new tower.',
+    color: 0xa6bb79,
+    buildable: true,
+    goldIncome: 0,
+    meatIncome: 0,
+  },
+  {
+    id: 'forest',
+    name: 'Timber grove',
+    description: '+12 gold after each defended wave.',
+    color: 0x829c62,
+    art: 'forest',
+    buildable: false,
+    goldIncome: 12,
+    meatIncome: 0,
+  },
+  {
+    id: 'farm',
+    name: 'Sky pasture',
+    description: '+4 meat after each defended wave.',
+    color: 0xb3bd7b,
+    art: 'mill',
+    buildable: false,
+    goldIncome: 0,
+    meatIncome: 4,
+  },
+] as const satisfies readonly TileDef[];
+export type TileId = (typeof tiles)[number]['id'];
+export const balance = {
+  startGold: 180,
+  startMeat: 16,
+  keepHealth: 20,
+  waveGold: 45,
+  waveMeat: 7,
+  tickSeconds: 0.1,
+  maxRecruits: 12,
+  islandRadius: 4,
+  maxTiles: 49,
+  sellFraction: 0.65,
+} as const;
+export const road = [
+  { x: -2, y: -2 },
+  { x: -1, y: -2 },
+  { x: 0, y: -2 },
+  { x: 1, y: -2 },
+  { x: 1, y: -1 },
+  { x: 1, y: 0 },
+  { x: 0, y: 0 },
+  { x: -1, y: 0 },
+  { x: -1, y: 1 },
+  { x: -1, y: 2 },
+  { x: 0, y: 2 },
+  { x: 1, y: 2 },
+  { x: 2, y: 2 },
+] as const;

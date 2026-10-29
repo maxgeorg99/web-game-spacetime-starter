@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "bun install --frozen-lockfile",
+  "buildCommand": "bash scripts/build-vercel.sh",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/provision.ts": {
+      "maxDuration": 300,
+      "includeFiles": "spacetimedb/dist/bundle.js"
+    }
+  }
+}

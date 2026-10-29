@@ -1,0 +1,21 @@
+name: Tile Tower Defense
+on:
+  push:
+    paths: ['projects/tile-tower-defense/**', '.github/workflows/tile-tower-defense.yml']
+  pull_request:
+    paths: ['projects/tile-tower-defense/**', '.github/workflows/tile-tower-defense.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/tile-tower-defense
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.12'
+      - run: bun install --frozen-lockfile
+      - run: bun run check

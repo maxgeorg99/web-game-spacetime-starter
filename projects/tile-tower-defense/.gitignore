@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.playwright-cli/
+spacetimedb/node_modules/
+spacetimedb/dist/
+
+.local/
+
+coordinator/node_modules/
+coordinator/dist/
+
+# Private runtime credentials; only explicit public config/templates may be committed.
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.production
+
+.vercel/
+.vercel
