@@ -8,5 +8,6 @@ bun.lock
 
 src/coordinator_bindings
 coordinator/dist
+spacetimedb/src/remote_bindings
 
 .vercel

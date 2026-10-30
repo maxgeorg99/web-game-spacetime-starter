@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { assetUrl } from './assets';
 import { audioMix, soundCues, type SoundCue } from '../shared/config/audio';
 import { road } from '../shared/config';
@@ -108,7 +109,7 @@ export class GameAudio {
   }
   private mix() {
     const mute = document.getElementById('audio-mute')!;
-    mute.textContent = this.settings.muted ? 'Unmute sound' : 'Mute sound';
+    mute.textContent = this.settings.muted ? t('audio.unmute') : t('audio.mute');
     mute.setAttribute('aria-pressed', String(this.settings.muted));
     this.music.volume = this.settings.music * audioMix.musicGain;
     if (!this.audible) {

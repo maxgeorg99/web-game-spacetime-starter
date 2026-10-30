@@ -10,6 +10,7 @@ export default defineConfig(
       '**/dist/**',
       'src/module_bindings/**',
       'src/coordinator_bindings/**',
+      'spacetimedb/src/remote_bindings/**',
       '.playwright-cli/**',
       '.local/**',
       '.vercel/**',

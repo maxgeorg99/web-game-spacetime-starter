@@ -94,19 +94,42 @@ export function income(s: State) {
     { gold: balance.waveGold, meat: balance.waveMeat },
   );
 }
-export function upgradeReason(s: State, tower: Tower, nodeId: string): string | undefined {
+export type UpgradeFailure =
+  | { kind: 'unknown' }
+  | { kind: 'maxed' }
+  | { kind: 'prerequisite'; skill: string; rank: number }
+  | { kind: 'gold'; amount: number };
+
+export function upgradeFailure(s: State, tower: Tower, nodeId: string): UpgradeFailure | undefined {
   const node = treeDef(tower.kind).nodes.find((n) => n.id === nodeId);
   if (!node) {
-    return 'Unknown skill.';
+    return { kind: 'unknown' };
   }
   if ((tower.ranks[node.id] ?? 0) >= node.maxRank) {
-    return 'Max rank';
+    return { kind: 'maxed' };
   }
   if (node.requires && (tower.ranks[node.requires.id] ?? 0) < node.requires.rank) {
-    return `Requires ${treeDef(tower.kind).nodes.find((n) => n.id === node.requires!.id)!.name} ${node.requires.rank}`;
+    return { kind: 'prerequisite', skill: node.requires.id, rank: node.requires.rank };
   }
   if (s.gold < node.goldCost) {
-    return `Need ${node.goldCost} gold`;
+    return { kind: 'gold', amount: node.goldCost };
+  }
+}
+
+/** Keep the server's existing error messages; clients translate the structured reason. */
+export function upgradeReason(s: State, tower: Tower, nodeId: string): string | undefined {
+  const failure = upgradeFailure(s, tower, nodeId);
+  switch (failure?.kind) {
+    case undefined:
+      return undefined;
+    case 'unknown':
+      return 'Unknown skill.';
+    case 'maxed':
+      return 'Max rank';
+    case 'prerequisite':
+      return `Requires ${treeDef(tower.kind).nodes.find((n) => n.id === failure.skill)!.name} ${failure.rank}`;
+    case 'gold':
+      return `Need ${failure.amount} gold`;
   }
 }
 /** Transactional domain API: failed commands never mutate the caller's snapshot. */

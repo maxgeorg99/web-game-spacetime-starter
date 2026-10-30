@@ -7,12 +7,14 @@ import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
 import ActReducer from "../act_reducer";
+import ConfigureReportingReducer from "../configure_reporting_reducer";
 import JoinReducer from "../join_reducer";
 import WorldActReducer from "../world_act_reducer";
 import WorldEnterReducer from "../world_enter_reducer";
 import WorldJoinReducer from "../world_join_reducer";
 
 export type ActParams = __Infer<typeof ActReducer>;
+export type ConfigureReportingParams = __Infer<typeof ConfigureReportingReducer>;
 export type JoinParams = __Infer<typeof JoinReducer>;
 export type WorldActParams = __Infer<typeof WorldActReducer>;
 export type WorldEnterParams = __Infer<typeof WorldEnterReducer>;

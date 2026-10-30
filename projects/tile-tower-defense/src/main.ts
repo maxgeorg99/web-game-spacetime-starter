@@ -1,3 +1,4 @@
+import { localizeDocument } from './i18n';
 import { SessionMenu } from './session-menu';
 import { GameAudio } from './audio';
 import Phaser from 'phaser';
@@ -6,7 +7,9 @@ import { GameStore } from './store';
 import { IslandScene } from './IslandScene';
 import { UI } from './ui';
 import './style.css';
+import './responsive.css';
 validateCatalog();
+localizeDocument();
 const store = new GameStore(),
   scene = new IslandScene(store);
 new UI(store, scene);

@@ -140,3 +140,41 @@ Handoff: Vercel login/project link complete; sensitive production publisher toke
 Production cutover: authorized by user and performed on 2026-10-29. Coordinator migrated without resetting saves; Vercel production READY at https://tiled-tower-defense.vercel.app. Maincloud legacy worker stopped, local worker preserved. GitHub endpoint variable configured. Required deployment builds/typechecks passed after fixing script module declarations. Standalone checks and gameplay verification remain skipped at user request. Push-release workflow is configured locally and must be committed/pushed to activate.
 
 itch.io upload completed and processing succeeded: `maxgeorg99/tiled-tower-defense:html5`, build `2247444`, version `vercel-cutover-20261029`.
+
+## SpacetimeDB 2.14.0 upgrade — 2026-10-30
+
+Pinned the client, both modules, Vercel compiler, release CLI and optional worker image to 2.14.0; refreshed lockfiles and regenerated both binding sets. Generation also restored bindings for the existing provisioning authorization/lease reducers. No production publish or existing-world migration was performed.
+
+With user approval, all three TypeScript checks, ESLint, 26 domain/world tests, frontend production build and the legacy server integration test passed. Both modules published successfully to an isolated local 2.14.0 server. The frontend build retains its large-chunk warning. Server integration covers the legacy solo flow, not coordinator provisioning or IDC; browser playtesting and production compatibility remain unverified.
+
+IDC assessment: direct world-to-coordinator slot reports can replace polling, but IDC does not publish new databases. Retain the Vercel function for on-demand worlds. A CI-prepublished world pool could remove runtime provisioning in a separate change. See `docs/SESSIONS.md` for trust, rollout and capacity requirements.
+
+Follow-up review: confirmed production has an on-demand function rather than a continuous worker. Recommend IDC for slot reporting while retaining database publishing. Migration must enable coordinator slot subscriptions in production, resolve the menu's 60-second stale-report policy, register trusted world identities and confirm same-server delivery support. No runtime changes or automated checks performed in this review; detailed handoff added to `docs/SESSIONS.md`.
+
+### IDC slot reporting implemented — 2026-10-30
+
+Added publisher-registered world identities, typed world-to-coordinator outboxes, occupancy updates and 30-second heartbeats. One pending call per world bounds the outbox; failed results retry with backoff. Vercel and the local provisioner configure new worlds, and the menu consumes coordinator updates with legacy/stale HTTP fallback. Existing saved worlds retain polling because their original init did not record a reporting administrator; enrolling them requires a separate trusted migration. Vercel remains responsible for database creation.
+
+Validation approved by the user: bindings generated; all three typechecks, lint, 31 unit tests, frontend build, solo server regression and actual two-world IDC delivery/authentication/recovery/heartbeat integration passed. Tests used isolated local databases, leaving existing local and production saves untouched. Existing build chunk warning remains. No browser or hosted rollout verification. See `docs/SESSIONS.md` for deployment order, generation commands and handoff.
+
+## Catapult and airship art — 2026-10-30
+
+Replaced the Catapult tower's cannon placeholder with the supplied Warfare sprites in blue, yellow, red and purple. Measured 256px frames: nine firing and four loading frames, driven by authoritative cooldown snapshots with reduced-motion support. Added matching tower portraits and the supplied stone projectile. Reduced the catapult display canvas from 112px to 80px following user playtest feedback.
+
+Generated a transparent 128px airship with PixelLab Pro and used exact palette replacement for the four captain variants. The renderer now uses these sprites, mirrored toward the destination, with existing troop labels and travel timing. Alpha and non-team pixels match across all variants. No gameplay balance or save schema changes.
+
+Typechecks, lint, 26 unit tests and build passed during integration; browser rendering confirmed the catapult and all four airship textures loaded using disposable preview data. Final scale adjustment was formatted; user is playtesting at localhost:5175. The persistent local database on port 3106 is running; production was not deployed.
+
+### Follow-up — building scale, flight movement and recruit colors
+
+Reduced the keep from 130px to 92px, standard towers from 65px to 48px and other structures from 75px to 58px. Preserved the user's latest 70px catapult size. Airships now render at 112px with a gentler arc and frame-based smoothing instead of restarting a tween on every snapshot. Visual prediction is capped at 250ms and does not spawn troops or change server state. Small bob/roll respects reduced motion.
+
+Added 24 PixelLab exact-palette portrait variants for all eight recruits (blue, yellow, purple); red uses the original. Recruit cards resolve the owning captain's faction. Checked all 32 rendered portraits in the browser and verified recolors preserve alpha and every non-team pixel. Typechecks and lint passed; browser checks confirmed four ship textures and continuous forward movement between snapshots. Uses disposable preview data, not a live multiplayer playthrough.
+
+## Localization and responsive UI — 2026-10-30
+
+Added i18next with typed keys, bundled English UI/content catalogs, locale fallback and CLDR plural counts (including zero/one/other troop labels). Migrated menus, HUD, canvas labels and content display text; HTML interpolation is escaped. Structured upgrade failures let clients translate reasons while preserving server messages. Backend/transport errors remain English. See `docs/LOCALIZATION.md` for adding languages.
+
+Consolidated compact layouts in `src/responsive.css`: 44px touch targets, safe-area spacing, horizontal recruit scrolling, collapsible actions, a tower upgrade sheet, short-phone panel scrolling and a landscape side dock. Fixed nested localization spans accidentally hidden by world-control CSS. Camera fitting considers compact HUD/dock bounds; rotation preserves the viewed island or overview. Collapsing actions reframes the battlefield. Existing drag/pinch controls remain available.
+
+Validation: 31 domain/world/localization tests, all TypeScript checks, lint, formatting and production build passed. Chromium exercised build/recruit layouts at 320×568, 390×844, 667×375, 844×390, 1024×768 and 1440×900, plus dock collapse/restore, upgrade opening/closing and field guide. Short landscape dock contents intentionally scroll within the panel. Browser checks use disposable data with the real renderer/UI; physical-device touch and a live multiplayer match remain manual checks. Build retains the existing large-chunk warning. No production deploy.

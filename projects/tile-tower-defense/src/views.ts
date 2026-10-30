@@ -1,8 +1,7 @@
 import { assetUrl } from './assets';
-import { bevyUnits } from '../shared/config/bevy-units';
-import { factionArt, type Faction } from '../shared/config/factions';
+import { t, th, escapeHtml } from './i18n';
 import {
-  balance,
+  bevyUnits,
   towers,
   waves,
   tiles,
@@ -10,11 +9,12 @@ import {
   towerDef,
   unitDef,
   tileDef,
-  uiIcons,
-} from '../shared/config';
+} from './i18n/content';
+import { factionArt, type Faction } from '../shared/config/factions';
+import { balance, uiIcons } from '../shared/config';
 import type { SkillNode, SkillTree, TowerDef, UnitDef } from '../shared/config';
 import type { State, Tower } from '../shared/game/model';
-import { effectiveStats, upgradeReason } from '../shared/game/rules';
+import { effectiveStats, upgradeFailure } from '../shared/game/rules';
 import { portrait, sheets } from './art';
 
 export function icon(name: keyof typeof uiIcons) {
@@ -24,7 +24,7 @@ export function avatar(unit: UnitDef, faction?: Faction) {
   if (unit.avatar in sheets) {
     return portrait(faction ? factionArt(unit.avatar, faction) : unit.avatar);
   }
-  return `<img class="avatar" src="${assetUrl(`art/${unit.avatar}.png`)}" alt="" />`;
+  return `<img class="avatar" src="${assetUrl(`art/${faction ? factionArt(unit.avatar, faction) : unit.avatar}.png`)}" alt="" />`;
 }
 const number = (value: number) => Number(value.toFixed(1));
 const disabled = (condition: boolean) => (condition ? 'disabled' : '');
@@ -39,9 +39,9 @@ export function buildCards(
     .map(
       (tower) => `
     <button class="action-card ${selected === tower.id ? 'chosen' : ''}" data-build="${tower.id}"
-      ${disabled(locked || state.phase !== 'prepare' || state.gold < tower.cost)} title="${tower.description}">
-      ${portrait(factionArt(tower.art, faction))}
-      <span class="card-name">${tower.name}</span>
+      ${disabled(locked || state.phase !== 'prepare' || state.gold < tower.cost)} title="${escapeHtml(tower.description)}">
+      ${portrait(factionArt(tower.avatar, faction))}
+      <span class="card-name">${escapeHtml(tower.name)}</span>
       <span class="card-cost">${icon('gold')}${tower.cost}</span>
     </button>
   `,
@@ -57,11 +57,11 @@ export function draftCards(state: State, selected: string | undefined, locked: b
         ? `${icon('gold')}+${tile.goldIncome}`
         : tile.meatIncome
           ? `${icon('meat')}+${tile.meatIncome}`
-          : `${icon('defense')}Buildable`;
+          : `${icon('defense')}${th('tower.buildable')}`;
       return `
-      <button class="action-card draft-card ${id === selected ? 'chosen' : ''}" data-tile="${id}" ${disabled(locked)} title="${tile.description}">
+      <button class="action-card draft-card ${id === selected ? 'chosen' : ''}" data-tile="${id}" ${disabled(locked)} title="${escapeHtml(tile.description)}">
         <span class="tile-preview" style="--tile-color:#${tile.color.toString(16)}">${'art' in tile ? portrait(tile.art) : ''}</span>
-        <span class="card-name">${tile.name}</span><span class="card-cost">${reward}</span>
+        <span class="card-name">${escapeHtml(tile.name)}</span><span class="card-cost">${reward}</span>
       </button>
     `;
     })
@@ -69,16 +69,29 @@ export function draftCards(state: State, selected: string | undefined, locked: b
 }
 
 function skillButton(state: State, tower: Tower, node: SkillNode, locked: boolean) {
-  const reason = upgradeReason(state, tower, node.id);
+  const failure = upgradeFailure(state, tower, node.id);
+  const reason =
+    failure?.kind === 'maxed'
+      ? t('upgrade.maxed')
+      : failure?.kind === 'gold'
+        ? t('upgrade.needGold', { gold: failure.amount })
+        : failure?.kind === 'prerequisite'
+          ? t('skill.requires', {
+              name: treeDef(tower.kind).nodes.find((parent) => parent.id === failure.skill)!.name,
+              rank: failure.rank,
+            })
+          : failure?.kind === 'unknown'
+            ? t('upgrade.unknown')
+            : undefined;
   const rank = tower.ranks[node.id] ?? 0;
   return `
     <button data-node="${node.id}" class="skill ${rank ? 'invested' : ''}"
-      ${disabled(locked || state.phase !== 'prepare' || !!reason)} title="${reason ?? node.description}">
+      ${disabled(locked || state.phase !== 'prepare' || !!reason)} title="${escapeHtml(reason ?? node.description)}">
       <span class="skill-image"><img src="${assetUrl(`art/${node.icon}.png`)}" alt="" /><span>${rank}/${node.maxRank}</span></span>
-      <b>${node.name}</b>
-      <small>${node.description}</small>
-      <span class="skill-price">${rank >= node.maxRank ? 'Maxed' : `${icon('gold')}${node.goldCost}`}</span>
-      ${reason && rank < node.maxRank ? `<em>${reason}</em>` : ''}
+      <b>${escapeHtml(node.name)}</b>
+      <small>${escapeHtml(node.description)}</small>
+      <span class="skill-price">${rank >= node.maxRank ? th('tower.maxed') : `${icon('gold')}${node.goldCost}`}</span>
+      ${reason && rank < node.maxRank ? `<em>${escapeHtml(reason)}</em>` : ''}
     </button>
   `;
 }
@@ -90,7 +103,7 @@ export function towerPanel(state: State, tower: Tower, locked: boolean, faction:
   const branches = tree.branches
     .map(
       (branch, index) => `
-    <section class="skill-branch"><h4>${branch}</h4>
+    <section class="skill-branch"><h4>${escapeHtml(branch)}</h4>
       ${tree.nodes
         .filter((node) => node.branch === index)
         .map((node) => skillButton(state, tower, node, locked))
@@ -100,15 +113,15 @@ export function towerPanel(state: State, tower: Tower, locked: boolean, faction:
     )
     .join('');
   return `
-    <div class="tower-heading">${portrait(factionArt(definition.art, faction))}<div><h2>${definition.name}</h2><span>Specialize this tower</span></div></div>
+    <div class="tower-heading">${portrait(factionArt(definition.avatar, faction))}<div><h2>${escapeHtml(definition.name)}</h2><span>${th('tower.specialize')}</span></div></div>
     <div class="tower-stats">
-      <span title="Damage">${icon('damage')}${number(stats.damage)}</span>
-      <span title="Range in tiles">${icon('range')}${number(stats.range)}</span>
-      <span title="Time between shots">${number(stats.cooldown)}s / shot</span>
+      <span title="${th('tower.damage')}">${icon('damage')}${number(stats.damage)}</span>
+      <span title="${th('tower.range')}">${icon('range')}${number(stats.range)}</span>
+      <span title="${th('tower.cooldown')}">${th('tower.secondsPerShot', { seconds: number(stats.cooldown) })}</span>
     </div>
     <div class="skill-tree">${branches}</div>
     <button class="sell" data-sell="yes" ${disabled(locked || state.phase !== 'prepare')}>
-      Sell ${icon('gold')}${Math.floor(tower.spent * balance.sellFraction)}
+      ${th('tower.sell')} ${icon('gold')}${Math.floor(tower.spent * balance.sellFraction)}
     </button>
   `;
 }
@@ -119,22 +132,22 @@ function catalogSkill(tree: SkillTree, node: SkillNode) {
     : undefined;
   return `
     <div class="catalog-skill"><img src="${assetUrl(`art/${node.icon}.png`)}" alt="" /><div>
-      <b>${node.name}</b><small>${node.description}</small>
-      <small>${node.maxRank} ranks · ${node.goldCost} gold each</small>
-      ${prerequisite ? `<small>Requires ${prerequisite}, rank ${node.requires!.rank}</small>` : ''}
+      <b>${escapeHtml(node.name)}</b><small>${escapeHtml(node.description)}</small>
+      <small>${th('count.ranks', { count: node.maxRank, gold: node.goldCost })}</small>
+      ${prerequisite ? `<small>${th('skill.requires', { name: prerequisite, rank: node.requires!.rank })}</small>` : ''}
     </div></div>
   `;
 }
 function catalogTower(tower: TowerDef) {
   const tree = treeDef(tower.id);
   return `
-    <article>${portrait(tower.art)}<h3>${tower.name}</h3><code>${tower.id}</code>
-      <p>${tower.description}</p>
-      <p>${tower.cost} gold · ${tower.damage} damage · ${tower.range} range · ${tower.cooldown}s</p>
+    <article>${portrait(tower.avatar)}<h3>${escapeHtml(tower.name)}</h3><code>${tower.id}</code>
+      <p>${escapeHtml(tower.description)}</p>
+      <p>${th('catalog.towerStats', { gold: tower.cost, damage: tower.damage, range: tower.range, seconds: tower.cooldown })}</p>
       ${tree.branches
         .map(
           (branch, index) => `
-        <h4>${branch}</h4>
+        <h4>${escapeHtml(branch)}</h4>
         ${tree.nodes
           .filter((node) => node.branch === index)
           .map((node) => catalogSkill(tree, node))
@@ -147,35 +160,35 @@ function catalogTower(tower: TowerDef) {
 }
 function catalogUnit(unit: UnitDef) {
   return `
-    <article>${avatar(unit)}<h3>${unit.name}</h3><code>${unit.id}</code>
-      <p>${unit.description}</p>
-      <p>${icon('health')}${unit.health} HP · ${icon('damage')}${unit.damage} damage<br />
-        ${unit.cooldown}s between attacks · ${unit.speed} tiles/s · ${unit.range} range<br />
-        ${unit.recruitable ? `${icon('meat')}${unit.meatCost} to recruit` : `${icon('gold')}${unit.reward} reward · ${unit.leak} keep damage`}
+    <article>${avatar(unit)}<h3>${escapeHtml(unit.name)}</h3><code>${unit.id}</code>
+      <p>${escapeHtml(unit.description)}</p>
+      <p>${icon('health')}${th('catalog.unitHealth', { health: unit.health })} · ${icon('damage')}${th('catalog.unitDamage', { damage: unit.damage })}<br />
+        ${th('catalog.unitTiming', { seconds: unit.cooldown, speed: unit.speed, range: unit.range })}<br />
+        ${unit.recruitable ? `${icon('meat')}${th('catalog.recruitCost', { cost: unit.meatCost })}` : `${icon('gold')}${th('catalog.reward', { reward: unit.reward, damage: unit.leak })}`}
       </p>
     </article>
   `;
 }
 export function catalogContent() {
   return `
-    <h3>Towers & specializations</h3><div class="catalog-grid">${towers.map(catalogTower).join('')}</div>
-    <h3>Recruits</h3><div class="catalog-grid">${bevyUnits
+    <h3>${th('catalog.towers')}</h3><div class="catalog-grid">${towers.map(catalogTower).join('')}</div>
+    <h3>${th('catalog.recruits')}</h3><div class="catalog-grid">${bevyUnits
       .filter((unit) => unit.recruitable)
       .map(catalogUnit)
       .join('')}</div>
-    <h3>Enemies</h3><div class="catalog-grid">${bevyUnits
+    <h3>${th('catalog.enemies')}</h3><div class="catalog-grid">${bevyUnits
       .filter((unit) => !unit.recruitable)
       .map(catalogUnit)
       .join('')}</div>
-    <h3>Waves</h3>
+    <h3>${th('catalog.waves')}</h3>
     ${waves
       .map(
         (wave, index) => `
-      <p><b>${index + 1}. ${wave.name}</b> — ${wave.groups.map((group) => `${group.count} ${unitDef(group.unit).name}`).join(', ')}
-        · ${wave.healthMultiplier}× HP · ${wave.interval}s spacing</p>
+      <p><b>${index + 1}. ${escapeHtml(wave.name)}</b> — ${wave.groups.map((group) => `${group.count} ${unitDef(group.unit).name}`).join(', ')}
+        · ${th('catalog.waveStats', { health: wave.healthMultiplier, seconds: wave.interval })}</p>
     `,
       )
       .join('')}
-    <h3>Land</h3>${tiles.map((tile) => `<p><b>${tile.name}</b> — ${tile.description}</p>`).join('')}
+    <h3>${th('catalog.land')}</h3>${tiles.map((tile) => `<p><b>${escapeHtml(tile.name)}</b> — ${escapeHtml(tile.description)}</p>`).join('')}
   `;
 }

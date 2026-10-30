@@ -14,6 +14,7 @@ import { balance, validateCatalog } from '../../shared/config';
 import { fresh, command } from '../../shared/game/rules';
 import { step } from '../../shared/game/combat';
 import type { State } from '../../shared/game/model';
+import coordinator from './remote_bindings/coordinator';
 
 // M1: bounded single-island aggregate. Split tables when multiplayer/replication requires it.
 const island = table(
@@ -38,24 +39,83 @@ const world = table(
     updated: t.timestamp(),
   },
 );
-const world_slots = table(
-  { name: 'world_slots', public: true },
+const reportingAdministrator = table(
+  { name: 'reporting_administrator' },
+  { id: t.u32().primaryKey(), owner: t.identity() },
+);
+const reporting = table(
+  { name: 'reporting' },
   {
     id: t.u32().primaryKey(),
-    claimed: t.u32(),
-    capacity: t.u32(),
+    target: coordinator.identity(),
+    lastClaimed: t.u32(),
+    nextReportAt: t.u64(),
+    pending: t.bool(),
+    lastError: t.string(),
   },
 );
-const db = schema({ island, clock, world, world_slots });
+const slotOutbox = coordinator.outbox.receiveWorldSlots({ name: 'slot_outbox' });
+const db = schema({
+  island,
+  clock,
+  world,
+  reportingAdministrator,
+  reporting,
+  slotOutbox,
+});
 export default db;
 export const init = db.init((ctx) => {
   validateCatalog();
-  ctx.db.world_slots.insert({ id: 1, claimed: 0, capacity: 4 });
+  ctx.db.reportingAdministrator.insert({ id: 1, owner: ctx.sender });
   ctx.db.clock.insert({
     scheduledId: 0n,
     scheduledAt: ScheduleAt.interval(BigInt(balance.tickSeconds * 1_000_000)),
   });
 });
+
+// Only the publisher recorded by init can configure the reporting target.
+export const configure_reporting = db.reducer(
+  { target: coordinator.identity() },
+  (ctx, { target }) => {
+    if (!ctx.db.reportingAdministrator.id.find(1)?.owner.isEqual(ctx.sender)) {
+      throw new SenderError('Reporting publisher only.');
+    }
+    const existing = ctx.db.reporting.id.find(1);
+    if (existing) {
+      if (!existing.target.isEqual(target)) {
+        throw new SenderError('Reporting target cannot be replaced while messages may be pending.');
+      }
+      return;
+    }
+    ctx.db.reporting.insert({
+      id: 1,
+      target,
+      lastClaimed: 5,
+      nextReportAt: 0n,
+      pending: false,
+      lastError: '',
+    });
+  },
+);
+
+export const on_slot_report = db.reducer(
+  { onResult: slotOutbox },
+  { row: slotOutbox.rowType, result: t.result(t.unit(), t.string()) },
+  (ctx, { row, result }) => {
+    const config = ctx.db.reporting.id.find(1);
+    if (!config || !config.target.isEqual(row.target)) {
+      return;
+    }
+    ctx.db.reporting.id.update({
+      ...config,
+      pending: false,
+      // A failed result is final. The scheduled tick sends a fresh snapshot after backoff.
+      lastClaimed: 'err' in result ? 5 : row.claimed,
+      nextReportAt: ctx.timestamp.microsSinceUnixEpoch + 30_000_000n,
+      lastError: 'err' in result ? result.err.slice(0, 500) || 'Slot report failed.' : '',
+    });
+  },
+);
 export const join = db.reducer((ctx) => {
   if (ctx.db.island.owner.find(ctx.sender)) {
     return;
@@ -142,11 +202,15 @@ export const tick = db.reducer({ onSchedule: clock }, { timer: clock.rowType }, 
     });
   }
   const claimed = worldState?.seats.filter((seat) => seat.owner).length ?? 0;
-  const slots = ctx.db.world_slots.id.find(1);
-  if (!slots) {
-    ctx.db.world_slots.insert({ id: 1, claimed, capacity: 4 });
-  } else if (slots.claimed !== claimed) {
-    ctx.db.world_slots.id.update({ ...slots, claimed });
+  const config = ctx.db.reporting.id.find(1);
+  if (
+    config &&
+    !config.pending &&
+    (ctx.timestamp.microsSinceUnixEpoch >= config.nextReportAt ||
+      (!config.lastError && config.lastClaimed !== claimed))
+  ) {
+    ctx.db.slotOutbox.insert({ msgId: 0n, target: config.target, claimed, capacity: 4 });
+    ctx.db.reporting.id.update({ ...config, pending: true });
   }
   for (const row of ctx.db.island.iter()) {
     if (worldState?.seats.some((seat) => seat.owner === row.owner.toHexString())) {
@@ -243,16 +307,6 @@ export const world_enter = db.reducer({ name: t.string() }, (ctx, args) => {
     previous ? restoreState(previous.state) : undefined,
     name,
   );
-  const slotReport = {
-    id: 1,
-    claimed: next.seats.filter((seat) => seat.owner).length,
-    capacity: 4,
-  };
-  if (ctx.db.world_slots.id.find(1)) {
-    ctx.db.world_slots.id.update(slotReport);
-  } else {
-    ctx.db.world_slots.insert(slotReport);
-  }
   if (row && next === current) {
     return;
   }

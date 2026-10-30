@@ -6,18 +6,26 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AuthorizeProvisionReducer from "../authorize_provision_reducer";
+import ClaimProvisionReducer from "../claim_provision_reducer";
+import CompleteProvisionReducer from "../complete_provision_reducer";
 import CreateSessionReducer from "../create_session_reducer";
 import ProvisionResultReducer from "../provision_result_reducer";
+import ReceiveWorldSlotsReducer from "../receive_world_slots_reducer";
 import RegisterWorldReducer from "../register_world_reducer";
-import ReportSlotsReducer from "../report_slots_reducer";
+import RegisterWorldReporterReducer from "../register_world_reporter_reducer";
 import RetrySessionReducer from "../retry_session_reducer";
 import SetNameReducer from "../set_name_reducer";
 import VisitSessionReducer from "../visit_session_reducer";
 
+export type AuthorizeProvisionParams = __Infer<typeof AuthorizeProvisionReducer>;
+export type ClaimProvisionParams = __Infer<typeof ClaimProvisionReducer>;
+export type CompleteProvisionParams = __Infer<typeof CompleteProvisionReducer>;
 export type CreateSessionParams = __Infer<typeof CreateSessionReducer>;
 export type ProvisionResultParams = __Infer<typeof ProvisionResultReducer>;
+export type ReceiveWorldSlotsParams = __Infer<typeof ReceiveWorldSlotsReducer>;
 export type RegisterWorldParams = __Infer<typeof RegisterWorldReducer>;
-export type ReportSlotsParams = __Infer<typeof ReportSlotsReducer>;
+export type RegisterWorldReporterParams = __Infer<typeof RegisterWorldReporterReducer>;
 export type RetrySessionParams = __Infer<typeof RetrySessionReducer>;
 export type SetNameParams = __Infer<typeof SetNameReducer>;
 export type VisitSessionParams = __Infer<typeof VisitSessionReducer>;

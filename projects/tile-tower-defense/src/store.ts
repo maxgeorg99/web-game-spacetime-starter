@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { worldIslands } from '../shared/config/world';
 import type { WorldState, WorldAction } from '../shared/game/world';
 import { restoreState } from '../shared/game/save';
@@ -16,7 +17,7 @@ export class GameStore {
   world?: WorldState;
   destination?: WorldDestination;
   ownSlot: number | null = null;
-  status = 'Choose a session';
+  status = t('session.chooseSession');
   ready = false;
   pending = false;
   error = '';
@@ -48,14 +49,14 @@ export class GameStore {
     this.ready = false;
     this.pending = false;
     this.error = '';
-    this.status = 'Choose a session';
+    this.status = t('session.chooseSession');
     this.notify();
   }
   enter(destination: WorldDestination, name: string, coordinatorToken: string) {
     this.leave();
     this.destination = destination;
     const generation = this.generation;
-    this.status = `Connecting to ${destination.name}…`;
+    this.status = t('connection.connectingWorld', { name: destination.name });
     this.notify();
     const captain = new URLSearchParams(location.search).get('captain')?.slice(0, 32);
     // Preserve the original per-world token where present; otherwise reuse coordinator identity.
@@ -82,7 +83,7 @@ export class GameStore {
           try {
             const world: WorldState = JSON.parse(row.state);
             if (world.version !== 1) {
-              throw Error('Unsupported world save.');
+              throw Error(t('connection.unsupportedSave'));
             }
             this.world = world;
             const seat = world.seats.find((seat) => seat.owner === identity.toHexString());
@@ -91,7 +92,10 @@ export class GameStore {
             this.sequence = seat?.sequence ?? 0;
             this.ready = true;
             this.error = '';
-            this.status = `${destination.name} · ${seat ? name : 'Spectating'}`;
+            this.status = t('connection.worldStatus', {
+              world: destination.name,
+              name: seat ? name : t('session.spectating'),
+            });
             this.notify();
           } catch (error) {
             this.failed(error);
@@ -137,7 +141,7 @@ export class GameStore {
       })
       .onDisconnect(() => {
         if (current()) {
-          this.failed(Error('Connection lost. Rejoin to continue.'));
+          this.failed(Error(t('connection.lostRejoin')));
         }
       })
       .build();
@@ -145,7 +149,7 @@ export class GameStore {
   private failed(error: unknown) {
     this.ready = false;
     this.error = error instanceof Error ? error.message : String(error);
-    this.status = 'Unable to connect to this world';
+    this.status = t('connection.failed');
     this.notify();
   }
   async send(action: WorldAction) {

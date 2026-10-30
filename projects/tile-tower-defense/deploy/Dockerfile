@@ -1,5 +1,5 @@
 FROM oven/bun:1.3.12-debian
-ARG SPACETIME_VERSION=2.10.2
+ARG SPACETIME_VERSION=2.14.0
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates nodejs \
     && rm -rf /var/lib/apt/lists/*
 ENV PATH="/root/.local/bin:${PATH}"

@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+import { configureWorldReporting } from '../scripts/lib/world-reporting.js';
 
 const host = 'https://maincloud.spacetimedb.com';
 const coordinator = 'tiled-tower-defense';
@@ -100,6 +101,7 @@ export default async function provision(req: IncomingMessage, res: ServerRespons
     } else if (!existing.ok) {
       throw Error(`World lookup status ${existing.status}`);
     }
+    await configureWorldReporting(host, coordinator, database, id, admin);
     const completed = await call('complete_provision', [
       id,
       attempt,

@@ -1,5 +1,7 @@
+import { t, th, escapeHtml } from './i18n';
+import { waves, unitDef } from './i18n/content';
 import { WorldUI } from './world-ui';
-import { balance, waves, unitDef } from '../shared/config';
+import { balance } from '../shared/config';
 import { income, sameCell } from '../shared/game/rules';
 import type { Point } from '../shared/game/model';
 import type { GameStore } from './store';
@@ -28,6 +30,13 @@ export class UI {
       this.buildKind = undefined;
       this.closeSelection();
     });
+    button('dock-toggle').onclick = () => {
+      const collapsed = document.body.classList.toggle('dock-collapsed');
+      button('dock-toggle').setAttribute('aria-expanded', String(!collapsed));
+      button('dock-toggle').textContent = t(
+        collapsed ? 'layout.showActions' : 'layout.hideActions',
+      );
+    };
     button('tab-send').onclick = () => {
       this.tab = 'send';
       this.buildKind = undefined;
@@ -124,14 +133,20 @@ export class UI {
     element('connection').textContent = this.store.status;
     element('notice').textContent = this.store.error;
     element('resources').innerHTML = `
-      <span title="Keep health">${icon('health')}<b>${state.lives}</b><small>/${balance.keepHealth}</small></span>
-      <span title="Gold">${icon('gold')}<b>${state.gold}</b></span>
-      <span title="Meat">${icon('meat')}<b>${state.meat}</b></span>
+      <span title="${th('hud.health')}">${icon('health')}<b>${state.lives}</b><small>/${balance.keepHealth}</small></span>
+      <span title="${th('hud.gold')}">${icon('gold')}<b>${state.gold}</b></span>
+      <span title="${th('hud.meat')}">${icon('meat')}<b>${state.meat}</b></span>
     `;
     element('army-count').textContent =
       state.phase === 'combat'
-        ? `${state.enemies.length} invaders · ${state.recruits.length} defenders`
-        : `${state.recruits.length}/${balance.maxRecruits} defenders`;
+        ? t('hud.armies', {
+            invaders: t('count.invaders', { count: state.enemies.length }),
+            defenders: t('count.defenders', { count: state.recruits.length }),
+          })
+        : t('count.defenderCapacity', {
+            count: state.recruits.length,
+            capacity: balance.maxRecruits,
+          });
 
     // Combat positions change at 10 Hz, but controls only redraw when their inputs change.
     const signature = JSON.stringify([
@@ -158,50 +173,47 @@ export class UI {
       !this.store.ready || this.store.pending || (this.store.online && this.store.ownSlot === null);
     const ended = state.phase === 'won' || state.phase === 'lost';
     const wave = waves[Math.min(state.wave, waves.length - 1)];
-    element('wave-number').textContent =
-      `Wave ${Math.min(state.wave + 1, waves.length)} / ${waves.length}`;
-    element('phase').textContent = state.phase;
+    element('wave-number').textContent = t('wave.number', {
+      number: Math.min(state.wave + 1, waves.length),
+      total: waves.length,
+    });
+    element('phase').textContent = t(`phase.${state.phase}`);
     element('wave-title').textContent =
       state.phase === 'won'
-        ? 'Island defended!'
+        ? t('wave.defended')
         : state.phase === 'lost'
-          ? 'Keep destroyed'
+          ? t('wave.destroyed')
           : wave.name;
     element('wave-description').textContent = ended
-      ? `${state.kills} invaders defeated. Start a new run to play again.`
+      ? t('wave.result', { count: state.kills })
       : wave.description;
     element('wave-units').innerHTML = wave.groups
       .map((group) => {
         const unit = unitDef(group.unit);
         return `
         <div class="wave-unit">${avatar(unit)}
-          <span><b>${group.count} × ${unit.name}</b><small>${Math.round(unit.health * wave.healthMultiplier)} HP · ${unit.leak} keep damage</small></span>
+          <span><b>${group.count} × ${escapeHtml(unit.name)}</b><small>${th('wave.unitStats', { health: Math.round(unit.health * wave.healthMultiplier), damage: unit.leak })}</small></span>
         </div>
       `;
       })
       .join('');
     button('start').disabled = locked || !['prepare', 'won', 'lost'].includes(state.phase);
     button('start').textContent = ended
-      ? 'New island ↻'
+      ? t('wave.restart')
       : state.phase === 'combat'
-        ? 'Defending…'
+        ? t('wave.defending')
         : state.phase === 'draft'
-          ? 'Place a tile'
-          : 'Start wave ▷';
+          ? t('wave.placeTile')
+          : t('wave.start');
 
     const hints = {
-      prepare: this.buildKind
-        ? 'Click a meadow to place your tower · Esc to cancel'
-        : 'Choose a tower, then place it on your island',
-      combat: 'Watch your defenses or send units to an opponent',
-      draft: this.draftKind
-        ? 'Place your tile in an outlined space'
-        : 'Choose a tile to expand your island',
-      won: 'All waves defeated. Your island stands.',
-      lost: 'Your keep has fallen. Try another defense.',
+      prepare: this.buildKind ? t('hint.placeTower') : t('hint.chooseTower'),
+      combat: t('hint.combat'),
+      draft: this.draftKind ? t('hint.placeTile') : t('hint.chooseTile'),
+      won: t('hint.won'),
+      lost: t('hint.lost'),
     };
-    element('instruction').textContent =
-      this.tab === 'send' ? 'Choose an opponent and send an airship' : hints[state.phase];
+    element('instruction').textContent = this.tab === 'send' ? t('hint.send') : hints[state.phase];
     const tower = state.towers.find((tower) => this.selected && sameCell(tower, this.selected));
     element('selection-panel').hidden = !tower || state.phase === 'draft';
     element('selection').innerHTML = tower
@@ -222,6 +234,6 @@ export class UI {
       button(`tab-${tab}`).setAttribute('aria-pressed', String(this.tab === tab));
     }
     const earned = income(state);
-    element('income').textContent = `Wave reward +${earned.gold} gold / +${earned.meat} meat`;
+    element('income').textContent = t('hud.income', { gold: earned.gold, meat: earned.meat });
   }
 }

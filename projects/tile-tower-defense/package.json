@@ -7,9 +7,11 @@
     "dev": "vite --host 127.0.0.1 --port 5175",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit && tsc -p spacetimedb --noEmit && tsc -p coordinator --noEmit",
-    "test": "bun test tests/domain.test.ts tests/world.test.ts",
+    "test": "bun test tests/domain.test.ts tests/world.test.ts tests/i18n.test.ts",
     "test:server": "bun test tests/server.test.ts",
+    "test:idc": "bun test tests/idc.test.ts",
     "spacetime:generate": "spacetime generate --lang typescript --out-dir src/module_bindings --module-path spacetimedb --yes",
+    "idc:generate": "spacetime generate --bindings module --lang typescript --module-path coordinator --out-dir spacetimedb/src/remote_bindings/coordinator --yes",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings 0",
@@ -26,8 +28,9 @@
     "secrets:github": "bun --env-file=.env.provisioner run scripts/configure-secrets.ts"
   },
   "dependencies": {
+    "i18next": "^26.5.12",
     "phaser": "^3.90.0",
-    "spacetimedb": "2.10.*"
+    "spacetimedb": "2.14.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -1,8 +1,12 @@
+import { t } from './i18n';
 import { assetUrl } from './assets';
+import { factionArt } from '../shared/config/factions';
 import Phaser from 'phaser';
 import type { Point } from '../shared/game/model';
+import type { Flight } from '../shared/game/world';
 import { fresh, expansionCells, sameCell } from '../shared/game/rules';
-import { worldBalance, worldIslands } from '../shared/config/world';
+import { worldBalance } from '../shared/config/world';
+import { worldIslands } from './i18n/content';
 import type { GameStore } from './store';
 import { images, sheets } from './art';
 import { IslandView } from './IslandView';
@@ -14,12 +18,14 @@ export class IslandScene extends Phaser.Scene {
   private views: IslandView[] = [];
   private labels: Phaser.GameObjects.Text[] = [];
   private airships = new Map<number, Phaser.GameObjects.Container>();
+  private flightSnapshots = new Map<number, { elapsed: number; receivedAt: number }>();
   private unsubscribe?: () => void;
   private dragStart?: { x: number; y: number; scrollX: number; scrollY: number };
   private dragged = false;
   private touchPositions = new Map<number, Point>();
   private pinch?: { distance: number; zoom: number; anchor: Point };
   private focused = false;
+  private focusSlot: number | null = null;
   private database?: string;
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   constructor(private store: GameStore) {
@@ -54,7 +60,7 @@ export class IslandScene extends Phaser.Scene {
       .fillRect(-5000, -5000, 10000, 10000);
     const islands = this.store.online
       ? worldIslands
-      : [{ slot: 0, name: 'Your keep', x: 0, y: 0, color: 0x6e9cbe }];
+      : [{ slot: 0, name: t('island.yours'), x: 0, y: 0, color: 0x6e9cbe }];
     for (const island of islands) {
       this.add.ellipse(island.x + 500, island.y + 465, 390, 62, 0x647f80, 0.12);
       const view = new IslandView(
@@ -216,14 +222,8 @@ export class IslandScene extends Phaser.Scene {
     if (!island || !this.cameras.main) {
       return;
     }
-    this.cameras.main
-      .setZoom(
-        Math.max(
-          0.4,
-          Math.min(1.4, (this.scale.width - 38) / 600, (this.scale.height - 290) / 380),
-        ),
-      )
-      .centerOn(island.x + 500, island.y + 330);
+    this.focusSlot = slot;
+    this.frame(island.x + 500, island.y + 330, 600, 380, 1.4);
   }
   overview() {
     if (!this.cameras.main) {
@@ -233,18 +233,61 @@ export class IslandScene extends Phaser.Scene {
       this.focusIsland(0);
       return;
     }
+    this.focusSlot = null;
+    this.frame(500, 330, 2600, 1850, 1.4);
+  }
+  /** Fit the island into the visible battlefield between compact controls. */
+  private frame(x: number, y: number, width: number, height: number, maxZoom: number) {
+    const screenWidth = this.scale.width,
+      screenHeight = this.scale.height;
+    const compact = screenWidth <= 700 || screenHeight <= 550;
+    const left = 20;
+    let right = screenWidth - 20,
+      top = 90,
+      bottom = screenHeight - 200;
+    if (compact) {
+      const bounds = (selector: string) => {
+        const element = document.querySelector<HTMLElement>(selector);
+        return element?.getClientRects().length ? element.getBoundingClientRect() : undefined;
+      };
+      const hud = bounds('.hud'),
+        wave = bounds('#wave-preview'),
+        dock = bounds('.bottom-hud');
+      top = (hud?.bottom ?? 50) + 12;
+      bottom = screenHeight - 16;
+      if (screenWidth >= 551 && screenHeight <= 550) {
+        right = (dock?.left ?? screenWidth - 320) - 12;
+      } else {
+        top = Math.max(top, (wave?.bottom ?? 100) + 12);
+        bottom = (dock?.top ?? screenHeight - 180) - 12;
+        right -= 44;
+      }
+    }
+    const availableWidth = Math.max(120, right - left);
+    const availableHeight = Math.max(120, bottom - top);
+    const zoom = Math.max(0.1, Math.min(maxZoom, availableWidth / width, availableHeight / height));
     this.cameras.main
-      .setZoom(
-        Math.max(0.15, Math.min((this.scale.width - 80) / 2600, (this.scale.height - 260) / 1850)),
-      )
-      .centerOn(500, 330);
+      .setZoom(zoom)
+      .centerOn(
+        x + (screenWidth / 2 - (left + availableWidth / 2)) / zoom,
+        y + (screenHeight / 2 - (top + availableHeight / 2)) / zoom,
+      );
+  }
+  refreshFraming() {
+    this.resize();
   }
   private resize() {
-    if (this.store.ready && this.store.ownSlot !== null) {
-      this.focusIsland(this.store.ownSlot);
-    } else {
-      this.overview();
-    }
+    // Preserve the selected island / world overview when rotating the device.
+    requestAnimationFrame(() => {
+      if (!this.scene.isActive()) {
+        return;
+      }
+      if (this.focusSlot !== null) {
+        this.focusIsland(this.focusSlot);
+      } else {
+        this.overview();
+      }
+    });
   }
   private render() {
     if (!this.views.length) {
@@ -264,6 +307,7 @@ export class IslandScene extends Phaser.Scene {
         ship.destroy(true);
       }
       this.airships.clear();
+      this.flightSnapshots.clear();
     }
     for (let slot = 0; slot < this.views.length; slot++) {
       const seat = this.store.world?.seats[slot];
@@ -271,7 +315,7 @@ export class IslandScene extends Phaser.Scene {
       this.views[slot].render();
       if (this.store.online) {
         this.labels[slot].setText(
-          `${worldIslands[slot].name}${seat?.owner ? (slot === this.store.ownSlot ? ' · You' : ' · ' + (seat.name ?? 'Captain ' + seat.owner.slice(-4))) : ' · Unclaimed'}`,
+          `${worldIslands[slot].name}${seat?.owner ? (slot === this.store.ownSlot ? t('world.you') : ' · ' + (seat.name ?? t('world.captain', { id: seat.owner.slice(-4) }))) : ' · ' + t('world.unclaimed')}`,
         );
       }
     }
@@ -291,19 +335,19 @@ export class IslandScene extends Phaser.Scene {
       alive.add(flight.id);
       const from = worldIslands[flight.from],
         to = worldIslands[flight.to];
-      const progress = Math.min(1, flight.elapsed / worldBalance.flightSeconds);
-      const x = Phaser.Math.Linear(from.x + 500, to.x + 500, progress);
-      const y =
-        Phaser.Math.Linear(from.y + 330, to.y + 210, progress) - Math.sin(progress * Math.PI) * 150;
+      const snapshot = this.flightSnapshots.get(flight.id);
+      if (!snapshot || snapshot.elapsed !== flight.elapsed) {
+        this.flightSnapshots.set(flight.id, { elapsed: flight.elapsed, receivedAt: this.time.now });
+      }
+      const { x, y } = this.flightPosition(flight, flight.elapsed);
       let ship = this.airships.get(flight.id);
       if (!ship) {
-        const art = this.add.graphics();
-        art.lineStyle(2, 0x89785a).lineBetween(-24, 0, -14, 28).lineBetween(24, 0, 14, 28);
-        art.fillStyle(0x8d6745).fillRoundedRect(-18, 22, 36, 13, 4);
-        art.fillStyle(0xe9d19b).fillEllipse(0, 0, 90, 40);
-        art.fillStyle(from.color).fillEllipse(0, 0, 24, 40);
+        const art = this.add
+          .image(0, 0, factionArt('airship', from.faction))
+          .setDisplaySize(112, 112)
+          .setFlipX(to.x < from.x);
         const label = this.add
-          .text(0, 42, `${flight.count} troops`, {
+          .text(0, 54, t('count.troops', { count: flight.count }), {
             fontFamily: 'Fira',
             fontSize: '12px',
             resolution: 3,
@@ -315,18 +359,51 @@ export class IslandScene extends Phaser.Scene {
         ship = this.add.container(x, y, [art, label]).setDepth(1500);
         this.airships.set(flight.id, ship);
       }
-      this.tweens.killTweensOf(ship);
-      this.tweens.add({ targets: ship, x, y, duration: 100, ease: 'Linear' });
     }
     for (const [id, ship] of this.airships) {
       if (!alive.has(id)) {
         this.tweens.killTweensOf(ship);
         ship.destroy(true);
         this.airships.delete(id);
+        this.flightSnapshots.delete(id);
       }
     }
   }
-  update(_time: number, delta: number) {
+  private flightPosition(flight: Flight, elapsed: number) {
+    const from = worldIslands[flight.from],
+      to = worldIslands[flight.to];
+    const progress = Phaser.Math.Clamp(elapsed / worldBalance.flightSeconds, 0, 1);
+    return {
+      x: Phaser.Math.Linear(from.x + 500, to.x + 500, progress),
+      y: Phaser.Math.Linear(from.y + 330, to.y + 210, progress) - Math.sin(progress * Math.PI) * 70,
+    };
+  }
+  private updateFlights(time: number, delta: number) {
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    for (const flight of this.store.world?.flights ?? []) {
+      const ship = this.airships.get(flight.id);
+      const snapshot = this.flightSnapshots.get(flight.id);
+      if (!ship || !snapshot) {
+        continue;
+      }
+      // Brief prediction bridges snapshot gaps; a stalled connection cannot advance indefinitely.
+      // Arrival and troop spawning remain entirely server-owned.
+      const elapsed =
+        snapshot.elapsed + Phaser.Math.Clamp((time - snapshot.receivedAt) / 1000, 0, 0.25);
+      const point = this.flightPosition(flight, elapsed);
+      const blend = 1 - Math.exp(-Math.min(delta, 100) / 65);
+      ship.setPosition(
+        Phaser.Math.Linear(ship.x, point.x, blend),
+        Phaser.Math.Linear(ship.y, point.y, blend),
+      );
+      const art = ship.getAt(0) as Phaser.GameObjects.Image;
+      const phase = time / 650 + flight.id * 1.7;
+      art.setY(reducedMotion ? 0 : Math.sin(phase) * 1.5);
+      art.setRotation(reducedMotion ? 0 : Math.sin(phase * 0.7) * 0.018);
+    }
+  }
+  update(time: number, delta: number) {
+    this.updateFlights(time, delta);
     if (
       !this.store.ready ||
       !this.cursors ||

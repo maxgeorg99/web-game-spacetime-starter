@@ -1,6 +1,12 @@
 import { assetUrl } from './assets';
 import { unitSheets } from '../shared/config/unit-art';
-import { factions, factionUnits, factionBuildings, factionArt } from '../shared/config/factions';
+import {
+  factions,
+  factionUnits,
+  factionBuildings,
+  factionTowerSheets,
+  factionArt,
+} from '../shared/config/factions';
 /** Measured strips, square frames, no gaps. Rive experiment art + shared Tiny Swords units. */
 export const sheets: Record<string, { size: number; frames: number }> = {
   ...unitSheets,
@@ -12,9 +18,19 @@ export const sheets: Record<string, { size: number; frames: number }> = {
   ranger: { size: 192, frames: 6 },
   guardian: { size: 320, frames: 12 },
 };
-export const images = ['keep', 'archer', 'cannon', 'barracks', 'mill', 'rock', 'arrow'];
+export const images = [
+  'keep',
+  'archer',
+  'cannon',
+  'barracks',
+  'mill',
+  'rock',
+  'arrow',
+  'catapult',
+  'catapult-avatar',
+];
 for (const faction of Object.keys(factions) as (keyof typeof factions)[]) {
-  for (const [unit, sheet] of Object.entries(factionUnits)) {
+  for (const [unit, sheet] of Object.entries({ ...factionUnits, ...factionTowerSheets })) {
     sheets[factionArt(unit, faction)] = sheet;
   }
   images.push(...factionBuildings.map((key) => factionArt(key, faction)));

@@ -6,9 +6,13 @@ The frontend stays available on itch.io. Vercel hosts a copy of the frontend plu
 
 The browser first creates a pending session through the coordinator. It sends its own SpacetimeDB bearer token to Vercel. The endpoint calls `authorize_provision` with that token, then uses the private publisher token to acquire a ten-minute durable lease. Only the creator can request provisioning; the existing four-world-per-identity and 32-world directory caps still apply. Anonymous identities are not a strong anti-abuse boundary; keep the global cap for this prototype.
 
-The deployment builds the game module once with SpacetimeDB CLI 2.10.2. The function publishes its JS bundle over HTTP with `host_type=Js`. No CLI or compiler runs in a request. A retry checks whether the named world already exists and never republishes it. Failed or uncertain requests retain the lease; the creator can retry after ten minutes. This is on-demand recovery, not an autonomous background queue.
+The deployment builds the game module once with SpacetimeDB CLI 2.14.0. The function publishes its JS bundle over HTTP with `host_type=Js`. No CLI or compiler runs in a request. A retry checks whether the named world already exists and never republishes it. Failed or uncertain requests retain the lease; the creator can retry after ten minutes. This is on-demand recovery, not an autonomous background queue.
 
-The open menu reads public `world_slots` rows directly every 15 seconds. Existing coordinator slot reporting remains available for local worker development. The production menu uses `VITE_PROVISIONER_URL`; Vercel builds set it to `/api/provision`, while itch.io needs the absolute production URL.
+Before completing provisioning, the function registers the world's database identity with the coordinator and configures its typed IDC target. Both operations are idempotent. IDC setup is required for every world; old pre-release worlds were reset for this cutover. A setup failure leaves the lease retryable; it never republishes an existing world.
+
+New worlds send occupancy changes and 30-second heartbeats directly to the coordinator via IDC. The menu reads only the coordinator subscription; its 15-second UI timer updates stale labels without network polling. Reports older than 60 seconds are shown as last reported. The local worker only provisions worlds. The production menu uses `VITE_PROVISIONER_URL`; Vercel builds set it to `/api/provision`, while itch.io needs the absolute production URL.
+
+IDC rollout requires a 2.14.0 coordinator deployed before the new provisioner/world bundle, plus same-server delivery support on Maincloud. Local integration and a disposable Maincloud delivery test passed. The user authorized resetting existing game worlds and both directories for this pre-release cutover. Ordinary future deploys do not automatically reset worlds.
 
 ## Accounts and secrets
 

@@ -13,7 +13,28 @@ export const factionUnits: Record<string, { size: number; frames: number }> = {
   ranger: { size: 192, frames: 4 },
   guardian: { size: 320, frames: 6 },
 };
-export const factionBuildings = ['keep', 'archer', 'cannon', 'barracks'];
+export const factionBuildings = [
+  'keep',
+  'archer',
+  'cannon',
+  'barracks',
+  'catapult',
+  'catapult-avatar',
+  'airship',
+];
+// Warfare catapult strips: 256px square frames, no margin or spacing.
+export const factionTowerSheets = {
+  'catapult-fire': { size: 256, frames: 9 },
+  'catapult-load': { size: 256, frames: 4 },
+};
+export const factionPortraits = new Set(
+  Object.keys(factionUnitSheets).map((key) => key.replace('units/', 'avatars/')),
+);
 export function factionArt(key: string, faction: Faction): string {
-  return key in factionUnits || factionBuildings.includes(key) ? `factions/${faction}/${key}` : key;
+  return key in factionUnits ||
+    key in factionTowerSheets ||
+    factionBuildings.includes(key) ||
+    (faction !== 'red' && factionPortraits.has(key))
+    ? `factions/${faction}/${key}`
+    : key;
 }

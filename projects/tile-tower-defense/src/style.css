@@ -663,110 +663,7 @@ dialog::backdrop {
     min-width: 100px;
   }
 }
-@media (max-width: 600px) {
-  .hud {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .resource-hud {
-    height: 44px;
-    padding: 3px 12px;
-  }
-  #resources b {
-    font-size: 18px;
-  }
-  #resources .stat-icon {
-    width: 25px;
-    height: 25px;
-  }
-  #resources small {
-    padding-bottom: 6px;
-    font-size: 9px;
-  }
-  .wave-hud {
-    width: 100%;
-    justify-content: space-between;
-  }
-  .wave-hud > button,
-  .wave-hud > details > summary {
-    height: 39px;
-  }
-  #wave-preview > summary {
-    font-size: 12px;
-  }
-  .primary {
-    flex: 1;
-    font-size: 12px;
-  }
-  .icon-button {
-    width: 38px;
-  }
-  .settings > summary {
-    padding: 9px 12px;
-  }
-  .wave-panel {
-    left: 0;
-    right: auto;
-    top: 47px;
-  }
-  .settings .floating-panel {
-    top: 47px;
-  }
-  .selection-panel {
-    top: 116px;
-    max-height: calc(100% - 320px);
-    width: min(310px, calc(100% - 24px));
-    padding: 12px;
-  }
-  .bottom-hud {
-    bottom: 14px;
-    width: calc(100% - 20px);
-  }
-  #income {
-    font-size: 8px;
-    max-width: 110px;
-    text-align: right;
-  }
-  .dock-tabs button {
-    font-size: 11px;
-    padding: 6px 12px;
-  }
-  .play-hint p {
-    font-size: 10px;
-  }
-  .play-hint {
-    margin-bottom: 8px;
-  }
-  .action-card {
-    padding: 2px 4px 6px;
-    min-height: 100px;
-  }
-  .card-tray,
-  #draft-cards {
-    gap: 6px;
-  }
-  .card-name {
-    font-size: 11px;
-  }
-  .action-card .avatar {
-    width: 58px;
-    height: 58px;
-  }
-  .action-card .portrait {
-    width: 60px;
-    height: 60px;
-  }
-  .catalog-grid {
-    grid-template-columns: 1fr;
-  }
-  #notice {
-    top: 118px;
-    width: 85%;
-  }
-  .skill {
-    min-height: 130px;
-  }
-}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     scroll-behavior: auto !important;
@@ -830,36 +727,6 @@ dialog::backdrop {
 .wave-unit small {
   font-size: 9px;
 }
-@media (max-width: 600px) {
-  .wave-number {
-    height: 39px;
-    font-size: 12px;
-    padding: 0 6px;
-  }
-  #wave-preview {
-    left: 12px;
-    top: 116px;
-    max-width: calc(100% - 24px);
-    padding: 8px 10px;
-  }
-  .wave-caption h2 {
-    font-size: 11px;
-  }
-  .wave-unit {
-    margin-top: 5px;
-  }
-  .wave-unit .avatar {
-    width: 32px;
-    height: 32px;
-  }
-  .wave-unit small {
-    display: none;
-  }
-  .selection-panel {
-    top: 215px;
-    max-height: calc(100% - 410px);
-  }
-}
 
 .world-navigation {
   position: absolute;
@@ -909,7 +776,7 @@ dialog::backdrop {
   justify-content: end;
   max-width: 220px;
 }
-.world-controls span {
+.world-controls > span {
   width: 100%;
   font-size: 9px;
   color: #627e76;
@@ -968,38 +835,8 @@ dialog::backdrop {
     top: 90px;
     max-width: 220px;
   }
-  .world-controls span {
+  .world-controls > span {
     display: none;
-  }
-}
-@media (max-width: 600px) {
-  .world-navigation {
-    top: 215px;
-    width: 125px;
-    gap: 4px;
-  }
-  .world-navigation button {
-    padding: 6px;
-  }
-  .world-navigation b {
-    font-size: 9px;
-  }
-  .world-navigation small {
-    font-size: 8px;
-  }
-  .world-controls {
-    top: 120px;
-    max-width: 100px;
-  }
-  .world-controls button {
-    font-size: 9px;
-    padding: 6px;
-  }
-  .expedition-controls {
-    gap: 7px;
-  }
-  .expedition-controls select {
-    max-width: 130px;
   }
 }
 
@@ -1177,130 +1014,5 @@ body {
   }
   .session-panel {
     -webkit-overflow-scrolling: touch;
-  }
-}
-@media (max-width: 600px) {
-  .hud {
-    top: max(8px, env(safe-area-inset-top));
-    left: max(8px, env(safe-area-inset-left));
-    right: max(8px, env(safe-area-inset-right));
-    gap: 6px;
-  }
-  .wave-hud {
-    gap: 4px;
-  }
-  .wave-number {
-    padding: 0 7px;
-    font-size: 11px;
-  }
-  #wave-preview {
-    top: calc(105px + env(safe-area-inset-top));
-    left: 8px;
-    width: min(66vw, 255px);
-    padding: 8px;
-  }
-  #wave-description {
-    display: none;
-  }
-  #wave-units {
-    gap: 4px;
-  }
-  .wave-unit .avatar {
-    width: 28px;
-    height: 28px;
-  }
-  .world-navigation {
-    left: auto;
-    right: max(8px, env(safe-area-inset-right));
-    top: calc(205px + env(safe-area-inset-top));
-    width: 44px;
-  }
-  .world-navigation button {
-    padding: 3px;
-    justify-content: center;
-  }
-  .world-navigation button > span {
-    display: none;
-  }
-  .world-controls {
-    top: calc(108px + env(safe-area-inset-top));
-    right: 8px;
-    max-width: 95px;
-  }
-  .world-controls button {
-    padding: 6px;
-    font-size: 10px;
-    width: 100%;
-  }
-  .bottom-hud {
-    bottom: max(8px, env(safe-area-inset-bottom));
-    width: calc(100% - 16px);
-  }
-  #send-cards {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    max-height: 29dvh;
-    gap: 4px;
-  }
-  #send-cards .action-card {
-    padding: 3px;
-  }
-  #send-cards .avatar {
-    width: 46px;
-    height: 46px;
-  }
-  #send-cards .card-name {
-    font-size: 10px;
-  }
-  #send-cards .unit-stats {
-    font-size: 8px;
-  }
-  .selection-panel {
-    top: 104px;
-    max-height: 52dvh;
-    overflow: auto;
-  }
-  .session-panel {
-    padding: 16px;
-  }
-  .session-panel h1 {
-    font-size: 23px;
-  }
-  #session-list {
-    max-height: 35dvh;
-  }
-}
-@media (max-height: 500px) and (pointer: coarse) {
-  #send-cards {
-    max-height: 25dvh;
-  }
-  .bottom-hud {
-    width: min(55vw, 550px);
-    left: auto;
-    right: 8px;
-    transform: none;
-  }
-  .world-navigation {
-    top: 100px;
-    left: auto;
-    right: 8px;
-    width: auto;
-    display: flex;
-  }
-  .world-navigation button > span {
-    display: none;
-  }
-  .world-controls {
-    top: 50px;
-    right: 8px;
-  }
-  .world-controls button {
-    width: auto;
-  }
-  #wave-preview {
-    top: 90px;
-    width: 190px;
-  }
-  .play-hint {
-    display: none;
   }
 }

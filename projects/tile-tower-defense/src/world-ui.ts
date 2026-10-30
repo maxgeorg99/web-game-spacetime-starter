@@ -1,19 +1,10 @@
+import { t, th, escapeHtml } from './i18n';
 import { assetUrl } from './assets';
-import { recruitableUnits } from '../shared/config/bevy-units';
-import { factions } from '../shared/config/factions';
-import { worldBalance, worldIslands } from '../shared/config/world';
-import { unitDef } from '../shared/config';
+import { recruitableUnits, factions, worldIslands, unitDef } from './i18n/content';
+import { worldBalance } from '../shared/config/world';
 import type { GameStore } from './store';
 import type { IslandScene } from './IslandScene';
 import { avatar, icon } from './views';
-
-const escape = (value: string) =>
-  value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
 
 /** World navigation never changes whose island the HUD commands control. */
 export class WorldUI {
@@ -108,10 +99,10 @@ export class WorldUI {
     document.getElementById('world-navigation')!.innerHTML = world.seats
       .map(
         (seat) => `
-      <button aria-label="${escape(seat.name ?? worldIslands[seat.slot].name)}" title="${escape(seat.name ?? worldIslands[seat.slot].name)}" data-island="${seat.slot}" class="${seat.slot === this.store.ownSlot ? 'own-island' : ''}">
-        <img class="captain-avatar" src="${assetUrl(`art/${factions[worldIslands[seat.slot].faction].avatar}.png`)}" alt="${factions[worldIslands[seat.slot].faction].name} captain" style="border-color:#${worldIslands[seat.slot].color.toString(16)}">
-        <span><b>${escape(seat.name ?? worldIslands[seat.slot].name)}${seat.slot === this.store.ownSlot ? ' · You' : ''}</b>
-          <small>${seat.owner ? `${seat.state.lives} HP · ${seat.state.phase === 'combat' ? 'Fighting' : seat.state.phase === 'lost' ? 'Defeated' : 'Preparing'}` : 'Unclaimed'}</small>
+      <button aria-label="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" title="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" data-island="${seat.slot}" class="${seat.slot === this.store.ownSlot ? 'own-island' : ''}">
+        <img class="captain-avatar" src="${assetUrl(`art/${factions[worldIslands[seat.slot].faction].avatar}.png`)}" alt="${th('world.captainColor', { color: factions[worldIslands[seat.slot].faction].name })}" style="border-color:#${worldIslands[seat.slot].color.toString(16)}">
+        <span><b>${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}${seat.slot === this.store.ownSlot ? t('world.you') : ''}</b>
+          <small>${seat.owner ? th('world.healthStatus', { health: seat.state.lives, status: seat.state.phase === 'combat' ? t('world.fighting') : seat.state.phase === 'lost' ? t('world.defeated') : t('world.preparing') }) : t('world.unclaimed')}</small>
         </span>
       </button>
     `,
@@ -122,10 +113,10 @@ export class WorldUI {
       ? opponents
           .map(
             (seat) =>
-              `<option value="${seat.slot}" ${seat.slot === this.target ? 'selected' : ''}>${escape(seat.name ?? worldIslands[seat.slot].name)}</option>`,
+              `<option value="${seat.slot}" ${seat.slot === this.target ? 'selected' : ''}>${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}</option>`,
           )
           .join('')
-      : '<option>No opponent yet</option>';
+      : `<option>${th('world.noOpponent')}</option>`;
     select.disabled = !opponents.length;
     const locked =
       !this.store.ready ||
@@ -136,8 +127,8 @@ export class WorldUI {
     document.getElementById('send-cards')!.innerHTML = recruitableUnits
       .map((unit) => {
         const cost = unit.meatCost * this.count;
-        return `<button class="action-card" data-send="${unit.id}" ${locked || cost > this.store.state.meat ? 'disabled' : ''} title="Send ${this.count} ${unit.name}. ${unit.leak} keep damage each.">
-        ${avatar(unit, this.store.faction)}<span class="card-name">${unit.name}</span><span class="unit-stats">${unit.health} HP · ${unit.leak} keep dmg<br>${unit.speed.toFixed(2)} tiles/s</span><span class="card-cost">${icon('meat')}${cost}</span>
+        return `<button class="action-card" data-send="${unit.id}" ${locked || cost > this.store.state.meat ? 'disabled' : ''} title="${th('world.sendTitle', { troops: t('count.troops', { count: this.count }), unit: unit.name, damage: unit.leak })}">
+        ${avatar(unit, this.store.faction)}<span class="card-name">${escapeHtml(unit.name)}</span><span class="unit-stats">${th('world.unitStats', { health: unit.health, damage: unit.leak })}<br>${th('world.speed', { speed: unit.speed.toFixed(2) })}</span><span class="card-cost">${icon('meat')}${cost}</span>
       </button>`;
       })
       .join('');
@@ -150,11 +141,16 @@ export class WorldUI {
           const inbound = flight.to === this.store.ownSlot;
           const destination = worldIslands[inbound ? flight.from : flight.to].name;
           const time = Math.max(0, Math.ceil(worldBalance.flightSeconds - flight.elapsed));
-          return `${inbound ? 'Incoming from' : 'To'} ${destination}: ${flight.remaining} ${unitDef(flight.unit).name} · ${time ? `${time}s` : 'landing'}`;
+          return t(inbound ? 'flight.incoming' : 'flight.outgoing', {
+            destination,
+            troops: t('count.troops', { count: flight.remaining }),
+            unit: unitDef(flight.unit).name,
+            arrival: time ? t('flight.seconds', { seconds: time }) : t('flight.landing'),
+          });
         })
         .join(' / ') ||
       (!opponents.length
-        ? 'Waiting for another captain to claim an island.'
-        : `${worldBalance.flightSeconds}s flight · ${this.count} units per airship`);
+        ? t('world.waiting')
+        : t('count.unitsPerAirship', { count: this.count, seconds: worldBalance.flightSeconds }));
   }
 }

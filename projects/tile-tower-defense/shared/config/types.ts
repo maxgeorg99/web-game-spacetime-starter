@@ -4,6 +4,7 @@ export interface ProjectileDef {
   speed: number;
 }
 export interface TowerDef {
+  avatar: string;
   projectile: ProjectileDef;
   id: string;
   name: string;

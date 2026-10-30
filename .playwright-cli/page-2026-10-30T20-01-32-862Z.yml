@@ -1,0 +1,37 @@
+- main [ref=e1]:
+  - region "Multiplayer sessions" [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Tiled Tower Defense" [level=1] [ref=e4]
+      - status [ref=e5]: Choose a world or create a new one
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - text: Captain name
+          - textbox "Captain name" [ref=e8]:
+            - /placeholder: Your name
+        - button "Save" [ref=e9] [cursor=pointer]
+      - heading "Worlds" [level=2] [ref=e10]
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - generic [ref=e13]:
+            - strong [ref=e14]: Release QA
+            - generic [ref=e15]: 3/4 islands available · last reported
+          - button "Join" [ref=e16] [cursor=pointer]
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - strong [ref=e19]: NewWorld.
+            - generic [ref=e20]: 2/4 islands available · last reported
+          - button "Join" [ref=e21] [cursor=pointer]
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - strong [ref=e24]: Original islands
+            - generic [ref=e25]: 0/4 islands available · last reported
+          - button "Spectate" [ref=e26] [cursor=pointer]
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - text: New world
+          - textbox "New world" [ref=e29]:
+            - /placeholder: Name your world
+        - button "Create" [ref=e30] [cursor=pointer]
+      - alert
+      - status
+  - img "Island battlefield. Choose a tower below and click a meadow to build." [ref=e31]

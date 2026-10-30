@@ -1,3 +1,4 @@
+import { t } from './i18n';
 import { factionArt, factions, type Faction } from '../shared/config/factions';
 import { worldIslands } from '../shared/config/world';
 import Phaser from 'phaser';
@@ -17,6 +18,7 @@ export class IslandView {
     { sprite: Phaser.GameObjects.Sprite; bar: Phaser.GameObjects.Graphics }
   >();
   private landKey = '';
+  private catapults = new Map<number, Phaser.GameObjects.Image>();
 
   private hover?: Point;
   private lastImpacts: unknown;
@@ -40,6 +42,7 @@ export class IslandView {
       sprite.destroy();
     }
     this.projectiles.clear();
+    this.catapults.clear();
     this.land.removeAll(true);
     this.landKey = '';
     this.lastImpacts = undefined;
@@ -81,6 +84,7 @@ export class IslandView {
     );
   }
   private drawLand() {
+    this.catapults.clear();
     this.land.removeAll(true);
     const s = this.state;
     const list = [...s.tiles].sort((a, b) => a.x + a.y - (b.x + b.y) || a.x - b.x);
@@ -165,7 +169,19 @@ export class IslandView {
         const sprite = this.add
           .image(x, y + 10, factionArt(art, this.faction), 0)
           .setOrigin(0.5, 1);
-        const width = core ? 130 : art === 'forest' ? 95 : building ? 65 : 75;
+        const width = core
+          ? 92
+          : art === 'catapult'
+            ? 70
+            : art === 'forest'
+              ? 95
+              : building
+                ? 48
+                : 58;
+        if (building?.kind === 'catapult') {
+          sprite.setOrigin(0.5, 0.78);
+          this.catapults.set(building.id, sprite);
+        }
         sprite.setDisplaySize(width, (width * sprite.height) / sprite.width);
         this.land.add(sprite);
       }
@@ -173,7 +189,7 @@ export class IslandView {
     const entry = this.project(road[0]);
     this.land.add(
       this.add
-        .text(entry.x, entry.y - 36, '↓ Incoming', {
+        .text(entry.x, entry.y - 36, t('island.incoming'), {
           fontFamily: 'Fira',
           resolution: Math.max(2, window.devicePixelRatio * 2),
           fontSize: '12px',
@@ -243,6 +259,29 @@ export class IslandView {
     if (key !== this.landKey) {
       this.landKey = key;
       this.drawLand();
+    }
+    // Snapshot cooldown is authoritative: advancing frames never advances combat.
+    for (const tower of s.towers) {
+      const sprite = this.catapults.get(tower.id);
+      if (!sprite) {
+        continue;
+      }
+      const cooldown = effectiveStats(tower).cooldown;
+      const duration = Math.min(1.1, cooldown);
+      const elapsed = Math.max(0, cooldown - tower.cooldown);
+      if (
+        tower.cooldown > 0 &&
+        elapsed < duration &&
+        !matchMedia('(prefers-reduced-motion: reduce)').matches
+      ) {
+        const frame = Math.min(12, Math.floor((elapsed / duration) * 13));
+        sprite.setTexture(
+          factionArt(frame < 9 ? 'catapult-fire' : 'catapult-load', this.faction),
+          frame < 9 ? frame : frame - 9,
+        );
+      } else {
+        sprite.setTexture(factionArt('catapult', this.faction));
+      }
     }
     const live = new Set<number>();
     for (const [fighters, ally] of [

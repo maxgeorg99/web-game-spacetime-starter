@@ -24,6 +24,30 @@ export const Island = __t.object("Island", {
 });
 export type Island = __Infer<typeof Island>;
 
+export const Reporting = __t.object("Reporting", {
+  id: __t.u32(),
+  target: __t.identity(),
+  lastClaimed: __t.u32(),
+  nextReportAt: __t.u64(),
+  pending: __t.bool(),
+  lastError: __t.string(),
+});
+export type Reporting = __Infer<typeof Reporting>;
+
+export const ReportingAdministrator = __t.object("ReportingAdministrator", {
+  id: __t.u32(),
+  owner: __t.identity(),
+});
+export type ReportingAdministrator = __Infer<typeof ReportingAdministrator>;
+
+export const SlotOutbox = __t.object("SlotOutbox", {
+  msgId: __t.u64(),
+  target: __t.identity(),
+  claimed: __t.u32(),
+  capacity: __t.u32(),
+});
+export type SlotOutbox = __Infer<typeof SlotOutbox>;
+
 export const World = __t.object("World", {
   id: __t.u32(),
   state: __t.string(),
@@ -31,11 +55,4 @@ export const World = __t.object("World", {
   updated: __t.timestamp(),
 });
 export type World = __Infer<typeof World>;
-
-export const WorldSlots = __t.object("WorldSlots", {
-  id: __t.u32(),
-  claimed: __t.u32(),
-  capacity: __t.u32(),
-});
-export type WorldSlots = __Infer<typeof WorldSlots>;
 

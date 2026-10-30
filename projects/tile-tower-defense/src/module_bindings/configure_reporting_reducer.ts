@@ -11,7 +11,5 @@ import {
 } from "spacetimedb";
 
 export default {
-  sessionId: __t.u32(),
-  claimed: __t.u32(),
-  capacity: __t.u32(),
+  target: __t.identity(),
 };

@@ -50,7 +50,20 @@ const provisionLease = table(
   { name: 'provision_lease' },
   { sessionId: t.u32().primaryKey(), attempt: t.string(), expiresAt: t.u64() },
 );
-const db = schema({ administrator, captain, session, membership, slots, provisionLease });
+// Only the publisher binds a database identity to a session. IDC carries that identity as sender.
+const worldReporter = table(
+  { name: 'world_reporter' },
+  { sessionId: t.u32().primaryKey(), identity: t.identity().unique() },
+);
+const db = schema({
+  administrator,
+  captain,
+  session,
+  membership,
+  slots,
+  provisionLease,
+  worldReporter,
+});
 export default db;
 export const init = db.init((ctx) => {
   ctx.db.administrator.insert({ id: 1, owner: ctx.sender });
@@ -166,21 +179,38 @@ export const provision_result = db.reducer(
   },
 );
 
-export const report_slots = db.reducer(
-  { sessionId: t.u32(), claimed: t.u32(), capacity: t.u32() },
+export const register_world_reporter = db.reducer(
+  { sessionId: t.u32(), identity: t.identity() },
   (ctx, args) => {
     if (!ctx.db.administrator.id.find(1)?.owner.isEqual(ctx.sender)) {
       throw new SenderError('Administrator only.');
     }
-    if (
-      !ctx.db.session.id.find(args.sessionId) ||
-      args.capacity !== 4 ||
-      args.claimed > args.capacity
-    ) {
+    if (!ctx.db.session.id.find(args.sessionId)) {
+      throw new SenderError('Unknown session.');
+    }
+    const existing = ctx.db.worldReporter.sessionId.find(args.sessionId);
+    if (existing) {
+      if (!existing.identity.isEqual(args.identity)) {
+        throw new SenderError('World reporter identity cannot be replaced.');
+      }
+      return;
+    }
+    ctx.db.worldReporter.insert(args);
+  },
+);
+
+export const receive_world_slots = db.reducer(
+  { claimed: t.u32(), capacity: t.u32() },
+  (ctx, args) => {
+    const reporter = ctx.db.worldReporter.identity.find(ctx.sender);
+    if (!reporter || !ctx.db.session.id.find(reporter.sessionId)) {
+      throw new SenderError('Registered world only.');
+    }
+    if (args.capacity !== 4 || args.claimed > args.capacity) {
       throw new SenderError('Invalid world capacity.');
     }
-    const row = { ...args, updatedAt: ctx.timestamp };
-    if (ctx.db.slots.sessionId.find(args.sessionId)) {
+    const row = { ...args, sessionId: reporter.sessionId, updatedAt: ctx.timestamp };
+    if (ctx.db.slots.sessionId.find(row.sessionId)) {
       ctx.db.slots.sessionId.update(row);
     } else {
       ctx.db.slots.insert(row);

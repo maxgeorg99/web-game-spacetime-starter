@@ -1,4 +1,5 @@
 import { DbConnection } from '../src/coordinator_bindings';
+import { databaseIdentity, identityArgument } from './lib/world-reporting';
 
 // Trusted local worker. CLI publishing credentials stay in the operator's CLI profile.
 // Run exactly one worker per coordinator. Publishing a deterministic name makes retries resumable.
@@ -37,34 +38,6 @@ if (process.env.SPACETIME_ADMIN_TOKEN) {
   } catch {
     throw Error('Could not authenticate provisioner. Check SPACETIME_ADMIN_TOKEN.');
   }
-}
-const lastReport = new Map<number, number>();
-async function reportSlots(id: number, uri: string, database: string) {
-  const endpoint = uri.replace(/^ws/, 'http').replace(/\/$/, '');
-  const response = await fetch(`${endpoint}/v1/database/${encodeURIComponent(database)}/sql`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: 'SELECT claimed, capacity FROM world_slots WHERE id = 1',
-    signal: AbortSignal.timeout(5000),
-  });
-  if (!response.ok) {
-    throw Error(`Slot query returned ${response.status}`);
-  }
-  const results: { rows: number[][] }[] = await response.json();
-  const [claimed, capacity] = results[0]?.rows[0] ?? [];
-  if (!Number.isInteger(claimed) || capacity !== 4 || claimed < 0 || claimed > capacity) {
-    return;
-  }
-  await cli([
-    'call',
-    coordinator,
-    'report_slots',
-    String(id),
-    String(claimed),
-    String(capacity),
-    '--server',
-    server,
-  ]);
 }
 let stopped = false;
 let connection: DbConnection | undefined;
@@ -120,18 +93,28 @@ while (!stopped) {
           continue;
         }
         // If this call fails, leave it pending and retry the same database after reconnect.
+        const [target, sender] = await Promise.all([
+          databaseIdentity(connectionUri, coordinator),
+          databaseIdentity(connectionUri, session.database),
+        ]);
+        await cli([
+          'call',
+          coordinator,
+          'register_world_reporter',
+          String(session.id),
+          JSON.stringify(identityArgument(sender)),
+          '--server',
+          server,
+        ]);
+        await cli([
+          'call',
+          session.database,
+          'configure_reporting',
+          JSON.stringify(identityArgument(target)),
+          '--server',
+          server,
+        ]);
         await result(session.id, true);
-      }
-      for (const session of connection.db.session.iter()) {
-        if (session.status !== 'ready' || Date.now() - (lastReport.get(session.id) ?? 0) < 15_000) {
-          continue;
-        }
-        lastReport.set(session.id, Date.now());
-        try {
-          await reportSlots(session.id, session.uri, session.database);
-        } catch (error) {
-          console.warn(`Slots unavailable for session ${session.id}:`, String(error));
-        }
       }
       await Bun.sleep(2000);
     }

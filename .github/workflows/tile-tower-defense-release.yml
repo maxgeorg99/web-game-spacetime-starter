@@ -47,8 +47,8 @@ jobs:
           curl --fail --silent --show-error --location https://install.spacetimedb.com -o /tmp/install-spacetime.sh
           sh /tmp/install-spacetime.sh --yes
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          "$HOME/.local/bin/spacetime" version install 2.10.2
-          "$HOME/.local/bin/spacetime" version use 2.10.2
+          "$HOME/.local/bin/spacetime" version install 2.14.0
+          "$HOME/.local/bin/spacetime" version use 2.14.0
       - name: Publish coordinator without resetting saves
         run: |
           spacetime login --token "$SPACETIME_ADMIN_TOKEN" > /dev/null
