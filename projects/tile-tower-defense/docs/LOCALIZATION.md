@@ -1,6 +1,6 @@
 # Localization
 
-Client text uses i18next. Edit `src/i18n/locales/en/ui.json` for menus, buttons, hints and counts; edit `content.json` alongside it for unit, tower, tile, wave, skill and faction display names/descriptions. Keys are flat, stable IDs. English is currently the only shipped language.
+Client text uses i18next. Edit `src/i18n/locales/en/ui.json` for menus, buttons, hints and counts; edit `content.json` alongside it for unit, tower, tile, wave, skill and faction display names/descriptions. Keys are flat, stable IDs. English, German and Spanish are bundled locally. Translated catalogs live under `src/i18n/locales/de/` and `src/i18n/locales/es/`; keep their keys and interpolation variables in sync with English.
 
 ```ts
 import { t, th } from './i18n';
@@ -22,17 +22,14 @@ Use `t` for canvas text, `textContent` and plain strings. Use `th` inside HTML t
 
 ## Add a language
 
-Create `src/i18n/locales/de/ui.json` and `content.json`, import them in `src/i18n/index.ts`, and register their merged catalog:
+For an additional language, create its `ui.json` and `content.json` under `src/i18n/locales/<locale>/`, import them in `src/i18n/index.ts`, and add their merged catalog to `bundledCatalogs`. The shipped languages are registered as follows:
 
 ```ts
-const translator = createTranslator(requestedLanguage, {
-  en: english,
-  de: { ...deUI, ...deContent },
-});
+const bundledCatalogs = { en: english, de: german, es: spanish };
 ```
 
-Language is chosen at startup from `?lang=de`, otherwise the browser language. Reload to change languages. Unsupported languages and missing entries fall back to English. No translation service is contacted during play. Key autocomplete comes from the English catalog.
+Language is chosen at startup from `?lang=de`, `?lang=es` or `?lang=en`, otherwise `navigator.language`. German regional locales (`de-DE`, `de-AT`, `de-CH`) resolve to German; Spanish regional locales (including `es-ES`, `es-MX`, `es-AR` and `es-419`) resolve to the shared Spanish catalog. Reload to change languages. This also applies inside itch.io’s game iframe: it reads the browser language directly and loads the bundled catalogs without external requests. Query overrides must be on the embedded game URL, not the parent itch.io page. Unsupported languages and missing entries fall back to English. No translation service is contacted during play. Key autocomplete comes from the English catalog.
 
 `src/i18n/content.ts` adapts display data on the client. Stable gameplay IDs, saves and server rules stay language independent. When adding content, add its English catalog keys too; tests cover content and static HTML keys. Shared configs contain IDs, art references and game rules only; do not duplicate display names or descriptions there. Skill trees store stable `branchIds`, with labels at `content.branches.<tower>.<branchId>`. The client adapter supplies typed localized names and descriptions for panels, prerequisites and the field guide. Server prerequisite diagnostics use stable skill IDs, while the UI translates the structured upgrade failure. Raw backend/transport errors and player-authored names are not translated by this pass.
 
-Run the existing approved checks with `bun run check`; localization tests cover plural categories, fallback, HTML escaping and catalog coverage.
+Run the existing approved checks with `bun run check`; localization tests cover plural categories, regional language selection, fallback, HTML escaping, complete German and Spanish key/interpolation parity and catalog coverage.

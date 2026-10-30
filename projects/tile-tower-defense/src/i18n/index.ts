@@ -1,8 +1,21 @@
 import { createInstance } from 'i18next';
 import ui from './locales/en/ui.json';
 import content from './locales/en/content.json';
+import germanUI from './locales/de/ui.json';
+import germanContent from './locales/de/content.json';
+import spanishUI from './locales/es/ui.json';
+import spanishContent from './locales/es/content.json';
 
 export const english = { ...ui, ...content };
+export const german = { ...germanUI, ...germanContent } satisfies Record<
+  keyof typeof english,
+  string
+>;
+export const spanish = { ...spanishUI, ...spanishContent } satisfies Record<
+  keyof typeof english,
+  string
+>;
+const bundledCatalogs = { en: english, de: german, es: spanish };
 type ResourceKey = keyof typeof english;
 type PluralBase<K> = K extends `${infer Base}_${'zero' | 'one' | 'two' | 'few' | 'many' | 'other'}`
   ? Base
@@ -15,7 +28,7 @@ type Arguments<K> = K extends PluralKey ? [values: Values & { count: number }] :
 /** Bundle catalogs locally: no network requests or translation service during play. */
 export function createTranslator(
   language = 'en',
-  catalogs: Record<string, Record<string, string>> = { en: english },
+  catalogs: Record<string, Record<string, string>> = bundledCatalogs,
 ) {
   const instance = createInstance();
   const resources = { ...catalogs, en: { ...english, ...catalogs.en } };
@@ -42,8 +55,7 @@ const requestedLanguage =
   typeof window === 'undefined'
     ? 'en'
     : (new URLSearchParams(window.location.search).get('lang') ?? navigator.language);
-// Add another imported catalog here when its translation is ready.
-const translator = createTranslator(requestedLanguage, { en: english });
+const translator = createTranslator(requestedLanguage);
 export const t = translator.t;
 export const language = translator.language;
 export function escapeHtml(value: string): string {

@@ -1,6 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
-import { createTranslator, english, t, th, type TranslationKey } from '../src/i18n';
+import {
+  createTranslator,
+  english,
+  german,
+  spanish,
+  t,
+  th,
+  type TranslationKey,
+} from '../src/i18n';
 import { towers, units, waves, tiles, skillTrees } from '../shared/config';
 import { buildCards } from '../src/views';
 import { fresh } from '../shared/game/rules';
@@ -49,6 +57,47 @@ describe('localization', () => {
   test('unsupported languages fall back to English and regional English resolves', () => {
     expect(createTranslator('xx').language).toBe('en');
     expect(createTranslator('en-GB').t('count.troops', { count: 1 })).toBe('1 troop');
+  });
+  test('German browser locales resolve to the bundled German catalog', () => {
+    for (const locale of ['de', 'de-DE', 'de-AT', 'de-CH']) {
+      const translator = createTranslator(locale);
+      expect(translator.language).toBe('de');
+      expect(translator.t('common.build')).toBe('Bauen');
+      expect(translator.t('content.towers.sentinel.name')).toBe('Magierturm');
+      expect(translator.t('content.skills.sentinel.lightning-capstone.name')).toBe('Überladung');
+      expect([0, 1, 2].map((count) => translator.t('count.troops', { count }))).toEqual([
+        'Keine Truppen',
+        '1 Einheit',
+        '2 Einheiten',
+      ]);
+    }
+  });
+  test('Spanish browser locales resolve to the bundled Spanish catalog', () => {
+    for (const locale of ['es', 'es-ES', 'es-MX', 'es-AR', 'es-419']) {
+      const translator = createTranslator(locale);
+      expect(translator.language).toBe('es');
+      expect(translator.t('common.build')).toBe('Construir');
+      expect(translator.t('content.towers.sentinel.name')).toBe('Torre de mago');
+      expect(translator.t('content.skills.sentinel.lightning-capstone.name')).toBe('Sobrecarga');
+      expect([0, 1, 2].map((count) => translator.t('count.troops', { count }))).toEqual([
+        'Sin tropas',
+        '1 unidad',
+        '2 unidades',
+      ]);
+      expect(translator.t('skill.requires', { name: 'Frío intenso', rank: 3 })).toBe(
+        'Requiere Frío intenso, rango 3',
+      );
+    }
+  });
+  test('translated catalogs cover every English key and preserve interpolation variables', () => {
+    const variables = (text: string) => (text.match(/{{\s*\w+\s*}}/g) ?? []).sort();
+    for (const catalog of [german, spanish]) {
+      expect(Object.keys(catalog).sort()).toEqual(Object.keys(english).sort());
+      for (const key of Object.keys(english) as (keyof typeof english)[]) {
+        expect(catalog[key].trim().length).toBeGreaterThan(0);
+        expect(variables(catalog[key])).toEqual(variables(english[key]));
+      }
+    }
   });
   test('text interpolation preserves names; HTML interpolation escapes markup once', () => {
     const name = '<img src=x onerror=alert(1)> & "Captain"';

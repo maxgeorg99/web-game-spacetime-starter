@@ -262,3 +262,15 @@ Removed duplicated English names/descriptions from shared tower, unit, terrain, 
 Extended localization coverage for all skill descriptions/branches, translated node labels and English fallback, unchanged gameplay data, and rejection of duplicate display fields in shared catalogs. These additions have not been run locally; manual playtesting remains the user preference.
 
 Release handoff: formatting and brace issues were fixed in commits b6a6f72 and 5250df7. GitHub release 41133563974 completed successfully. Fresh islands on Maincloud (tile-td-c20096a1909c-1) was subsequently updated with the released Mage Tower module using --delete-data=never; publication succeeded. The user identified the reported unknown skill as a legacy case. No world reset was performed.
+
+### German browser-language support — 2026-10-30
+
+Added complete German UI and content catalogs, including all towers, branches, skills/capstones, terrain, waves, units, factions, islands and accessibility labels. Registered German in the bundled i18next resources; browser locales de/de-DE/de-AT/de-CH resolve to German, with explicit ?lang=de/en overrides and English fallback. The same bundled code runs inside itch.io’s iframe without translation-network requests. Added wrapping/hyphenation for long German card and skill text.
+
+Added unrun regression coverage for German regional locales, plural counts, catalog key parity and interpolation placeholders. German catalog keys are also checked against the English type shape by the normal release build. Formatted authored files; no local tests, typechecks, builds or browser checks run, per manual-playtest preference. Manual preview: localhost:5175/?lang=de (or reload with German browser language); ?lang=en restores English. German is not yet confirmed deployed to itch.io.
+
+### Spanish browser-language support — 2026-10-30
+
+Added complete Spanish UI and content catalogs, including skills/capstones, towers, units, terrain, waves, factions, islands and accessibility labels. Bundled Spanish alongside English and German; Spanish browser locales resolve to es, with ?lang=es for manual selection and English fallback. Translation files use the same stable keys and interpolation placeholders, with their key shape checked by the existing release build. No changes to server rules or saved IDs.
+
+Extended the unrun localization regressions for es/es-ES/es-MX/es-AR/es-419, plural counts, skill prerequisite interpolation and Spanish catalog coverage. Formatted authored files; no tests, typechecks, builds or browser checks run, following the manual-playtest preference. Preview locally at localhost:5175/?lang=es. This change has not been published to itch.io.

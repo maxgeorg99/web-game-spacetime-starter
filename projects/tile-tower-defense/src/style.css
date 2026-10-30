@@ -363,6 +363,15 @@ summary::-webkit-details-marker {
 .skill b {
   font-size: 10px;
 }
+.skill b,
+.skill small,
+.skill em,
+.skill-branch h4,
+.card-name {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
 .skill small {
   font-size: 9px;
   font-weight: 400;
