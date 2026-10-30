@@ -14,6 +14,8 @@ export function restoreState(serialized: string, migrateGameplay = true): State 
     state.impacts = [];
     delete state.shots;
   }
-  if (migrateGameplay) migrateMages(state);
+  if (migrateGameplay) {
+    migrateMages(state);
+  }
   return state;
 }

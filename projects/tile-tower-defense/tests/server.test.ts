@@ -111,9 +111,10 @@ test('server purchases mage branches, rejects a locked capstone and replicates s
     await conn.reducers.act({ ...args, kind: 'sentinel' });
     await until(() => row().sequence === 1);
     const tower = JSON.parse(row().state).towers[0].id;
-    await expect(
+    const lockedCapstone = await Promise.allSettled([
       conn.reducers.act({ ...args, sequence: 1, action: 'upgrade', tower, node: 'frost-capstone' }),
-    ).rejects.toThrow();
+    ]);
+    expect(lockedCapstone[0].status).toBe('rejected');
     expect(row().sequence).toBe(1);
     for (const [index, node] of ['frost-attune', 'fire-attune', 'lightning-attune'].entries()) {
       await conn.reducers.act({ ...args, sequence: index + 1, action: 'upgrade', tower, node });

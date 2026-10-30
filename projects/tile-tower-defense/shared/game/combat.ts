@@ -12,7 +12,9 @@ export function step(s: State, defendBetweenWaves = false) {
   migrateMages(s);
   const dt = balance.tickSeconds;
   s.impacts = [];
-  for (const fighter of [...s.enemies, ...s.recruits]) tickMagic(fighter, dt);
+  for (const fighter of [...s.enemies, ...s.recruits]) {
+    tickMagic(fighter, dt);
+  }
   advanceProjectiles(s, dt);
   s.spawnIn -= dt;
   if (s.phase === 'combat' && s.queue.length && s.spawnIn <= 0) {

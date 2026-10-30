@@ -17,8 +17,12 @@ export function magePoints(tower: Pick<Tower, 'ranks'>) {
 }
 export function mageAspect(tower: Pick<Tower, 'ranks' | 'school'>): MageAspect {
   const maximum = Math.max(...schools.map((school) => branchPoints(tower, school)));
-  if (!maximum) return 'arcane';
-  if (tower.school && branchPoints(tower, tower.school) === maximum) return tower.school;
+  if (!maximum) {
+    return 'arcane';
+  }
+  if (tower.school && branchPoints(tower, tower.school) === maximum) {
+    return tower.school;
+  }
   return schools.find((school) => branchPoints(tower, school) === maximum)!;
 }
 export function mageMastered(tower: Pick<Tower, 'ranks'>) {
@@ -49,7 +53,9 @@ export function magicSpell(tower: Tower, damage: number): MagicPayload {
   };
 }
 export function applyMagic(target: Fighter, spell: MagicPayload) {
-  if (spell.chained) return;
+  if (spell.chained) {
+    return;
+  }
   if (spell.slow) {
     target.chill = {
       strength: Math.max(target.chill?.strength ?? 0, spell.slow),
@@ -74,15 +80,21 @@ export function applyMagic(target: Fighter, spell: MagicPayload) {
 }
 /** Only the shared scheduled simulation advances statuses or applies damage. */
 export function tickMagic(fighter: Fighter, dt: number) {
-  if (fighter.health <= 0) return;
+  if (fighter.health <= 0) {
+    return;
+  }
   if (fighter.burn) {
     fighter.health -= fighter.burn.dps * fighter.burn.stacks * Math.min(dt, fighter.burn.remaining);
     fighter.burn.remaining = Math.max(0, fighter.burn.remaining - dt);
-    if (!fighter.burn.remaining) delete fighter.burn;
+    if (!fighter.burn.remaining) {
+      delete fighter.burn;
+    }
   }
   if (fighter.chill) {
     fighter.chill.remaining = Math.max(0, fighter.chill.remaining - dt);
-    if (!fighter.chill.remaining) delete fighter.chill;
+    if (!fighter.chill.remaining) {
+      delete fighter.chill;
+    }
   }
   fighter.freeze = Math.max(0, (fighter.freeze ?? 0) - dt);
   fighter.freezeGuard = Math.max(0, (fighter.freezeGuard ?? 0) - dt);
@@ -91,7 +103,9 @@ export function tickMagic(fighter: Fighter, dt: number) {
 export function migrateMages(state: State): boolean {
   let changed = false;
   for (const tower of state.towers) {
-    if (tower.kind !== 'sentinel' || tower.magicVersion === 1) continue;
+    if (tower.kind !== 'sentinel' || tower.magicVersion === 1) {
+      continue;
+    }
     const legacy = ['steel', 'piercer', 'scope', 'horizon', 'drill', 'precision'];
     if (Object.keys(tower.ranks).some((id) => legacy.includes(id))) {
       const refund = Math.max(0, tower.spent - 120);

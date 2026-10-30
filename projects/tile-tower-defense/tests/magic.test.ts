@@ -58,8 +58,11 @@ describe('authoritative mage skills', () => {
       ['frost-capstone', 1],
       ['fire-attune', 3],
       ['fire-duration', 2],
-    ] as const)
-      for (let i = 0; i < count; i++) state = command(state, { type: 'upgrade', tower: id, node });
+    ] as const) {
+      for (let i = 0; i < count; i++) {
+        state = command(state, { type: 'upgrade', tower: id, node });
+      }
+    }
     expect(magePoints(state.towers[0])).toBe(15);
     expect(mageAspect(state.towers[0])).toBe('frost');
     const before = JSON.stringify(state);
@@ -99,7 +102,9 @@ describe('authoritative mage skills', () => {
   test('burn stacks are bounded and partial final ticks deal exactly remaining duration', () => {
     const target = enemy(2),
       spell = magicSpell(mastered('fire'), 20);
-    for (let i = 0; i < 20; i++) applyMagic(target, spell);
+    for (let i = 0; i < 20; i++) {
+      applyMagic(target, spell);
+    }
     expect(target.burn?.stacks).toBe(4);
     const dps = target.burn!.dps * 4;
     target.burn!.remaining = 0.05;
@@ -125,7 +130,9 @@ describe('authoritative mage skills', () => {
       12,
       magicSpell(tower, 20),
     );
-    for (let i = 0; i < 12; i++) advanceProjectiles(state, 0.1);
+    for (let i = 0; i < 12; i++) {
+      advanceProjectiles(state, 0.1);
+    }
     expect(state.enemies.map((e) => e.health)).toEqual([980, 986, 990.2]);
     expect(state.projectiles).toHaveLength(0);
     expect(state.impacts.filter((impact) => impact.from)).toHaveLength(3);

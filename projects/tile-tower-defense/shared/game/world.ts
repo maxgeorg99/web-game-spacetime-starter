@@ -162,7 +162,9 @@ function continueCampaign(seat: WorldSeat) {
 /** Advance every occupied island, including unattended defenses, with one authoritative clock. */
 export function stepWorld(world: WorldState): boolean {
   let changed = false;
-  for (const seat of world.seats) changed = migrateMages(seat.state) || changed;
+  for (const seat of world.seats) {
+    changed = migrateMages(seat.state) || changed;
+  }
   for (const flight of world.flights) {
     changed = true;
     flight.elapsed += balance.tickSeconds;

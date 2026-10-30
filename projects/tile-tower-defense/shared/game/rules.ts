@@ -49,27 +49,33 @@ export function effectiveStats(
   const base = towerDef(tower.kind),
     mods = { damage: 0, range: 0, attackSpeed: 0, splash: 0 };
   for (const node of treeDef(tower.kind).nodes) {
-    if (node.stat !== 'magic') mods[node.stat] += node.perRank * (tower.ranks[node.id] ?? 0);
+    if (node.stat !== 'magic') {
+      mods[node.stat] += node.perRank * (tower.ranks[node.id] ?? 0);
+    }
   }
-  if (tower.kind === 'sentinel')
+  if (tower.kind === 'sentinel') {
     mods.damage += (tower.ranks['frost-power'] ?? 0) * magicBalance.frostDamagePerRank;
+  }
   if (state && tower.x !== undefined && tower.y !== undefined) {
     const point = { x: tower.x, y: tower.y };
-    if (state.tiles.some((tile) => tile.kind === 'watchpost' && sameCell(tile, point)))
+    if (state.tiles.some((tile) => tile.kind === 'watchpost' && sameCell(tile, point))) {
       mods.range += terrainBonuses.perchRange;
+    }
     if (
       state.tiles.some(
         (tile) => tile.kind === 'shrine' && distance(tile, point) <= terrainBonuses.shrineRadius,
       )
-    )
+    ) {
       mods.damage += terrainBonuses.shrineDamage;
+    }
     if (
       state.tiles.some(
         (tile) =>
           tile.kind === 'windmill' && distance(tile, point) <= terrainBonuses.windmillRadius,
       )
-    )
+    ) {
       mods.attackSpeed += terrainBonuses.windmillSpeed;
+    }
   }
   return {
     damage: base.damage * (1 + mods.damage),
@@ -111,12 +117,19 @@ export function income(s: State) {
       const def = tileDef(tile.kind);
       let gold = def.goldIncome,
         meat = def.meatIncome;
-      if (tile.kind === 'forest') gold += count('forest') * terrainBonuses.groveGold;
-      if (tile.kind === 'farm') meat += count('forest') * terrainBonuses.pastureMeat;
-      if (tile.kind === 'quarry')
+      if (tile.kind === 'forest') {
+        gold += count('forest') * terrainBonuses.groveGold;
+      }
+      if (tile.kind === 'farm') {
+        meat += count('forest') * terrainBonuses.pastureMeat;
+      }
+      if (tile.kind === 'quarry') {
         gold +=
           s.towers.filter((tower) => adjacent(tile, tower)).length * terrainBonuses.quarryGold;
-      if (tile.kind === 'orchard') meat += count('farm') * terrainBonuses.orchardMeat;
+      }
+      if (tile.kind === 'orchard') {
+        meat += count('farm') * terrainBonuses.orchardMeat;
+      }
       return { gold: sum.gold + gold, meat: sum.meat + meat };
     },
     { gold: Number(balance.waveGold), meat: Number(balance.waveMeat) },
@@ -155,10 +168,12 @@ export function upgradeFailure(s: State, tower: Tower, nodeId: string): UpgradeF
     return { kind: 'unknown' };
   }
   const tree = treeDef(tower.kind);
-  if (tree.pointLimit && magePoints(tower) >= tree.pointLimit)
+  if (tree.pointLimit && magePoints(tower) >= tree.pointLimit) {
     return { kind: 'points', limit: tree.pointLimit };
-  if (node.branchPoints && branchPoints(tower, schools[node.branch]) < node.branchPoints)
+  }
+  if (node.branchPoints && branchPoints(tower, schools[node.branch]) < node.branchPoints) {
     return { kind: 'branch', points: node.branchPoints };
+  }
   if ((tower.ranks[node.id] ?? 0) >= node.maxRank) {
     return { kind: 'maxed' };
   }
@@ -256,7 +271,9 @@ export function command(current: State, action: Command): State {
       if (tower!.kind === 'sentinel') {
         const preferred = schools[node.branch];
         const aspect = mageAspect({ ...tower!, school: preferred });
-        if (aspect !== 'arcane') tower!.school = aspect;
+        if (aspect !== 'arcane') {
+          tower!.school = aspect;
+        }
       }
       break;
     }
@@ -317,8 +334,9 @@ export function command(current: State, action: Command): State {
       if (!expansionCells(s).some((p) => sameCell(p, action))) {
         throw Error('Place beside your island, inside the boundary.');
       }
-      if (action.kind === 'relic')
+      if (action.kind === 'relic') {
         s.lives = Math.min(balance.keepHealth, s.lives + terrainBonuses.relicHealing);
+      }
       s.tiles.push({ x: action.x, y: action.y, kind: tileDef(action.kind).id });
       s.offers = [];
       s.phase = 'prepare';

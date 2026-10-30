@@ -359,8 +359,11 @@ describe('twenty-wave campaign', () => {
       waves.flatMap((wave) => wave.groups.map((group) => group.unit)),
     );
     for (const unit of units) {
-      if (unit.recruitable) expect(encountered.has(unit.id)).toBe(false);
-      else expect(encountered.has(unit.id)).toBe(true);
+      if (unit.recruitable) {
+        expect(encountered.has(unit.id)).toBe(false);
+      } else {
+        expect(encountered.has(unit.id)).toBe(true);
+      }
     }
     expect(new Set(waves.map((wave) => wave.id)).size).toBe(20);
   });

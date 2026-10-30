@@ -6,8 +6,9 @@ import type { State } from './model';
 export function draftOffers(s: State): TileId[] {
   const depth = Math.max(s.wave, s.tiles.length - 24);
   let seed = (s.kills * 7919 + s.nextId * 104729 + s.tiles.length * 1543 + depth * 31) >>> 0;
-  for (const tile of s.tiles)
+  for (const tile of s.tiles) {
     seed = (Math.imul(seed, 31) + tile.x * 17 + tile.y * 13 + tile.kind.length) >>> 0;
+  }
   const random = () => {
     seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
     return seed / 4294967296;

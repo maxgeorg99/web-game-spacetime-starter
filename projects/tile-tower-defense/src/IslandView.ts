@@ -201,7 +201,9 @@ export class IslandView {
         g.lineStyle(2, color, 0.85).strokeEllipse(x, y + 3, 42, 20);
         if (mageMastered(building)) {
           g.lineStyle(2, color, 0.55).strokeEllipse(x, y + 3, 56, 28);
-          for (const dx of [-24, 24]) g.fillStyle(color).fillCircle(x + dx, y + 3, 3);
+          for (const dx of [-24, 24]) {
+            g.fillStyle(color).fillCircle(x + dx, y + 3, 3);
+          }
         }
       }
       if (building && tile.kind === 'watchpost') {
@@ -224,9 +226,12 @@ export class IslandView {
             : building
               ? 48
               : (landmarkArt[art]?.width ?? 58);
-        if (landmarkArt[art]) sprite.setOrigin(0.5, landmarkArt[art].groundY);
-        if (building?.kind === 'watchtower' || building?.kind === 'sentinel')
+        if (landmarkArt[art]) {
+          sprite.setOrigin(0.5, landmarkArt[art].groundY);
+        }
+        if (building?.kind === 'watchtower' || building?.kind === 'sentinel') {
           sprite.setOrigin(0.5, watchtowerGroundY);
+        }
         if (building?.kind === 'catapult') {
           sprite.setOrigin(0.5, 0.78);
           this.catapults.set(building.id, sprite);
@@ -290,10 +295,18 @@ export class IslandView {
       if (valid) {
         const effect = placementEffect(this.state, this.draftKind, cell);
         lines = [t('draft.preview', effect)];
-        if (effect.towers) lines.push(t('draft.blessing', { count: effect.towers }));
-        if (effect.hastened) lines.push(t('draft.haste', { count: effect.hastened }));
-        if (effect.range) lines.push(t('draft.perch'));
-        if (effect.healing) lines.push(t('draft.healing', { count: effect.healing }));
+        if (effect.towers) {
+          lines.push(t('draft.blessing', { count: effect.towers }));
+        }
+        if (effect.hastened) {
+          lines.push(t('draft.haste', { count: effect.hastened }));
+        }
+        if (effect.range) {
+          lines.push(t('draft.perch'));
+        }
+        if (effect.healing) {
+          lines.push(t('draft.healing', { count: effect.healing }));
+        }
         lines.push(t('draft.confirm'));
         for (const other of this.state.tiles) {
           const range =
@@ -456,8 +469,12 @@ export class IslandView {
           actor.sprite.setTint(0x92eaff);
           actor.sprite.anims.pause();
         } else {
-          if (f.chill) actor.sprite.setTint(0xc4efff);
-          if (!matchMedia('(prefers-reduced-motion: reduce)').matches) actor.sprite.anims.resume();
+          if (f.chill) {
+            actor.sprite.setTint(0xc4efff);
+          }
+          if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            actor.sprite.anims.resume();
+          }
         }
         actor.bar
           .clear()

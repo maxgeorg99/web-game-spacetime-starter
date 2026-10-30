@@ -40,19 +40,25 @@ export function advanceProjectiles(state: State, delta: number) {
   for (const projectile of state.projectiles) {
     const opponents = projectile.ally ? state.enemies : state.recruits;
     const target = opponents.find((unit) => unit.id === projectile.target && unit.health > 0);
-    if (target) projectile.aim = position(target.progress);
+    if (target) {
+      projectile.aim = position(target.progress);
+    }
     const remaining = distance(projectile, projectile.aim);
     projectile.age += delta;
     if (remaining <= projectile.speed * delta) {
       for (const unit of opponents) {
-        if (unit.health <= 0) continue;
+        if (unit.health <= 0) {
+          continue;
+        }
         if (
           unit.id === target?.id ||
           (projectile.splash > 0 &&
             distance(position(unit.progress), projectile.aim) <= projectile.splash)
         ) {
           unit.health -= projectile.damage;
-          if (unit.id === target?.id && projectile.magic) applyMagic(unit, projectile.magic);
+          if (unit.id === target?.id && projectile.magic) {
+            applyMagic(unit, projectile.magic);
+          }
         }
       }
       const spell = projectile.magic;
@@ -62,8 +68,9 @@ export function advanceProjectiles(state: State, delta: number) {
           if (
             unit.health > 0 &&
             distance(position(unit.progress), projectile.aim) <= magicBalance.igniteRadius
-          )
+          ) {
             unit.health -= projectile.damage;
+          }
         }
       }
       state.impacts.push({
@@ -92,7 +99,7 @@ export function advanceProjectiles(state: State, delta: number) {
               distance(position(a.progress), projectile.aim) -
                 distance(position(b.progress), projectile.aim) || a.id - b.id,
           )[0];
-        if (next)
+        if (next) {
           chained.push({
             ...projectile,
             ...projectile.aim,
@@ -115,10 +122,13 @@ export function advanceProjectiles(state: State, delta: number) {
               ignite: false,
             },
           });
+        }
       }
       continue;
     }
-    if (projectile.age > 5) continue;
+    if (projectile.age > 5) {
+      continue;
+    }
     const travel = (projectile.speed * delta) / remaining;
     projectile.x += (projectile.aim.x - projectile.x) * travel;
     projectile.y += (projectile.aim.y - projectile.y) * travel;

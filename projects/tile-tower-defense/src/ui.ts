@@ -108,7 +108,9 @@ export class UI {
       backdropPress = event.target === dialog && outsideDialog(event);
     });
     dialog.addEventListener('click', (event) => {
-      if (backdropPress && event.target === dialog && outsideDialog(event)) dialog.close();
+      if (backdropPress && event.target === dialog && outsideDialog(event)) {
+        dialog.close();
+      }
       backdropPress = false;
     });
     // Dismiss before Phaser handles the next selection, so clicking another tower
@@ -142,7 +144,9 @@ export class UI {
       this.buildKind = undefined;
     } else if (state.phase === 'draft' && this.draftKind) {
       this.scene.previewCell(point);
-      if (confirmed) void this.store.send({ type: 'expand', kind: this.draftKind, ...point });
+      if (confirmed) {
+        void this.store.send({ type: 'expand', kind: this.draftKind, ...point });
+      }
     } else if (this.buildKind) {
       void this.store.send({ type: 'build', kind: this.buildKind, ...point });
     }
