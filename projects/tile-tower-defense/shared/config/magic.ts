@@ -67,11 +67,7 @@ const branches = [
     name: 'Lightning',
     icon: 'magic/lightning-icon',
     nodes: [
-      [
-        'attune',
-        'Chain spark',
-        'Unlock 2/3/4 additional jumps. Jumps deal damage only.',
-      ],
+      ['attune', 'Chain spark', 'Unlock 2/3/4 additional jumps. Jumps deal damage only.'],
       ['duration', 'Arcing reach', '+0.3 tiles jump range per rank (base 1.2).'],
       ['power', 'Conduction', 'Keep 5% more damage per jump per rank (base 70%).'],
       [
