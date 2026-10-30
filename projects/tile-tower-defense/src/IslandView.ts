@@ -1,3 +1,9 @@
+import { mageAspect, mageMastered } from '../shared/game/magic';
+import { magicColors } from '../shared/config/magic';
+import { landmarkArt, watchtowerGroundY } from '../shared/config/presentation';
+import { discoveries, rarityColors, terrainBonuses } from '../shared/config/drafting';
+import type { TileId } from '../shared/config';
+import { placementEffect } from '../shared/game/rules';
 import { t } from './i18n';
 import { factionArt, factions, type Faction } from '../shared/config/factions';
 import { worldIslands } from '../shared/config/world';
@@ -15,12 +21,19 @@ export class IslandView {
   private highlight!: Phaser.GameObjects.Graphics;
   private actors = new Map<
     number,
-    { sprite: Phaser.GameObjects.Sprite; bar: Phaser.GameObjects.Graphics }
+    {
+      sprite: Phaser.GameObjects.Sprite;
+      bar: Phaser.GameObjects.Graphics;
+      burn?: { badge: Phaser.GameObjects.Container; count: Phaser.GameObjects.Text };
+    }
   >();
   private landKey = '';
   private catapults = new Map<number, Phaser.GameObjects.Image>();
 
   private hover?: Point;
+  private draftKind?: TileId;
+  private previewLabel?: Phaser.GameObjects.Text;
+  private knownTiles = new Set<string>();
   private lastImpacts: unknown;
   constructor(
     private scene: Phaser.Scene,
@@ -35,6 +48,7 @@ export class IslandView {
     for (const actor of this.actors.values()) {
       actor.sprite.destroy();
       actor.bar.destroy();
+      actor.burn?.badge.destroy();
     }
     this.actors.clear();
     for (const sprite of this.projectiles.values()) {
@@ -45,6 +59,9 @@ export class IslandView {
     this.catapults.clear();
     this.land.removeAll(true);
     this.landKey = '';
+    this.knownTiles.clear();
+    this.previewLabel?.setVisible(false);
+    this.draftKind = undefined;
     this.lastImpacts = undefined;
     this.selected = undefined;
     this.hover = undefined;
@@ -55,6 +72,10 @@ export class IslandView {
   }
   private get tweens() {
     return this.scene.tweens;
+  }
+  setDraft(kind?: string) {
+    this.draftKind = kind as TileId | undefined;
+    this.drawSelection();
   }
   setHover(point?: Point) {
     this.hover = point;
@@ -131,6 +152,14 @@ export class IslandView {
         ],
         true,
       );
+      if (!path && discoveries[tile.kind].rarity !== 'common') {
+        g.lineStyle(2, rarityColors[discoveries[tile.kind].rarity], 0.9).strokeEllipse(
+          x,
+          y,
+          60,
+          28,
+        );
+      }
       if (path) {
         for (const [dx, dy] of [
           [-14, 0],
@@ -161,10 +190,29 @@ export class IslandView {
       const art = core
         ? 'keep'
         : building
-          ? towerDef(building.kind).art
+          ? building.kind === 'sentinel'
+            ? `mage-${mageAspect(building)}`
+            : towerDef(building.kind).art
           : 'art' in def
             ? def.art
             : undefined;
+      if (building?.kind === 'sentinel') {
+        const color = magicColors[mageAspect(building)];
+        g.lineStyle(2, color, 0.85).strokeEllipse(x, y + 3, 42, 20);
+        if (mageMastered(building)) {
+          g.lineStyle(2, color, 0.55).strokeEllipse(x, y + 3, 56, 28);
+          for (const dx of [-24, 24]) g.fillStyle(color).fillCircle(x + dx, y + 3, 3);
+        }
+      }
+      if (building && tile.kind === 'watchpost') {
+        const platform = landmarkArt['tiles/watchpost'];
+        this.land.add(
+          this.add
+            .image(x, y + 10, 'tiles/watchpost')
+            .setOrigin(0.5, platform.groundY)
+            .setDisplaySize(platform.width, platform.width),
+        );
+      }
       if (art) {
         const sprite = this.add
           .image(x, y + 10, factionArt(art, this.faction), 0)
@@ -173,11 +221,12 @@ export class IslandView {
           ? 92
           : art === 'catapult'
             ? 70
-            : art === 'forest'
-              ? 95
-              : building
-                ? 48
-                : 58;
+            : building
+              ? 48
+              : (landmarkArt[art]?.width ?? 58);
+        if (landmarkArt[art]) sprite.setOrigin(0.5, landmarkArt[art].groundY);
+        if (building?.kind === 'watchtower' || building?.kind === 'sentinel')
+          sprite.setOrigin(0.5, watchtowerGroundY);
         if (building?.kind === 'catapult') {
           sprite.setOrigin(0.5, 0.78);
           this.catapults.set(building.id, sprite);
@@ -206,6 +255,7 @@ export class IslandView {
     }
     const g = this.highlight;
     g.clear();
+    this.previewLabel?.setVisible(false);
     if (this.state.phase === 'draft') {
       for (const cell of expansionCells(this.state)) {
         const p = this.project(cell);
@@ -219,6 +269,61 @@ export class IslandView {
           true,
         );
       }
+    }
+    if (this.state.phase === 'draft' && this.draftKind && this.hover) {
+      const cell = this.hover,
+        p = this.project(cell);
+      const valid = expansionCells(this.state).some((other) => sameCell(cell, other));
+      const color = valid ? rarityColors[discoveries[this.draftKind].rarity] : 0xc57263;
+      this.polygon(
+        g,
+        [
+          [p.x - 44, p.y],
+          [p.x, p.y - 22],
+          [p.x + 44, p.y],
+          [p.x, p.y + 22],
+        ],
+        color,
+        0.65,
+      );
+      let lines = [t('draft.invalid')];
+      if (valid) {
+        const effect = placementEffect(this.state, this.draftKind, cell);
+        lines = [t('draft.preview', effect)];
+        if (effect.towers) lines.push(t('draft.blessing', { count: effect.towers }));
+        if (effect.hastened) lines.push(t('draft.haste', { count: effect.hastened }));
+        if (effect.range) lines.push(t('draft.perch'));
+        if (effect.healing) lines.push(t('draft.healing', { count: effect.healing }));
+        lines.push(t('draft.confirm'));
+        for (const other of this.state.tiles) {
+          const range =
+            this.draftKind === 'shrine'
+              ? terrainBonuses.shrineRadius
+              : this.draftKind === 'windmill'
+                ? terrainBonuses.windmillRadius
+                : 1.01;
+          if (Math.hypot(other.x - cell.x, other.y - cell.y) <= range) {
+            const target = this.project(other);
+            g.lineStyle(2, color, 0.8).lineBetween(p.x, p.y, target.x, target.y);
+            g.strokeEllipse(target.x, target.y, 72, 36);
+          }
+        }
+      }
+      this.previewLabel ??= this.add
+        .text(0, 0, '', {
+          fontFamily: 'Fira',
+          fontSize: '13px',
+          color: '#fff7db',
+          backgroundColor: '#243e39',
+          padding: { x: 10, y: 8 },
+          align: 'center',
+        })
+        .setOrigin(0.5, 1)
+        .setDepth(1100);
+      this.previewLabel
+        .setText(lines.join('\n'))
+        .setPosition(p.x, p.y - 38)
+        .setVisible(true);
     }
     for (const [cell, color] of [
       [this.hover, 0xffffff],
@@ -246,7 +351,7 @@ export class IslandView {
     const tower = this.state.towers.find((t) => this.selected && sameCell(t, this.selected));
     if (tower) {
       const p = this.project(tower),
-        range = effectiveStats(tower).range;
+        range = effectiveStats(tower, this.state).range;
       g.lineStyle(2, 0xffecab, 0.7).strokeEllipse(p.x, p.y, range * 130, range * 65);
     }
   }
@@ -255,10 +360,30 @@ export class IslandView {
       return;
     }
     const s = this.state,
-      key = JSON.stringify([s.tiles, s.towers.map((t) => [t.id, t.x, t.y, t.kind])]);
+      key = JSON.stringify([
+        s.tiles,
+        s.towers.map((t) => [t.id, t.x, t.y, t.kind, t.school, t.ranks]),
+      ]);
     if (key !== this.landKey) {
+      const added = this.landKey
+        ? s.tiles.filter((tile) => !this.knownTiles.has(`${tile.x},${tile.y}`))
+        : [];
+      this.knownTiles = new Set(s.tiles.map((tile) => `${tile.x},${tile.y}`));
       this.landKey = key;
       this.drawLand();
+      for (const tile of added) {
+        const p = this.project(tile),
+          color = rarityColors[discoveries[tile.kind].rarity];
+        const ring = this.add.ellipse(p.x, p.y, 88, 44).setStrokeStyle(4, color).setDepth(1002);
+        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.tweens.add({
+          targets: ring,
+          scale: reduced ? 1 : 2.2,
+          alpha: 0,
+          duration: reduced ? 150 : 700,
+          onComplete: () => ring.destroy(),
+        });
+      }
     }
     // Snapshot cooldown is authoritative: advancing frames never advances combat.
     for (const tower of s.towers) {
@@ -266,7 +391,7 @@ export class IslandView {
       if (!sprite) {
         continue;
       }
-      const cooldown = effectiveStats(tower).cooldown;
+      const cooldown = effectiveStats(tower, this.state).cooldown;
       const duration = Math.min(1.1, cooldown);
       const elapsed = Math.max(0, cooldown - tower.cooldown);
       if (
@@ -326,6 +451,14 @@ export class IslandView {
           actor.sprite.setFlipX(facing.x < p.x);
         }
         actor.sprite.setPosition(p.x, p.y - 9).setDepth(500 + p.y / 10);
+        actor.sprite.clearTint();
+        if ((f.freeze ?? 0) > 0) {
+          actor.sprite.setTint(0x92eaff);
+          actor.sprite.anims.pause();
+        } else {
+          if (f.chill) actor.sprite.setTint(0xc4efff);
+          if (!matchMedia('(prefers-reduced-motion: reduce)').matches) actor.sprite.anims.resume();
+        }
         actor.bar
           .clear()
           .setDepth(600 + p.y / 10)
@@ -333,12 +466,49 @@ export class IslandView {
           .fillRoundedRect(p.x - 16, p.y - 32, 32, 4, 2)
           .fillStyle(faction ? factions[faction].color : 0xe4a17f)
           .fillRect(p.x - 15, p.y - 31, 30 * Math.max(0, f.health / f.maxHealth), 2);
+        if (f.chill || (f.freeze ?? 0) > 0) {
+          actor.bar
+            .lineStyle((f.freeze ?? 0) > 0 ? 3 : 1, magicColors.frost, 0.9)
+            .strokeEllipse(p.x, p.y + 1, 28, 12);
+          actor.bar
+            .lineBetween(p.x + 20, p.y - 25, p.x + 20, p.y - 15)
+            .lineBetween(p.x + 16, p.y - 20, p.x + 24, p.y - 20);
+        }
+        if (f.burn) {
+          if (!actor.burn) {
+            const backing = this.add
+              .graphics()
+              .fillStyle(0x35271f, 0.95)
+              .fillRoundedRect(-20, -12, 40, 24, 6)
+              .lineStyle(1, 0xd9964b, 0.9)
+              .strokeRoundedRect(-20, -12, 40, 24, 6);
+            const flame = this.add.image(-7, 0, 'magic/fire-icon').setDisplaySize(24, 24);
+            const count = this.add
+              .text(10, 0, '', {
+                fontFamily: 'Fira',
+                fontSize: '13px',
+                fontStyle: 'bold',
+                color: '#fff1cd',
+                resolution: Math.max(2, window.devicePixelRatio),
+              })
+              .setOrigin(0.5);
+            actor.burn = { badge: this.add.container(0, 0, [backing, flame, count]), count };
+          }
+          actor.burn.badge
+            .setPosition(p.x, p.y - 49)
+            .setDepth(700 + p.y / 10)
+            .setVisible(true);
+          actor.burn.count.setText(String(f.burn.stacks));
+        } else {
+          actor.burn?.badge.setVisible(false);
+        }
       }
     }
     for (const [id, actor] of this.actors) {
       if (!live.has(id)) {
         actor.sprite.destroy();
         actor.bar.destroy();
+        actor.burn?.badge.destroy();
         this.actors.delete(id);
       }
     }
@@ -354,7 +524,22 @@ export class IslandView {
       if (!sprite) {
         sprite = this.add
           .image(x, y, projectile.art)
-          .setDisplaySize(projectile.art === 'rock' ? 22 : 42, projectile.art === 'rock' ? 22 : 42)
+          .setDisplaySize(
+            projectile.magic
+              ? projectile.magic.overcharge
+                ? 32
+                : 24
+              : projectile.art === 'rock'
+                ? 22
+                : 42,
+            projectile.magic
+              ? projectile.magic.overcharge
+                ? 32
+                : 24
+              : projectile.art === 'rock'
+                ? 22
+                : 42,
+          )
           .setDepth(1000);
         this.projectiles.set(projectile.id, sprite);
       }
@@ -377,18 +562,37 @@ export class IslandView {
       this.lastImpacts = s.impacts;
       for (const impact of s.impacts) {
         const point = this.project(impact);
+        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (impact.from) {
+          const start = this.project(impact.from),
+            dx = point.x - start.x,
+            dy = point.y - start.y;
+          const arc = this.add.graphics().setDepth(1002);
+          arc.lineStyle(impact.capstone ? 4 : 2, magicColors.lightning, 0.95).strokePoints([
+            { x: start.x, y: start.y - 12 },
+            { x: start.x + dx * 0.35 - 4, y: start.y + dy * 0.35 - 16 },
+            { x: start.x + dx * 0.65 + 4, y: start.y + dy * 0.65 - 8 },
+            { x: point.x, y: point.y - 12 },
+          ]);
+          this.tweens.add({
+            targets: arc,
+            alpha: 0,
+            duration: reduced ? 80 : 240,
+            onComplete: () => arc.destroy(),
+          });
+        }
         const flash = this.add
           .circle(
             point.x,
             point.y - 10,
-            impact.splash ? 12 : 5,
-            impact.ally ? 0xffe6a2 : 0xe4a086,
+            impact.splash ? 12 : impact.capstone ? 10 : 5,
+            impact.school ? magicColors[impact.school] : impact.ally ? 0xffe6a2 : 0xe4a086,
             0.8,
           )
           .setDepth(1001);
         this.tweens.add({
           targets: flash,
-          scale: impact.splash ? 2.3 : 1.5,
+          scale: reduced ? 1 : impact.splash ? 2.3 : impact.capstone ? 2 : 1.5,
           alpha: 0,
           duration: 200,
           onComplete: () => flash.destroy(),

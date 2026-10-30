@@ -21,6 +21,10 @@ export const factionBuildings = [
   'catapult',
   'catapult-avatar',
   'airship',
+  'mage-arcane',
+  'mage-frost',
+  'mage-fire',
+  'mage-lightning',
 ];
 // Warfare catapult strips: 256px square frames, no margin or spacing.
 export const factionTowerSheets = {

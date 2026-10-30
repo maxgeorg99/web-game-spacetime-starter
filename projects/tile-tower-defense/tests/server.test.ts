@@ -101,3 +101,34 @@ test('server owns commands, isolates identities, rejects replays, and reconnects
     }
   }
 }, 30000);
+
+test('server purchases mage branches, rejects a locked capstone and replicates spell effects', async () => {
+  const { conn } = await connect();
+  try {
+    await conn.reducers.join({});
+    const row = () => conn.db.island.owner.find(conn.identity!)!;
+    await until(() => !!row());
+    await conn.reducers.act({ ...args, kind: 'sentinel' });
+    await until(() => row().sequence === 1);
+    const tower = JSON.parse(row().state).towers[0].id;
+    await expect(
+      conn.reducers.act({ ...args, sequence: 1, action: 'upgrade', tower, node: 'frost-capstone' }),
+    ).rejects.toThrow();
+    expect(row().sequence).toBe(1);
+    for (const [index, node] of ['frost-attune', 'fire-attune', 'lightning-attune'].entries()) {
+      await conn.reducers.act({ ...args, sequence: index + 1, action: 'upgrade', tower, node });
+      await until(() => row().sequence === index + 2);
+    }
+    const bought: State = JSON.parse(row().state);
+    expect(bought.gold).toBe(0);
+    expect(bought.towers[0].school).toBe('lightning');
+    await conn.reducers.act({ ...args, sequence: 4, action: 'start' });
+    await until(() => {
+      const state: State = JSON.parse(row().state);
+      return state.enemies.some((enemy) => !!enemy.chill && !!enemy.burn);
+    });
+    expect(JSON.parse(row().state).towers[0].casts).toBeGreaterThan(0);
+  } finally {
+    conn.disconnect();
+  }
+}, 30000);

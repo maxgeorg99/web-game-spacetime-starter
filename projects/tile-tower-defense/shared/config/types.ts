@@ -44,10 +44,13 @@ export interface SkillNode {
   maxRank: number;
   goldCost: number;
   requires?: { id: string; rank: number };
-  stat: Stat;
+  stat: Stat | 'magic';
+  branchPoints?: number;
+  capstone?: boolean;
   perRank: number;
 }
 export interface SkillTree {
+  pointLimit?: number;
   tower: string;
   branches: readonly string[];
   nodes: readonly SkillNode[];

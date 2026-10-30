@@ -1,6 +1,8 @@
+import { migrateMages } from './magic';
 import { recruitableUnits } from '../config/bevy-units';
-import { balance, tiles, unitDef } from '../config';
+import { balance, unitDef } from '../config';
 import { expeditions, worldBalance, worldIslands } from '../config/world';
+import { draftOffers } from './drafting';
 import { fresh, command, expansionCells } from './rules';
 import { step } from './combat';
 import type { Command, State } from './model';
@@ -155,11 +157,12 @@ function continueCampaign(seat: WorldSeat) {
   seat.cycles++;
   seat.state.wave = 0;
   seat.state.phase = expansionCells(seat.state).length ? 'draft' : 'prepare';
-  seat.state.offers = seat.state.phase === 'draft' ? tiles.map((tile) => tile.id) : [];
+  seat.state.offers = seat.state.phase === 'draft' ? draftOffers(seat.state) : [];
 }
 /** Advance every occupied island, including unattended defenses, with one authoritative clock. */
 export function stepWorld(world: WorldState): boolean {
   let changed = false;
+  for (const seat of world.seats) changed = migrateMages(seat.state) || changed;
   for (const flight of world.flights) {
     changed = true;
     flight.elapsed += balance.tickSeconds;

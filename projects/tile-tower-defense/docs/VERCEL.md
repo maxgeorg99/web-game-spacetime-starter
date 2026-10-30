@@ -47,3 +47,11 @@ Production coordinator updated without deleting data; only the private lease tab
 The Vercel and itch.io production builds passed, including their required TypeScript checks. The initial Vercel attempt found missing module declarations in the credential scripts; these were fixed before the successful deployment. Separate lint, unit/integration tests and browser/gameplay verification were not run, as requested. The release workflow changes are local until committed and pushed.
 
 itch.io upload completed and processing succeeded: `maxgeorg99/tiled-tower-defense:html5`, build `2247444`, version `vercel-cutover-20261029`.
+
+## IDC-only release — 2026-10-30
+
+User authorized resetting the game's local and Maincloud worlds and deploying this version. Removed three local worlds and one hosted world listed in their coordinators, reset both directories, and created Fresh islands in each. Unrelated databases were preserved. Both worlds reported zero occupied seats through IDC.
+
+Production is READY at https://tiled-tower-defense.vercel.app, deployment `dpl_CkjTwx485kHGsmqrbKvtXkHL4MET`. The first deployment exposed a Node ESM import-resolution error in the new helper import; adding the `.js` extension fixed it. The final live endpoint rejected unauthenticated creation, created a new world, returned ready on repeat provisioning, and delivered its initial slot report to the coordinator. The frontend returned HTTP 200; browser gameplay was not checked.
+
+itch.io build `2255349`, version `idc-only-20261030`, processed successfully. Local typechecks, lint, 31 unit tests, solo server integration, IDC integration and production builds passed; the existing chunk-size warning remains. This authorized reset was performed manually and is not part of the ordinary push-release workflow.

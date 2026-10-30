@@ -7,7 +7,7 @@
     "dev": "vite --host 127.0.0.1 --port 5175",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit && tsc -p spacetimedb --noEmit && tsc -p coordinator --noEmit",
-    "test": "bun test tests/domain.test.ts tests/world.test.ts tests/i18n.test.ts",
+    "test": "bun test tests/domain.test.ts tests/world.test.ts tests/i18n.test.ts tests/magic.test.ts",
     "test:server": "bun test tests/server.test.ts",
     "test:idc": "bun test tests/idc.test.ts",
     "spacetime:generate": "spacetime generate --lang typescript --out-dir src/module_bindings --module-path spacetimedb --yes",

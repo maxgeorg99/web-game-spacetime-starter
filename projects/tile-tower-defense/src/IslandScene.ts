@@ -214,6 +214,12 @@ export class IslandScene extends Phaser.Scene {
   private get ownView() {
     return this.views[this.store.online ? (this.store.ownSlot ?? -1) : 0];
   }
+  setDraft(kind?: string) {
+    this.ownView?.setDraft(kind);
+  }
+  previewCell(point: Point) {
+    this.ownView?.setHover(point);
+  }
   clearSelection() {
     this.ownView?.clearSelection();
   }

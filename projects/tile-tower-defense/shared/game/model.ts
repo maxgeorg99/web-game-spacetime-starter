@@ -1,3 +1,4 @@
+import type { MageAspect, School } from '../config/magic';
 import type { TileId, TowerId, UnitId } from '../config';
 export interface Point {
   x: number;
@@ -7,6 +8,9 @@ export interface Land extends Point {
   kind: TileId;
 }
 export interface Tower extends Point {
+  magicVersion?: 1;
+  school?: School;
+  casts?: number;
   id: number;
   kind: TowerId;
   ranks: Record<string, number>;
@@ -14,6 +18,11 @@ export interface Tower extends Point {
   spent: number;
 }
 export interface Fighter {
+  chill?: { remaining: number; strength: number };
+  freeze?: number;
+  freezeGuard?: number;
+  burn?: { remaining: number; dps: number; stacks: number };
+
   /** Expedition origin; absent on neutral enemies and local defenders. */
   captainSlot?: number;
   reward?: number;
@@ -25,7 +34,25 @@ export interface Fighter {
   maxHealth: number;
   cooldown: number;
 }
+export interface MagicPayload {
+  school: MageAspect;
+  slow: number;
+  slowSeconds: number;
+  burnDps: number;
+  burnSeconds: number;
+  burnStacks: number;
+  jumps: number;
+  jumpRange: number;
+  retention: number;
+  freeze: boolean;
+  ignite: boolean;
+  overcharge: boolean;
+  visited: number[];
+  chained?: boolean;
+}
 export interface Projectile extends Point {
+  origin?: Point;
+  magic?: MagicPayload;
   id: number;
   art: string;
   speed: number;
@@ -38,6 +65,9 @@ export interface Projectile extends Point {
   launchHeight: number;
 }
 export interface Impact extends Point {
+  school?: MageAspect;
+  from?: Point;
+  capstone?: boolean;
   splash: number;
   ally: boolean;
 }

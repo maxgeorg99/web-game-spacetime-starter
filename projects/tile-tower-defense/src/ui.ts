@@ -73,6 +73,8 @@ export class UI {
     element('draft-cards').onclick = (event) => {
       const target = this.clickedButton(event);
       if (target?.dataset.tile) {
+        this.selected = undefined;
+        this.scene.clearSelection();
         this.draftKind = target.dataset.tile;
         this.render(true);
       }
@@ -92,6 +94,31 @@ export class UI {
     const dialog = element('catalog') as HTMLDialogElement;
     button('catalog-open').onclick = () => dialog.showModal();
     button('catalog-close').onclick = () => dialog.close();
+    const outsideDialog = (event: MouseEvent) => {
+      const bounds = dialog.getBoundingClientRect();
+      return (
+        event.clientX < bounds.left ||
+        event.clientX > bounds.right ||
+        event.clientY < bounds.top ||
+        event.clientY > bounds.bottom
+      );
+    };
+    let backdropPress = false;
+    dialog.addEventListener('pointerdown', (event) => {
+      backdropPress = event.target === dialog && outsideDialog(event);
+    });
+    dialog.addEventListener('click', (event) => {
+      if (backdropPress && event.target === dialog && outsideDialog(event)) dialog.close();
+      backdropPress = false;
+    });
+    // Dismiss before Phaser handles the next selection, so clicking another tower
+    // can open its panel without that same interaction immediately closing it.
+    document.addEventListener('pointerdown', (event) => {
+      const panel = element('selection-panel');
+      if (!panel.hidden && event.target instanceof Node && !panel.contains(event.target)) {
+        this.closeSelection();
+      }
+    });
     element('catalog-content').innerHTML = catalogContent();
     this.render(true);
   }
@@ -107,13 +134,15 @@ export class UI {
   }
 
   private selectCell(point: Point) {
+    const confirmed = this.selected && sameCell(this.selected, point);
     this.selected = point;
     const state = this.store.state;
     const tower = state.towers.find((tower) => sameCell(tower, point));
     if (tower) {
       this.buildKind = undefined;
     } else if (state.phase === 'draft' && this.draftKind) {
-      void this.store.send({ type: 'expand', kind: this.draftKind, ...point });
+      this.scene.previewCell(point);
+      if (confirmed) void this.store.send({ type: 'expand', kind: this.draftKind, ...point });
     } else if (this.buildKind) {
       void this.store.send({ type: 'build', kind: this.buildKind, ...point });
     }
@@ -213,7 +242,8 @@ export class UI {
       won: t('hint.won'),
       lost: t('hint.lost'),
     };
-    element('instruction').textContent = this.tab === 'send' ? t('hint.send') : hints[state.phase];
+    element('instruction').textContent =
+      this.tab === 'send' && state.phase !== 'draft' ? t('hint.send') : hints[state.phase];
     const tower = state.towers.find((tower) => this.selected && sameCell(tower, this.selected));
     element('selection-panel').hidden = !tower || state.phase === 'draft';
     element('selection').innerHTML = tower
@@ -224,6 +254,7 @@ export class UI {
     if (state.phase !== 'draft') {
       this.draftKind = undefined;
     }
+    this.scene.setDraft(this.draftKind);
     element('draft-cards').innerHTML = draftCards(state, this.draftKind, locked);
     element('build-tray').innerHTML = buildCards(state, this.buildKind, locked, this.store.faction);
     element('build-tray').hidden = this.tab !== 'build';

@@ -1,3 +1,6 @@
+import { draftOffers } from '../shared/game/drafting';
+import { discoveries } from '../shared/config/drafting';
+import { placementEffect } from '../shared/game/rules';
 import { existsSync } from 'node:fs';
 import { launch, advanceProjectiles } from '../shared/game/projectiles';
 import { restoreState } from '../shared/game/save';
@@ -220,7 +223,11 @@ describe('shared combat', () => {
       s = command(s, { type: 'start' });
       settle(s);
       if (s.phase === 'draft') {
-        s = command(s, { type: 'expand', kind: 'forest', ...expansionCells(s)[0] });
+        s = command(s, {
+          type: 'expand',
+          kind: s.offers.includes('forest') ? 'forest' : s.offers[0],
+          ...expansionCells(s)[0],
+        });
       }
     }
     expect(s.phase).toBe('won');
@@ -301,5 +308,78 @@ describe('projectiles and presentation data', () => {
     expect(migrated.projectiles).toEqual([]);
     expect('shots' in migrated).toBe(false);
     expect(() => restoreState('{"version":99}')).toThrow('Unsupported');
+  });
+});
+
+describe('island discoveries', () => {
+  test('offers are distinct, stable after restore, gated and include a discovery', () => {
+    const state = fresh();
+    state.wave = 1;
+    const offers = draftOffers(state);
+    expect(offers).toHaveLength(3);
+    expect(new Set(offers).size).toBe(3);
+    expect(offers.some((id) => discoveries[id].rarity !== 'common')).toBe(true);
+    expect(offers.every((id) => discoveries[id].unlock <= 1)).toBe(true);
+    expect(draftOffers(restoreState(JSON.stringify(state)))).toEqual(offers);
+  });
+  test('placement preview includes both sides of grove synergy and matches payment', () => {
+    let state = fresh();
+    state.tiles.push({ x: -3, y: 0, kind: 'forest' });
+    state.phase = 'draft';
+    state.offers = ['forest'];
+    const before = income(state);
+    const effect = placementEffect(state, 'forest', { x: -3, y: 1 });
+    expect(effect.gold).toBe(20);
+    state = command(state, { type: 'expand', kind: 'forest', x: -3, y: 1 });
+    expect(income(state).gold - before.gold).toBe(effect.gold);
+    expect(state.offers).toEqual([]);
+    expect(() => command(state, { type: 'expand', kind: 'forest', x: -3, y: 2 })).toThrow();
+  });
+  test('landmarks change combat stats without stacking shrines and healing is capped', () => {
+    let state = command(fresh(), { type: 'build', kind: 'watchtower', x: 0, y: -1 });
+    const tower = state.towers[0],
+      base = effectiveStats(tower);
+    state.tiles.find((tile) => tile.x === 0 && tile.y === -1)!.kind = 'watchpost';
+    state.tiles.push({ x: 0, y: -3, kind: 'shrine' });
+    state.tiles.find((tile) => tile.x === -1 && tile.y === -1)!.kind = 'shrine';
+    expect(effectiveStats(tower, state).range).toBeCloseTo(base.range * 1.25);
+    expect(effectiveStats(tower, state).damage).toBeCloseTo(base.damage * 1.2);
+    state.lives = balance.keepHealth - 1;
+    state.phase = 'draft';
+    state.offers = ['relic'];
+    state = command(state, { type: 'expand', kind: 'relic', x: -3, y: 0 });
+    expect(state.lives).toBe(balance.keepHealth);
+  });
+});
+
+describe('twenty-wave campaign', () => {
+  test('introduces every enemy in the roster without turning recruits into neutral enemies', () => {
+    expect(waves).toHaveLength(20);
+    const encountered = new Set<string>(
+      waves.flatMap((wave) => wave.groups.map((group) => group.unit)),
+    );
+    for (const unit of units) {
+      if (unit.recruitable) expect(encountered.has(unit.id)).toBe(false);
+      else expect(encountered.has(unit.id)).toBe(true);
+    }
+    expect(new Set(waves.map((wave) => wave.id)).size).toBe(20);
+  });
+});
+
+describe('windmill discovery', () => {
+  test('has a capped local attack-speed aura and reports only newly affected towers', () => {
+    let state = command(fresh(), { type: 'build', kind: 'watchtower', x: -2, y: -1 });
+    const tower = state.towers[0];
+    const base = effectiveStats(tower, state);
+    expect(placementEffect(state, 'windmill', { x: -3, y: -1 }).hastened).toBe(1);
+    expect(placementEffect(state, 'windmill', { x: 3, y: 0 }).hastened).toBe(0);
+    state.phase = 'draft';
+    state.offers = ['windmill'];
+    state = command(state, { type: 'expand', kind: 'windmill', x: -3, y: -1 });
+    expect(effectiveStats(tower, state).cooldown).toBeCloseTo(base.cooldown / 1.15);
+    expect(placementEffect(state, 'windmill', { x: -3, y: 0 }).hastened).toBe(0);
+    state.tiles.push({ x: -3, y: 0, kind: 'windmill' });
+    expect(effectiveStats(tower, state).cooldown).toBeCloseTo(base.cooldown / 1.15);
+    expect(effectiveStats(tower, state).damage).toBe(base.damage);
   });
 });

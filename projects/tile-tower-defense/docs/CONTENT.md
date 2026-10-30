@@ -70,3 +70,35 @@ Recruit portrait variants live in `public/art/factions/{blue,yellow,purple}/avat
 ## Display text
 
 Client names and descriptions are edited in `src/i18n/locales/en/content.json`. Add matching keys when adding config entries; keep stable IDs unchanged. See [Localization](LOCALIZATION.md) for plural counts, translated UI and additional languages.
+
+## Discovery drafts and terrain synergies
+
+`shared/config/drafting.ts` defines rarity colors, offer weights, unlock depths and terrain bonus values. `shared/game/drafting.ts` generates three distinct offers, with a guaranteed uncommon-or-better slot. Depth is the larger of completed waves in the current cycle and placed expansions plus one. Offers are saved, so reconnecting cannot reroll them. The new-to-island badge means a type has not yet been placed here; it is not an account collection.
+
+Groves gain 4 gold per orthogonally adjacent grove (both benefit); pastures gain 2 meat per neighboring grove; quarries gain 6 gold per neighboring tower; orchards gain 2 meat per neighboring pasture. Bonuses pay at wave completion. Perches add 25% base range to a tower on that tile. Shrines add 20% base damage within Euclidean distance two; multiple shrines do not stack. These bonuses add alongside skill modifiers. Springs heal up to three missing keep health on placement and pay both resources each wave.
+
+`placementEffect` calculates the entire island income difference, including changed neighbors. Preview a location and tap it again to commit. New tiles reuse registered art and rarity accents. Road rerouting, rotation, tile replacement, account unlocks and paid rerolls remain unimplemented. Save format and transport commands remain compatible; existing terrain receives adjacency bonuses after the server module is updated.
+
+## Twenty-wave campaign
+
+The campaign has 20 authored waves. The original five opening compositions remain stable; later waves introduce all 32 non-recruitable Bevy enemies. Player soldiers stay in the Recruit roster, and three legacy enemies retain their opening-wave appearances. Groups spawn in their listed order using the wave's interval and health multiplier. Descriptions describe formation, health, speed and keep damage, not special abilities.
+
+Shared worlds cycle after wave 20. The field guide lists every wave and all eight terrain discoveries with illustration, rarity, effect and unlock depth. Longer-run difficulty requires manual balancing; roster coverage is protected by an added regression case, not a claim that the campaign has been playtested.
+
+## Windmill and dedicated discovery sprites
+
+Windmill is the ninth tile: rare, unlocked at discovery depth two, weight two. Towers within two tiles gain +15% base attack speed, additive with attack-speed skill modifiers. Multiple windmills do not stack. It gives no income and cannot host a tower. Placement preview counts only towers that gain speed; combat and tower inspection use the same `effectiveStats` rules.
+
+Six dedicated sprites replace placeholders for quarry, orchard, perch, shrine, spring and windmill. Runtime PNGs under `public/art/tiles` are 96×96 with transparency. `landmarkArt` in presentation config records display width and measured footprint anchors. The perch platform remains under a built tower. Draft cards and the field guide reuse the same art keys. See `TILE-ART.md` for source jobs, prompts and preparation. Original meadow, grove and pasture art remains unchanged.
+
+## Mage Tower: authoritative elemental skills
+
+The stable `sentinel` ID now displays Mage Tower. Base price 120 gold, damage 20, range 2.8 tiles, 1.1-second cooldown. It begins with an arcane bolt. `shared/config/magic.ts` defines the three schools, skill nodes, 15-point budget, capstones and balance constants. Each school has three three-rank skills followed by a one-rank capstone; buying the capstone requires nine prior points in that school. Only one capstone fits the total budget. Gold costs are 20/25/35 per rank, then 90 for the capstone.
+
+Primary hits combine all learned elements. School appearance follows the greatest investment; a tied purchase prefers the branch just purchased. Frost slows 30/40/50%, extends duration and improves bolt damage. Deep Freeze makes every fifth cast freeze its primary target for 0.8 seconds, followed by three seconds of freeze immunity. Fire applies burn with a bounded per-target stack count (one to four); repeat applications preserve the stronger damage/duration and refresh it, rather than creating unbounded per-tower effects. Ignition makes every fifth cast deal additional area damage on impact. Lightning adds 2/3/4 jumps, with upgrades to reach and damage retention. Overcharge makes every fourth cast jump twice more with no damage loss. Bounces apply damage only; they cannot spread frost/burn or trigger further capstone explosions.
+
+Shared scheduled combat increments cast counters, snapshots spell parameters on launch, applies effects on impact, ticks burn, controls movement/freeze, and selects the next nearest living unvisited chain target (ID breaks ties). Chain projectiles are queued for the next tick. Burn deaths pass through the existing single bounty/kill accounting. Parameters, visited IDs, timers, cast count and in-flight spells are saved in the authoritative JSON. There are no client combat timers, random procs, optimistic purchases or client target choices for Mage gameplay.
+
+Existing Sentinel towers remain placed. The authority marks them once with `magicVersion: 1`; old Sentinel ranks are cleared and their upgrade spend is refunded, preserving the base purchase and sell accounting. Old in-flight arrows finish normally. World ticks persist migration even between waves; solo restore/commands migrate before execution. Browser restore explicitly disables gameplay migration/refunds and waits for replicated state.
+
+Presentation reuses the reference Bevy Ice/Fire/Tesla mage sprites (128×256) across captain colors. Arcane/frost wizard cloth has controlled palette variants; fire/lightning retain their source wizard styles. Faction changes derive from matching base-tower palettes. All ground anchors use the measured 230/256 base. Four 32×32 bolt PNGs derive from the Shaman's first 128px frame and the static fireball; three existing spell icons supply skill buttons. Capstones add a second ground sigil, enlarged impact/overcharge feedback, and status visuals render frost rings, frozen sprites and burn stack flames. New files live under `public/art/magic`, `public/art/mage-*.png`, and `public/art/factions/*/mage-*.png`. Retain the source asset pack license; no external asset service is required.

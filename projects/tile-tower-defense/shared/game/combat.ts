@@ -1,3 +1,4 @@
+import { magicSpell, tickMagic, migrateMages } from './magic';
 import { launch, advanceProjectiles } from './projectiles';
 import { balance, road, towerDef, unitDef, waves } from '../config';
 import type { Fighter, State } from './model';
@@ -8,8 +9,10 @@ export function step(s: State, defendBetweenWaves = false) {
   if (s.phase !== 'combat' && (!defendBetweenWaves || s.phase === 'lost')) {
     return;
   }
+  migrateMages(s);
   const dt = balance.tickSeconds;
   s.impacts = [];
+  for (const fighter of [...s.enemies, ...s.recruits]) tickMagic(fighter, dt);
   advanceProjectiles(s, dt);
   s.spawnIn -= dt;
   if (s.phase === 'combat' && s.queue.length && s.spawnIn <= 0) {
@@ -24,19 +27,24 @@ export function step(s: State, defendBetweenWaves = false) {
     if (tower.cooldown > 0) {
       continue;
     }
-    const stats = effectiveStats(tower);
+    const stats = effectiveStats(tower, s);
     const target = s.enemies
       .filter((e) => e.health > 0 && distance(tower, position(e.progress)) <= stats.range)
       .sort((a, b) => b.progress - a.progress || a.id - b.id)[0];
     if (!target) {
       continue;
     }
-    launch(s, tower, target, towerDef(tower.kind).projectile, stats.damage, stats.splash, true, 48);
+    tower.casts = (tower.casts ?? 0) + 1;
+    const spell = tower.kind === 'sentinel' ? magicSpell(tower, stats.damage) : undefined;
+    const definition = spell
+      ? { ...towerDef(tower.kind).projectile, art: `magic/${spell.school}-bolt` }
+      : towerDef(tower.kind).projectile;
+    launch(s, tower, target, definition, stats.damage, stats.splash, true, 48, spell);
     tower.cooldown = stats.cooldown;
   }
   // Recruits and enemies acquire spatial targets. Melee contact blocks passage; ranged units may stop earlier.
   function advance(f: Fighter, opponents: Fighter[], direction: 1 | -1) {
-    if (f.health <= 0) {
+    if (f.health <= 0 || (f.freeze ?? 0) > 0) {
       return;
     }
     const def = unitDef(f.kind),
@@ -62,7 +70,7 @@ export function step(s: State, defendBetweenWaves = false) {
     } else {
       const blocked = living.some((o) => Math.abs(o.progress - f.progress) < 0.4);
       if (!blocked) {
-        f.progress += direction * def.speed * dt;
+        f.progress += direction * def.speed * dt * (1 - (f.chill?.strength ?? 0));
       }
     }
   }

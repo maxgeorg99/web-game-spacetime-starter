@@ -1,3 +1,4 @@
+import { landmarkArt } from '../shared/config/presentation';
 import { assetUrl } from './assets';
 import { unitSheets } from '../shared/config/unit-art';
 import {
@@ -10,7 +11,6 @@ import {
 /** Measured strips, square frames, no gaps. Rive experiment art + shared Tiny Swords units. */
 export const sheets: Record<string, { size: number; frames: number }> = {
   ...unitSheets,
-  forest: { size: 256, frames: 6 },
   raider: { size: 192, frames: 8 },
   swarm: { size: 192, frames: 5 },
   siege: { size: 320, frames: 7 },
@@ -28,6 +28,16 @@ export const images = [
   'arrow',
   'catapult',
   'catapult-avatar',
+  'mage-arcane',
+  'mage-frost',
+  'mage-fire',
+  'mage-lightning',
+  'magic/arcane-bolt',
+  'magic/frost-bolt',
+  'magic/fire-bolt',
+  'magic/fire-icon',
+  'magic/lightning-bolt',
+  ...Object.keys(landmarkArt),
 ];
 for (const faction of Object.keys(factions) as (keyof typeof factions)[]) {
   for (const [unit, sheet] of Object.entries({ ...factionUnits, ...factionTowerSheets })) {

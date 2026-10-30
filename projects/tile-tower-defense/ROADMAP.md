@@ -157,6 +157,16 @@ Added publisher-registered world identities, typed world-to-coordinator outboxes
 
 Validation approved by the user: bindings generated; all three typechecks, lint, 31 unit tests, frontend build, solo server regression and actual two-world IDC delivery/authentication/recovery/heartbeat integration passed. Tests used isolated local databases, leaving existing local and production saves untouched. Existing build chunk warning remains. No browser or hosted rollout verification. See `docs/SESSIONS.md` for deployment order, generation commands and handoff.
 
+### IDC-only reset and release — 2026-10-30
+
+User explicitly authorized discarding old worlds locally and on Maincloud and deploying the hosted version. Removed HTTP slot polling, the public world slot table, administrator slot reporting and legacy provisioning branches. Every world now requires IDC configuration; stale reports remain labeled as last reported without a network fallback.
+
+Deleted the three directory-listed local worlds and one hosted world, reset both coordinators, and created Fresh islands in each environment. Unrelated databases were untouched. The updated local provisioner is running. Actual Maincloud IDC delivery passed on disposable databases before reset; those probes were deleted.
+
+All three typechecks, lint, 31 unit tests, solo server regression, IDC integration and production builds passed. The live Vercel smoke check caught an extensionless Node ESM import; fixed it to `.js` and redeployed successfully as `dpl_CkjTwx485kHGsmqrbKvtXkHL4MET`. Live creation, repeat provisioning, unauthenticated rejection and IDC reports passed; both fresh worlds have four free seats. itch.io build `2255349`, version `idc-only-20261030`, processed successfully. Formatted two existing store HTML files required by the release format check. No browser gameplay verification in this cutover. The disposable local integration server was stopped; the normal local server and worker remain running.
+
+Handoff: reload and choose a captain name again after the directory reset. Commit/push to `main` triggers the existing release workflow; this reset is not part of that workflow. Future releases update the frontend, coordinator and bundle used for new worlds; they do not automatically republish existing worlds.
+
 ## Catapult and airship art — 2026-10-30
 
 Replaced the Catapult tower's cannon placeholder with the supplied Warfare sprites in blue, yellow, red and purple. Measured 256px frames: nine firing and four loading frames, driven by authoritative cooldown snapshots with reduced-motion support. Added matching tower portraits and the supplied stone projectile. Reduced the catapult display canvas from 112px to 80px following user playtest feedback.
@@ -178,3 +188,69 @@ Added i18next with typed keys, bundled English UI/content catalogs, locale fallb
 Consolidated compact layouts in `src/responsive.css`: 44px touch targets, safe-area spacing, horizontal recruit scrolling, collapsible actions, a tower upgrade sheet, short-phone panel scrolling and a landscape side dock. Fixed nested localization spans accidentally hidden by world-control CSS. Camera fitting considers compact HUD/dock bounds; rotation preserves the viewed island or overview. Collapsing actions reframes the battlefield. Existing drag/pinch controls remain available.
 
 Validation: 31 domain/world/localization tests, all TypeScript checks, lint, formatting and production build passed. Chromium exercised build/recruit layouts at 320×568, 390×844, 667×375, 844×390, 1024×768 and 1440×900, plus dock collapse/restore, upgrade opening/closing and field guide. Short landscape dock contents intentionally scroll within the panel. Browser checks use disposable data with the real renderer/UI; physical-device touch and a live multiplayer match remain manual checks. Build retains the existing large-chunk warning. No production deploy.
+
+## Discovery drafting — 2026-10-30 (awaiting manual playtest)
+
+Implemented three distinct weighted offers with a guaranteed uncommon-or-better slot. Eight terrain types span four rarities; orchard/shrine unlock at depth two, spring at depth three. Island size preserves depth across campaign cycles. Offers derive from saved game data and remain stored until placement; existing pending offers remain valid.
+
+Groves reward neighboring groves; pastures reward groves; quarries reward towers; orchards reward pastures. Perches add 25% base range, shrines add 20% base damage within two tiles (non-stacking), and springs produce both resources and heal up to three keep health on placement. Combat, inspection, income and placement previews share these rules.
+
+Added rarity cards, new-to-island markers, colored tile ghosts, exact benefit previews, neighborhood indicators, two-tap confirmation, landmark color accents and reduced-motion-aware placement pulses. Uses existing art. Road rerouting and dedicated landmark illustrations remain future work; this slice does not complete M3.
+
+Added unrun regression cases for stable/gated offers, adjacency income, consumed drafts, terrain combat stats, non-stacking shrines and capped healing. User chose manual playtesting: no lint, typechecks, tests, builds or browser verification run. Authored files formatted. No local/production publish performed. Multiplayer is the only browser mode: update the intended local world's module before playtesting; HMR alone cannot change authoritative rules. Existing terrain gains adjacency bonuses without a save reset. Current drafts retain saved offers; the next completed wave uses the new pool.
+
+### Click-outside dismissal — 2026-10-30
+
+Field guide closes on a backdrop click/tap; presses inside its content or padding remain open. Tower inspection closes when pressing outside the panel, before the next battlefield selection so another tower can still open normally. Existing close buttons and Escape remain available. Formatted; automated and browser checks not run, following the user's manual-playtest preference.
+
+### Draft readability, illustrated tile guide and 20 waves — 2026-10-30
+
+Reserved a non-shrinking, clipped artwork area for tile previews so sprites and tile shadows cannot spill over card names/descriptions; centered artwork also fits narrow cards. Field guide now presents all eight tiles as illustrated cards near the top, with rarity, effects and unlock depth.
+
+Expanded the five-wave campaign to 20 authored waves. Preserved the first five wave IDs/compositions for saved queues; wave five now describes an early milestone. Waves 6–20 introduce all 32 enemy roster types through themed swarms, durable columns, fast hunts and heavy mixed assaults. All three legacy enemy IDs remain represented in the opening. Eight recruitable soldiers stay player units. New groups use existing health/speed/keep-damage behavior; no unimplemented monster abilities are promised. Campaign length and world looping already derive from the catalog length.
+
+Added an unrun roster-coverage/20-wave invariant. Formatted authored changes; lint, typechecks, tests and browser checks remain skipped per manual-playtest preference. Balance across the longer campaign is provisional. Local publishing is part of making this change available for the ongoing playtest; production untouched.
+
+Local handoff: module compilation and publish to `tile-tower-defense-world` succeeded without a destructive migration. Fresh islands now uses the 20-wave campaign; existing progress is preserved. Frontend changes use Vite HMR. No gameplay/browser verification performed.
+
+### Catapult aiming — 2026-10-30
+
+Catapults now record their actual target position when firing and rotate the existing sprite toward that point in projected screen space. Facing persists through firing/reloading and land redraws. Moved the rotation pivot to the chassis center so it turns in place. Existing saves tolerate the optional aim field and acquire it on their next shot. No client-side target selection or simulation duplication. Authored files formatted; automated/browser checks remain skipped for manual playtesting.
+
+Catapult aiming reverted at user request: restored the original fixed orientation and sprite anchor, removed target recording and rotation configuration. Existing saved aim fields are harmless unused JSON. All earlier drafting, guide and campaign changes remain. Formatting only; no automated or browser checks.
+
+### Windmill and dedicated discovery art — 2026-10-30
+
+Added a ninth rare tile, Windmill: +15% base attack speed within two tiles, non-stacking, available at depth two. Shared combat/inspection/placement calculations include the aura. Added an unrun regression for radius, exact speed, non-stacking and incremental preview counts.
+
+Generated quarry and orchard with PixelLab Pro Flash. PixelLab then exhausted its account allowance; user authorized switching to OpenAI. Generated the remaining perch, shrine, spring and windmill with built-in OpenAI image generation using the quarry as reference. Prepared 96×96 transparent runtime PNGs with nearest-neighbor resizing where needed, inspected the final art and measured alpha footprints. Six files total approximately 62 KB. Large OpenAI sources stay outside the runtime bundle. Island, draft and field guide share dedicated art keys; perch remains visible under a built tower. Art provenance/prompt record: docs/TILE-ART.md.
+
+No automated tests, lint, typechecks or browser checks run, following the user's manual playtest preference. Asset dimension/file-size inspection and formatting only. Local publication follows for Fresh islands; production untouched.
+
+Local handoff: module compilation and publish to Fresh islands succeeded; existing save retained. Reload the browser to load the six new image textures. Previously saved draft offers remain valid; Windmill can appear in subsequent eligible drafts. No production deployment.
+
+### Timber grove overflow — 2026-10-30
+
+Found incorrect slicing: forest.png matches Tree1's eight 192×256 frames, previously registered as six 256×256 frames. Replaced the oversized single-tree display with a compact three-tree composition from existing Tree1/Tree3 assets, without generating art. New grove.png is 96×96, 2.1 KB, with visible bounds safely inset. Island, draft and field guide share the new asset. Removed unused incorrect sheet registration and oversized render special case. Forest ID and bonuses unchanged. Inspected the composed PNG and measured source frames; no automated tests or browser checks, per manual-playtest preference.
+
+Grove scale follow-up: increased battlefield display width from 76px to 84px (about 11%) at user request, preserving the footprint anchor and inset tree cluster. Formatting only; no automated or browser checks.
+
+### Watchtower ground alignment — 2026-10-30
+
+Measured all four faction watchtower sprites: 128×256 canvases with visible bounds (4,46)–(124,230). Bottom padding previously lifted the displayed tower about 10px off its intended ground contact. Anchored watchtowers at y=230/256 instead of the canvas bottom, preserving their width and horizontal center. Client presentation only. Formatted; no automated or browser verification, following manual-playtest preference.
+
+## Mage Tower replacement — 2026-10-30
+
+Replaced Sentinel's display/config role with a Mage Tower while retaining its stable saved ID. Implemented Frost/Fire/Lightning branches, 15 total points, prerequisites, 10-point capstones, hybrid primary hits and dominant-school appearance. Deep Freeze: periodic primary freeze plus immunity. Ignition: periodic impact explosion. Overcharge: periodic extra jumps with full damage retention. All purchases, cast counters, projectile payloads, statuses, damage ticks, target selection, death rewards and limits run in shared server-authoritative logic. Client only renders replicated state; client restore explicitly disables gameplay migration/refunds.
+
+Migrates old Sentinel investments once on authority, refunding upgrade gold and clearing old ranks while keeping the tower/base spend. World ticks handle idle migrations; old arrows and saves remain readable. No table/reducer schema changes, so generated bindings need no edit.
+
+Reused Bevy wizard/tower art and spell icons, created arcane/frost palette variants, four faction appearances for each aspect and compact 32px spell projectiles. School/capstone sigils, frost/freeze presentation, burn stack markers and chain arcs show replicated effects. Skill panel displays school points, total budget, prerequisites and capstones; field guide/localization updated.
+
+User explicitly chose manual playtesting again. Added but did not run focused skill/status/chain/capstone/migration/determinism regressions and a real-server mage purchase/effect scenario; added the mage suite to the normal test command. No lint, typechecks, tests or browser verification run. Authored files formatted and art inspected. Balance and actual gameplay remain unverified; local module publication is the next playtest handoff step. Production untouched.
+
+Mage handoff: module compilation and non-destructive local publish to `tile-tower-defense-world` succeeded. Fresh islands now runs authoritative mage rules and migrations. Reload localhost:5175 for new textures and skill UI. Existing Sentinel upgrade refunds occur once on the server. No standalone checks, tests or browser playthrough were run; user will verify manually.
+
+### Clear burn status badge — 2026-10-30
+
+Replaced tiny triangle stack markers with the existing pixel-art flame icon and a numeric stack count on a dark, orange-bordered badge above the health bar. Badge is created only for affected units, follows authoritative burn state, hides on expiry and is destroyed with its actor. No combat changes; no server publish needed. Formatted; manual playtesting only.

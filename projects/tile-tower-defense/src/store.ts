@@ -88,7 +88,7 @@ export class GameStore {
             this.world = world;
             const seat = world.seats.find((seat) => seat.owner === identity.toHexString());
             this.ownSlot = seat?.slot ?? null;
-            this.state = seat ? restoreState(JSON.stringify(seat.state)) : fresh();
+            this.state = seat ? restoreState(JSON.stringify(seat.state), false) : fresh();
             this.sequence = seat?.sequence ?? 0;
             this.ready = true;
             this.error = '';

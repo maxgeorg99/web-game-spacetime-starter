@@ -1,4 +1,259 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Tiled Tower Defense — store artwork</title><style>
-@font-face{font-family:Fira;src:url('/art/FiraSans-Bold.ttf');font-weight:700}@font-face{font-family:Fira;src:url('/art/FiraSans-Regular.ttf')}
-*{box-sizing:border-box}body{margin:0;background:#142f36;font-family:Fira,sans-serif;color:#fbf1d6}.art{position:relative;overflow:hidden;background:radial-gradient(ellipse at 68% 80%,#467177 0%,#234b53 42%,#142f36 85%);width:630px;height:500px}.title{position:absolute;z-index:4;top:27px;left:34px;margin:0;font-size:60px;line-height:.96;letter-spacing:-2px;font-weight:700;text-shadow:0 4px #142f36}.title span{display:block}.subtitle{position:absolute;left:36px;top:153px;font-size:16px;color:#dfd9b8;z-index:4}.island{position:absolute;left:68px;top:185px;width:490px;height:270px;filter:drop-shadow(0 18px 12px #081d2438)}.island svg{width:100%;height:100%}.keep{position:absolute;left:237px;top:203px;width:235px;image-rendering:pixelated;z-index:3}.tower{position:absolute;left:114px;top:207px;width:125px;image-rendering:pixelated;z-index:2}.soldier{position:absolute;left:170px;top:310px;width:85px;image-rendering:pixelated;z-index:4}.ship{position:absolute;left:440px;top:76px;width:143px;image-rendering:pixelated;z-index:3;transform:rotate(-8deg)}.cloud{position:absolute;background:#b4d5d0;opacity:.12;border-radius:50%;width:250px;height:36px;left:435px;top:245px;transform:rotate(-12deg)}.cloud.two{left:-90px;top:335px;width:250px}.caption{position:absolute;bottom:24px;left:36px;right:36px;border-top:1px solid #adbc9a55;padding-top:13px;font-size:15px;letter-spacing:.1px;display:flex;justify-content:space-between}.dots{display:flex;gap:6px;align-items:center}.dots i{display:block;width:10px;height:10px;border-radius:2px;background:#438ed1}.dots i:nth-child(2){background:#e2b832}.dots i:nth-child(3){background:#d65353}.dots i:nth-child(4){background:#9a65c9}.banner{width:960px;height:300px}.banner .title{top:44px;left:42px;font-size:66px}.banner .subtitle{left:44px;top:181px;font-size:18px;max-width:380px;line-height:1.45}.banner .island{left:465px;top:52px;width:460px;height:245px}.banner .keep{left:643px;top:70px;width:190px}.banner .tower{left:541px;top:77px;width:112px}.banner .soldier{left:580px;top:168px;width:78px}.banner .ship{left:811px;top:12px;width:122px}.banner .caption{left:44px;bottom:23px;border:0;padding:0;width:355px;font-size:12px}.banner .cloud{left:770px;top:196px}.banner .cloud.two{left:373px;top:208px}
-</style></head><body><div class="art" id="art"><div class="cloud"></div><div class="cloud two"></div><h1 class="title"><span>Tiled Tower</span><span>Defense</span></h1><div class="subtitle">Build your island. Hold the line.</div><div class="island"><svg viewBox="0 0 490 270" xmlns="http://www.w3.org/2000/svg"><path d="M15 121 244 12 477 121 246 238Z" fill="#b5c584"/><path d="M15 121 246 238 246 270 15 153Z" fill="#71815c"/><path d="M246 238 477 121 477 152 246 270Z" fill="#53674f"/><path d="M15 121 244 12 477 121 246 238Z" fill="url(#tiles)"/><defs><pattern id="tiles" width="98" height="46" patternUnits="userSpaceOnUse" patternTransform="translate(0 6)"><path d="M0 23 49 0 98 23 49 46Z" fill="none" stroke="#dae0a1" stroke-width="1"/><path d="M2 23 49 1 49 44Z" fill="#99b46b" opacity=".25"/></pattern></defs><path d="m28 116 48-22 44 23 48-23 49 24 50-24 42 21-93 46-49-24-49 23Z" fill="#e7d49b"/><path d="m28 116 48-22 44 23 48-23 49 24 50-24 42 21" fill="none" stroke="#f2e2b2" stroke-width="3"/></svg></div><img class="tower" src="/art/factions/blue/archer.png"><img class="keep" src="/art/factions/blue/keep.png"><img class="soldier" src="/art/factions/blue/captain.png"><img class="ship" src="/art/factions/red/airship.png"><div class="caption"><span>Four captains. One sky.</span><div class="dots"><i></i><i></i><i></i><i></i></div></div></div><script>if(new URLSearchParams(location.search).has('banner'))document.getElementById('art').classList.add('banner')</script></body></html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tiled Tower Defense — store artwork</title>
+    <style>
+      @font-face {
+        font-family: Fira;
+        src: url('/art/FiraSans-Bold.ttf');
+        font-weight: 700;
+      }
+      @font-face {
+        font-family: Fira;
+        src: url('/art/FiraSans-Regular.ttf');
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #142f36;
+        font-family: Fira, sans-serif;
+        color: #fbf1d6;
+      }
+      .art {
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(ellipse at 68% 80%, #467177 0%, #234b53 42%, #142f36 85%);
+        width: 630px;
+        height: 500px;
+      }
+      .title {
+        position: absolute;
+        z-index: 4;
+        top: 27px;
+        left: 34px;
+        margin: 0;
+        font-size: 60px;
+        line-height: 0.96;
+        letter-spacing: -2px;
+        font-weight: 700;
+        text-shadow: 0 4px #142f36;
+      }
+      .title span {
+        display: block;
+      }
+      .subtitle {
+        position: absolute;
+        left: 36px;
+        top: 153px;
+        font-size: 16px;
+        color: #dfd9b8;
+        z-index: 4;
+      }
+      .island {
+        position: absolute;
+        left: 68px;
+        top: 185px;
+        width: 490px;
+        height: 270px;
+        filter: drop-shadow(0 18px 12px #081d2438);
+      }
+      .island svg {
+        width: 100%;
+        height: 100%;
+      }
+      .keep {
+        position: absolute;
+        left: 237px;
+        top: 203px;
+        width: 235px;
+        image-rendering: pixelated;
+        z-index: 3;
+      }
+      .tower {
+        position: absolute;
+        left: 114px;
+        top: 207px;
+        width: 125px;
+        image-rendering: pixelated;
+        z-index: 2;
+      }
+      .soldier {
+        position: absolute;
+        left: 170px;
+        top: 310px;
+        width: 85px;
+        image-rendering: pixelated;
+        z-index: 4;
+      }
+      .ship {
+        position: absolute;
+        left: 440px;
+        top: 76px;
+        width: 143px;
+        image-rendering: pixelated;
+        z-index: 3;
+        transform: rotate(-8deg);
+      }
+      .cloud {
+        position: absolute;
+        background: #b4d5d0;
+        opacity: 0.12;
+        border-radius: 50%;
+        width: 250px;
+        height: 36px;
+        left: 435px;
+        top: 245px;
+        transform: rotate(-12deg);
+      }
+      .cloud.two {
+        left: -90px;
+        top: 335px;
+        width: 250px;
+      }
+      .caption {
+        position: absolute;
+        bottom: 24px;
+        left: 36px;
+        right: 36px;
+        border-top: 1px solid #adbc9a55;
+        padding-top: 13px;
+        font-size: 15px;
+        letter-spacing: 0.1px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .dots {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .dots i {
+        display: block;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        background: #438ed1;
+      }
+      .dots i:nth-child(2) {
+        background: #e2b832;
+      }
+      .dots i:nth-child(3) {
+        background: #d65353;
+      }
+      .dots i:nth-child(4) {
+        background: #9a65c9;
+      }
+      .banner {
+        width: 960px;
+        height: 300px;
+      }
+      .banner .title {
+        top: 44px;
+        left: 42px;
+        font-size: 66px;
+      }
+      .banner .subtitle {
+        left: 44px;
+        top: 181px;
+        font-size: 18px;
+        max-width: 380px;
+        line-height: 1.45;
+      }
+      .banner .island {
+        left: 465px;
+        top: 52px;
+        width: 460px;
+        height: 245px;
+      }
+      .banner .keep {
+        left: 643px;
+        top: 70px;
+        width: 190px;
+      }
+      .banner .tower {
+        left: 541px;
+        top: 77px;
+        width: 112px;
+      }
+      .banner .soldier {
+        left: 580px;
+        top: 168px;
+        width: 78px;
+      }
+      .banner .ship {
+        left: 811px;
+        top: 12px;
+        width: 122px;
+      }
+      .banner .caption {
+        left: 44px;
+        bottom: 23px;
+        border: 0;
+        padding: 0;
+        width: 355px;
+        font-size: 12px;
+      }
+      .banner .cloud {
+        left: 770px;
+        top: 196px;
+      }
+      .banner .cloud.two {
+        left: 373px;
+        top: 208px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="art" id="art">
+      <div class="cloud"></div>
+      <div class="cloud two"></div>
+      <h1 class="title"><span>Tiled Tower</span><span>Defense</span></h1>
+      <div class="subtitle">Build your island. Hold the line.</div>
+      <div class="island">
+        <svg viewBox="0 0 490 270" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 121 244 12 477 121 246 238Z" fill="#b5c584" />
+          <path d="M15 121 246 238 246 270 15 153Z" fill="#71815c" />
+          <path d="M246 238 477 121 477 152 246 270Z" fill="#53674f" />
+          <path d="M15 121 244 12 477 121 246 238Z" fill="url(#tiles)" />
+          <defs>
+            <pattern
+              id="tiles"
+              width="98"
+              height="46"
+              patternUnits="userSpaceOnUse"
+              patternTransform="translate(0 6)"
+            >
+              <path d="M0 23 49 0 98 23 49 46Z" fill="none" stroke="#dae0a1" stroke-width="1" />
+              <path d="M2 23 49 1 49 44Z" fill="#99b46b" opacity=".25" />
+            </pattern>
+          </defs>
+          <path d="m28 116 48-22 44 23 48-23 49 24 50-24 42 21-93 46-49-24-49 23Z" fill="#e7d49b" />
+          <path
+            d="m28 116 48-22 44 23 48-23 49 24 50-24 42 21"
+            fill="none"
+            stroke="#f2e2b2"
+            stroke-width="3"
+          />
+        </svg>
+      </div>
+      <img class="tower" src="/art/factions/blue/archer.png" /><img
+        class="keep"
+        src="/art/factions/blue/keep.png"
+      /><img class="soldier" src="/art/factions/blue/captain.png" /><img
+        class="ship"
+        src="/art/factions/red/airship.png"
+      />
+      <div class="caption">
+        <span>Four captains. One sky.</span>
+        <div class="dots"><i></i><i></i><i></i><i></i></div>
+      </div>
+    </div>
+    <script>
+      if (new URLSearchParams(location.search).has('banner'))
+        document.getElementById('art').classList.add('banner');
+    </script>
+  </body>
+</html>

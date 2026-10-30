@@ -531,11 +531,13 @@ summary::-webkit-details-marker {
   margin: 0 0 12px;
 }
 .tile-preview {
-  width: 65px;
-  height: 50px;
+  width: min(96px, 100%);
+  height: 86px;
+  flex: 0 0 86px;
   position: relative;
-  display: grid;
-  place-items: center;
+  display: block;
+  isolation: isolate;
+  overflow: hidden;
 }
 .tile-preview::before {
   content: '';
@@ -544,14 +546,33 @@ summary::-webkit-details-marker {
   background: var(--tile-color);
   transform: rotate(30deg) skew(-20deg);
   position: absolute;
-  top: 12px;
+  left: calc(50% - 22.5px);
+  bottom: 12px;
   box-shadow: 4px 6px 0 #7b8267;
 }
-.tile-preview .portrait {
-  position: relative;
-  width: 60px;
-  height: 60px;
+#draft .tile-preview > .portrait,
+.catalog-tile .tile-preview > .portrait {
+  position: absolute;
+  left: calc(50% - 32px);
+  bottom: 18px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
   z-index: 1;
+}
+.catalog-grid .catalog-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-top: 3px solid var(--rarity);
+}
+.catalog-tile h4 {
+  margin: 6px 0;
+}
+.catalog-tile small {
+  margin-top: auto;
+  color: #7c724e;
 }
 #notice {
   position: absolute;
@@ -1015,4 +1036,91 @@ body {
   .session-panel {
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* Discovery cards stay compact enough to leave the coast visible. */
+#draft .draft-card {
+  border-top: 3px solid var(--rarity);
+  min-width: 0;
+  padding: 9px 10px;
+  gap: 7px;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+#draft .draft-card:hover {
+  box-shadow: 0 5px 16px #344d3826;
+}
+.rarity-label {
+  color: var(--rarity);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 9px;
+  font-weight: bold;
+}
+.draft-description {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #53604d;
+}
+.discovery-label {
+  margin-top: auto;
+  font-size: 9px;
+  color: #7c724e;
+}
+#draft .chosen {
+  outline-color: var(--rarity);
+}
+@media (max-width: 600px) {
+  #draft .draft-card {
+    padding: 7px 5px;
+    gap: 4px;
+  }
+  .draft-description {
+    font-size: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #draft .draft-card {
+    transition: none;
+  }
+}
+
+.mage-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 8px;
+  background: #e8e2ee;
+  font-size: 12px;
+}
+.mage-summary p {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #666078;
+}
+.skill-branch[style] h4 {
+  border-bottom: 3px solid var(--school);
+  padding-bottom: 7px;
+}
+.skill-branch h4 small {
+  float: right;
+  font-size: 10px;
+}
+.skill.capstone {
+  border: 2px solid #b39a61;
+  background: #faf3df;
+}
+.skill.capstone.invested {
+  box-shadow: inset 0 0 0 2px #e1c574;
+}
+.selection-panel {
+  max-height: calc(100dvh - 125px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }

@@ -8,7 +8,7 @@ Open http://127.0.0.1:5175, choose a captain name, then join/resume a world or c
 
 - Build towers on empty meadow and select them to purchase skill ranks.
 - Recruit one of eight soldiers, choose an opponent and send an airship.
-- Start neutral waves; the preview stays beneath resources. Draft land after victories.
+- Defend a 20-wave campaign covering all 32 enemy types; the preview stays beneath resources. Draft land after victories. Shared worlds repeat the campaign after wave 20.
 - Drag or use arrow keys to pan, scroll to zoom, and use island/Home/World view shortcuts.
 - Use the settings menu to return to Sessions. Your world and island stay saved.
 - Mute or adjust music/effects in settings. Audio starts after interaction and pauses in background tabs.
