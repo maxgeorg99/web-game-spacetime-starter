@@ -12,10 +12,12 @@ import {
   towerDef,
   unitDef,
   tileDef,
+  type Localized,
+  type LocalizedSkillTree,
 } from './i18n/content';
 import { factionArt, type Faction } from '../shared/config/factions';
 import { balance, uiIcons } from '../shared/config';
-import type { SkillNode, SkillTree, TowerDef, UnitDef } from '../shared/config';
+import type { SkillNode, TowerDef, UnitDef } from '../shared/config';
 import type { State, Tower } from '../shared/game/model';
 import { effectiveStats, upgradeFailure } from '../shared/game/rules';
 import { portrait, sheets } from './art';
@@ -70,7 +72,7 @@ export function draftCards(state: State, selected: string | undefined, locked: b
     .join('');
 }
 
-function skillButton(state: State, tower: Tower, node: SkillNode, locked: boolean) {
+function skillButton(state: State, tower: Tower, node: Localized<SkillNode>, locked: boolean) {
   const failure = upgradeFailure(state, tower, node.id);
   const reason =
     failure?.kind === 'points'
@@ -134,7 +136,7 @@ export function towerPanel(state: State, tower: Tower, locked: boolean, faction:
   `;
 }
 
-function catalogSkill(tree: SkillTree, node: SkillNode) {
+function catalogSkill(tree: LocalizedSkillTree, node: Localized<SkillNode>) {
   const prerequisite = node.requires
     ? tree.nodes.find((parent) => parent.id === node.requires!.id)?.name
     : undefined;
@@ -146,7 +148,7 @@ function catalogSkill(tree: SkillTree, node: SkillNode) {
     </div></div>
   `;
 }
-function catalogTower(tower: TowerDef) {
+function catalogTower(tower: Localized<TowerDef>) {
   const tree = treeDef(tower.id);
   return `
     <article>${portrait(tower.avatar)}<h3>${escapeHtml(tower.name)}</h3><code>${tower.id}</code>
@@ -167,7 +169,7 @@ function catalogTower(tower: TowerDef) {
     </article>
   `;
 }
-function catalogUnit(unit: UnitDef) {
+function catalogUnit(unit: Localized<UnitDef>) {
   return `
     <article>${avatar(unit)}<h3>${escapeHtml(unit.name)}</h3><code>${unit.id}</code>
       <p>${escapeHtml(unit.description)}</p>

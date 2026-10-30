@@ -2,8 +2,6 @@ import type { TileDef } from './types';
 export const tiles = [
   {
     id: 'meadow',
-    name: 'Meadow',
-    description: 'Open ground for a new tower.',
     color: 0xa6bb79,
     buildable: true,
     goldIncome: 0,
@@ -11,8 +9,6 @@ export const tiles = [
   },
   {
     id: 'forest',
-    name: 'Timber grove',
-    description: '+12 gold per wave. +4 gold for each adjacent grove.',
     color: 0x829c62,
     art: 'tiles/grove',
     buildable: false,
@@ -21,8 +17,6 @@ export const tiles = [
   },
   {
     id: 'farm',
-    name: 'Sky pasture',
-    description: '+4 meat per wave. +2 meat for each adjacent grove.',
     color: 0xb3bd7b,
     art: 'mill',
     buildable: false,
@@ -31,8 +25,6 @@ export const tiles = [
   },
   {
     id: 'quarry',
-    name: 'Sunstone quarry',
-    description: '+18 gold per wave. +6 gold for each adjacent tower.',
     color: 12100476,
     art: 'tiles/quarry',
     buildable: false,
@@ -41,8 +33,6 @@ export const tiles = [
   },
   {
     id: 'orchard',
-    name: 'Moon orchard',
-    description: '+8 gold and +3 meat per wave. +2 meat for each adjacent pasture.',
     color: 9681049,
     art: 'tiles/orchard',
     buildable: false,
@@ -51,8 +41,6 @@ export const tiles = [
   },
   {
     id: 'watchpost',
-    name: 'Eagle perch',
-    description: 'Buildable. A tower on this tile gains +25% range.',
     color: 9416382,
     art: 'tiles/watchpost',
     buildable: true,
@@ -61,8 +49,6 @@ export const tiles = [
   },
   {
     id: 'shrine',
-    name: 'Ember shrine',
-    description: 'Towers within 2 tiles gain +20% damage. Does not stack.',
     color: 12887250,
     art: 'tiles/shrine',
     buildable: false,
@@ -71,8 +57,6 @@ export const tiles = [
   },
   {
     id: 'relic',
-    name: 'Golden spring',
-    description: '+20 gold and +6 meat per wave. Restore 3 keep health on placement.',
     color: 14008699,
     art: 'tiles/relic',
     buildable: false,
@@ -81,8 +65,6 @@ export const tiles = [
   },
   {
     id: 'windmill',
-    name: 'Windmill',
-    description: 'Towers within 2 tiles gain +15% base attack speed. Does not stack.',
     color: 0xb7c9ac,
     art: 'tiles/windmill',
     buildable: false,

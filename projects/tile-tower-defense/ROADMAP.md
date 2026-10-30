@@ -254,3 +254,11 @@ Mage handoff: module compilation and non-destructive local publish to `tile-towe
 ### Clear burn status badge — 2026-10-30
 
 Replaced tiny triangle stack markers with the existing pixel-art flame icon and a numeric stack count on a dark, orange-bordered badge above the health bar. Badge is created only for affected units, follows authoritative burn state, hides on expiry and is destroyed with its actor. No combat changes; no server publish needed. Formatted; manual playtesting only.
+
+### Locale catalogs as the single display-text source — 2026-10-30
+
+Removed duplicated English names/descriptions from shared tower, unit, terrain, wave and skill definitions, plus faction/island labels. Shared configs retain IDs, gameplay values and art references; the client i18n adapter adds typed localized display text. Skill branches now use stable IDs instead of English labels or positional translation keys. Tower panels, prerequisites and the field guide consume localized content; server prerequisite diagnostics reference the stable skill ID. Saves, node IDs and authoritative gameplay rules are unchanged.
+
+Extended localization coverage for all skill descriptions/branches, translated node labels and English fallback, unchanged gameplay data, and rejection of duplicate display fields in shared catalogs. These additions have not been run locally; manual playtesting remains the user preference.
+
+Release handoff: formatting and brace issues were fixed in commits b6a6f72 and 5250df7. GitHub release 41133563974 completed successfully. Fresh islands on Maincloud (tile-td-c20096a1909c-1) was subsequently updated with the released Mage Tower module using --delete-data=never; publication succeeded. The user identified the reported unknown skill as a legacy case. No world reset was performed.

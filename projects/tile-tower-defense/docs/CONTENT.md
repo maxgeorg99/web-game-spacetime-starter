@@ -69,7 +69,7 @@ Recruit portrait variants live in `public/art/factions/{blue,yellow,purple}/avat
 
 ## Display text
 
-Client names and descriptions are edited in `src/i18n/locales/en/content.json`. Add matching keys when adding config entries; keep stable IDs unchanged. See [Localization](LOCALIZATION.md) for plural counts, translated UI and additional languages.
+Names and descriptions live only in `src/i18n/locales/en/content.json`. Add matching keys when adding config entries; keep stable IDs unchanged. Shared configs must not carry English display text. Skill trees use `branchIds` and numeric node branch indices; branch names, node names and descriptions are resolved by the client localization adapter. Use its localized types when rendering content. See [Localization](LOCALIZATION.md) for plural counts, translated UI and additional languages.
 
 ## Discovery drafts and terrain synergies
 

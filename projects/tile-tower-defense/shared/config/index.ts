@@ -84,7 +84,7 @@ export function validateCatalog() {
     for (const n of tree.nodes) {
       if (
         n.branch < 0 ||
-        n.branch >= tree.branches.length ||
+        n.branch >= tree.branchIds.length ||
         n.maxRank < 1 ||
         !Number.isInteger(n.maxRank) ||
         n.goldCost <= 0 ||

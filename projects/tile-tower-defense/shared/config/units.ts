@@ -5,8 +5,6 @@ const legacyUnits = [
   {
     id: 'squire',
     avatar: 'avatars/squire',
-    name: 'Squire',
-    description: 'A sturdy guard who meets enemies on the road.',
     art: 'squire',
     health: 110,
     damage: 14,
@@ -22,8 +20,6 @@ const legacyUnits = [
     id: 'ranger',
     projectile: { art: 'arrow', speed: 6 },
     avatar: 'avatars/ranger',
-    name: 'Ranger',
-    description: 'Fires from behind your front line.',
     art: 'ranger',
     health: 60,
     damage: 12,
@@ -38,8 +34,6 @@ const legacyUnits = [
   {
     id: 'guardian',
     avatar: 'avatars/guardian',
-    name: 'Guardian',
-    description: 'Slow, heavily armored expedition veteran.',
     art: 'guardian',
     health: 230,
     damage: 24,
@@ -54,8 +48,6 @@ const legacyUnits = [
   {
     id: 'goblin',
     avatar: 'avatars/goblin',
-    name: 'Cave spider',
-    description: 'Small, quick and rarely alone.',
     art: 'swarm',
     health: 45,
     damage: 8,
@@ -70,8 +62,6 @@ const legacyUnits = [
   {
     id: 'raider',
     avatar: 'avatars/raider',
-    name: 'Sand serpent',
-    description: 'A tougher attacker with a heavy axe.',
     art: 'raider',
     health: 115,
     damage: 16,
@@ -86,8 +76,6 @@ const legacyUnits = [
   {
     id: 'brute',
     avatar: 'avatars/brute',
-    name: 'Siege tortoise',
-    description: 'A slow siege beast. Do not let it reach the keep.',
     art: 'siege',
     health: 300,
     damage: 30,

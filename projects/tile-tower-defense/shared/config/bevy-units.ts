@@ -6,8 +6,6 @@ import type { UnitDef } from './types';
 export const bevyUnits = [
   {
     id: 'warrior',
-    name: 'Warrior',
-    description: 'Steady invader. Deals 1 keep damage if it gets through.',
     art: 'units/warrior',
     avatar: 'avatars/warrior',
     health: 50.0,
@@ -22,8 +20,6 @@ export const bevyUnits = [
   },
   {
     id: 'archer',
-    name: 'Archer',
-    description: 'Steady invader. Deals 1 keep damage if it gets through.',
     art: 'units/archer',
     avatar: 'avatars/archer',
     health: 30.0,
@@ -42,8 +38,6 @@ export const bevyUnits = [
   },
   {
     id: 'lancer',
-    name: 'Lancer',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/lancer',
     avatar: 'avatars/lancer',
     health: 80.0,
@@ -58,8 +52,6 @@ export const bevyUnits = [
   },
   {
     id: 'monk',
-    name: 'Monk',
-    description: 'Steady invader. Deals 3 keep damage if it gets through.',
     art: 'units/monk',
     avatar: 'avatars/monk',
     health: 80.0,
@@ -74,8 +66,6 @@ export const bevyUnits = [
   },
   {
     id: 'skull',
-    name: 'Skull',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/skull',
     avatar: 'avatars/skull',
     health: 70.0,
@@ -90,8 +80,6 @@ export const bevyUnits = [
   },
   {
     id: 'paddle_fish',
-    name: 'Paddle Fish',
-    description: 'Swift invader. Deals 1 keep damage if it gets through.',
     art: 'units/paddle_fish',
     avatar: 'avatars/paddle_fish',
     health: 40.0,
@@ -106,8 +94,6 @@ export const bevyUnits = [
   },
   {
     id: 'harpoon_fish',
-    name: 'Harpoon Fish',
-    description: 'Swift invader. Deals 1 keep damage if it gets through.',
     art: 'units/harpoon_fish',
     avatar: 'avatars/harpoon_fish',
     health: 35.0,
@@ -122,8 +108,6 @@ export const bevyUnits = [
   },
   {
     id: 'goblin_lancer',
-    name: 'Goblin Lancer',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/goblin_lancer',
     avatar: 'avatars/goblin_lancer',
     health: 60.0,
@@ -138,8 +122,6 @@ export const bevyUnits = [
   },
   {
     id: 'shaman',
-    name: 'Shaman',
-    description: 'Steady invader. Deals 3 keep damage if it gets through.',
     art: 'units/shaman',
     avatar: 'avatars/shaman',
     health: 30.0,
@@ -154,8 +136,6 @@ export const bevyUnits = [
   },
   {
     id: 'thief',
-    name: 'Thief',
-    description: 'Swift invader. Deals 1 keep damage if it gets through.',
     art: 'units/thief',
     avatar: 'avatars/thief',
     health: 25.0,
@@ -170,8 +150,6 @@ export const bevyUnits = [
   },
   {
     id: 'snake',
-    name: 'Snake',
-    description: 'Swift invader. Deals 1 keep damage if it gets through.',
     art: 'units/snake',
     avatar: 'avatars/snake',
     health: 20.0,
@@ -186,8 +164,6 @@ export const bevyUnits = [
   },
   {
     id: 'turtle',
-    name: 'Turtle',
-    description: 'Steady invader. Deals 1 keep damage if it gets through.',
     art: 'units/turtle',
     avatar: 'avatars/turtle',
     health: 120.0,
@@ -202,8 +178,6 @@ export const bevyUnits = [
   },
   {
     id: 'minotaur',
-    name: 'Minotaur',
-    description: 'Heavy invader. Deals 3 keep damage if it gets through.',
     art: 'units/minotaur',
     avatar: 'avatars/minotaur',
     health: 150.0,
@@ -218,8 +192,6 @@ export const bevyUnits = [
   },
   {
     id: 'gnoll',
-    name: 'Gnoll',
-    description: 'Steady invader. Deals 1 keep damage if it gets through.',
     art: 'units/gnoll',
     avatar: 'avatars/gnoll',
     health: 45.0,
@@ -234,8 +206,6 @@ export const bevyUnits = [
   },
   {
     id: 'spider',
-    name: 'Spider',
-    description: 'Swift invader. Deals 1 keep damage if it gets through.',
     art: 'units/spider',
     avatar: 'avatars/spider',
     health: 25.0,
@@ -250,8 +220,6 @@ export const bevyUnits = [
   },
   {
     id: 'panda',
-    name: 'Panda',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/panda',
     avatar: 'avatars/panda',
     health: 100.0,
@@ -266,8 +234,6 @@ export const bevyUnits = [
   },
   {
     id: 'lizard',
-    name: 'Lizard',
-    description: 'Steady invader. Deals 1 keep damage if it gets through.',
     art: 'units/lizard',
     avatar: 'avatars/lizard',
     health: 60.0,
@@ -282,8 +248,6 @@ export const bevyUnits = [
   },
   {
     id: 'bear',
-    name: 'Bear',
-    description: 'Steady invader. Deals 3 keep damage if it gets through.',
     art: 'units/bear',
     avatar: 'avatars/bear',
     health: 140.0,
@@ -298,8 +262,6 @@ export const bevyUnits = [
   },
   {
     id: 'gnome',
-    name: 'Gnome',
-    description: 'Swift invader. Deals 1 keep damage if it gets through.',
     art: 'units/gnome',
     avatar: 'avatars/gnome',
     health: 25.0,
@@ -314,8 +276,6 @@ export const bevyUnits = [
   },
   {
     id: 'ogre',
-    name: 'Ogre',
-    description: 'Heavy invader. Deals 5 keep damage if it gets through.',
     art: 'units/ogre',
     avatar: 'avatars/ogre',
     health: 400.0,
@@ -330,8 +290,6 @@ export const bevyUnits = [
   },
   {
     id: 'dragon',
-    name: 'Dragon',
-    description: 'Heavy invader. Deals 3 keep damage if it gets through.',
     art: 'units/dragon',
     avatar: 'units/dragon',
     health: 200.0,
@@ -346,8 +304,6 @@ export const bevyUnits = [
   },
   {
     id: 'mage',
-    name: 'Mage',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/mage',
     avatar: 'units/mage',
     health: 80.0,
@@ -362,8 +318,6 @@ export const bevyUnits = [
   },
   {
     id: 'knight',
-    name: 'Knight',
-    description: 'Heavy invader. Deals 2 keep damage if it gets through.',
     art: 'units/knight',
     avatar: 'units/knight',
     health: 150.0,
@@ -378,8 +332,6 @@ export const bevyUnits = [
   },
   {
     id: 'werewolf',
-    name: 'Werewolf',
-    description: 'Swift invader. Deals 2 keep damage if it gets through.',
     art: 'units/werewolf',
     avatar: 'avatars/werewolf',
     health: 85.0,
@@ -394,8 +346,6 @@ export const bevyUnits = [
   },
   {
     id: 'demon',
-    name: 'Demon',
-    description: 'Heavy invader. Deals 4 keep damage if it gets through.',
     art: 'units/demon',
     avatar: 'avatars/demon',
     health: 180.0,
@@ -410,8 +360,6 @@ export const bevyUnits = [
   },
   {
     id: 'stone_golem',
-    name: 'Stone Golem',
-    description: 'Heavy invader. Deals 3 keep damage if it gets through.',
     art: 'units/stone_golem',
     avatar: 'avatars/stone_golem',
     health: 500.0,
@@ -426,8 +374,6 @@ export const bevyUnits = [
   },
   {
     id: 'lizardman',
-    name: 'Lizardman',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/lizardman',
     avatar: 'avatars/lizardman',
     health: 70.0,
@@ -442,8 +388,6 @@ export const bevyUnits = [
   },
   {
     id: 'cerberus',
-    name: 'Cerberus',
-    description: 'Heavy invader. Deals 3 keep damage if it gets through.',
     art: 'units/cerberus',
     avatar: 'avatars/cerberus',
     health: 200.0,
@@ -458,8 +402,6 @@ export const bevyUnits = [
   },
   {
     id: 'skeleton_mage',
-    name: 'Skeleton Mage',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/skeleton_mage',
     avatar: 'avatars/skeleton_mage',
     health: 40.0,
@@ -474,8 +416,6 @@ export const bevyUnits = [
   },
   {
     id: 'gryphon',
-    name: 'Gryphon',
-    description: 'Swift invader. Deals 2 keep damage if it gets through.',
     art: 'units/gryphon',
     avatar: 'avatars/gryphon',
     health: 90.0,
@@ -490,8 +430,6 @@ export const bevyUnits = [
   },
   {
     id: 'headless_horseman',
-    name: 'Headless Horseman',
-    description: 'Heavy invader. Deals 3 keep damage if it gets through.',
     art: 'units/headless_horseman',
     avatar: 'avatars/headless_horseman',
     health: 160.0,
@@ -506,8 +444,6 @@ export const bevyUnits = [
   },
   {
     id: 'pyromancer',
-    name: 'Pyromancer',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/pyromancer',
     avatar: 'avatars/pyromancer',
     health: 50.0,
@@ -522,8 +458,6 @@ export const bevyUnits = [
   },
   {
     id: 'dwarf',
-    name: 'Dwarf',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/dwarf',
     avatar: 'units/dwarf',
     health: 120.0,
@@ -538,8 +472,6 @@ export const bevyUnits = [
   },
   {
     id: 'gargoyle',
-    name: 'Gargoyle',
-    description: 'Heavy invader. Deals 3 keep damage if it gets through.',
     art: 'units/gargoyle',
     avatar: 'avatars/gargoyle',
     health: 200.0,
@@ -554,8 +486,6 @@ export const bevyUnits = [
   },
   {
     id: 'satyr_archer',
-    name: 'Satyr Archer',
-    description: 'Swift invader. Deals 1 keep damage if it gets through.',
     art: 'units/satyr_archer',
     avatar: 'avatars/satyr_archer',
     health: 40.0,
@@ -570,8 +500,6 @@ export const bevyUnits = [
   },
   {
     id: 'centaur',
-    name: 'Centaur',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/centaur',
     avatar: 'avatars/centaur',
     health: 110.0,
@@ -586,8 +514,6 @@ export const bevyUnits = [
   },
   {
     id: 'berserker',
-    name: 'Berserker',
-    description: 'Steady invader. Deals 2 keep damage if it gets through.',
     art: 'units/berserker',
     avatar: 'avatars/berserker',
     health: 90.0,
@@ -602,8 +528,6 @@ export const bevyUnits = [
   },
   {
     id: 'horseman',
-    name: 'Horseman',
-    description: 'Swift invader. Deals 2 keep damage if it gets through.',
     art: 'units/horseman',
     avatar: 'avatars/horseman',
     health: 100.0,
@@ -618,8 +542,6 @@ export const bevyUnits = [
   },
   {
     id: 'king',
-    name: 'King',
-    description: 'Heavy invader. Deals 3 keep damage if it gets through.',
     art: 'units/king',
     avatar: 'avatars/king',
     health: 160.0,
@@ -634,8 +556,6 @@ export const bevyUnits = [
   },
   {
     id: 'swordsman',
-    name: 'Swordsman',
-    description: 'Steady invader. Deals 1 keep damage if it gets through.',
     art: 'units/swordsman',
     avatar: 'avatars/swordsman',
     health: 75.0,

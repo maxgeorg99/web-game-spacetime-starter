@@ -4,6 +4,7 @@ import { createTranslator, english, t, th, type TranslationKey } from '../src/i1
 import { towers, units, waves, tiles, skillTrees } from '../shared/config';
 import { buildCards } from '../src/views';
 import { fresh } from '../shared/game/rules';
+import { localizeSkillTree } from '../src/i18n/content';
 
 describe('localization', () => {
   test('troop counts select zero, one, and other without caller branches', () => {
@@ -71,12 +72,51 @@ describe('localization', () => {
       }
     }
     for (const tree of skillTrees) {
+      for (const branch of tree.branchIds) {
+        const key = `content.branches.${tree.tower}.${branch}` as TranslationKey;
+        expect(t(key)).not.toBe(key);
+      }
       for (const node of tree.nodes) {
-        expect(t(`content.skills.${tree.tower}.${node.id}.name` as TranslationKey)).not.toContain(
-          'content.skills.',
-        );
+        for (const field of ['name', 'description']) {
+          const key = `content.skills.${tree.tower}.${node.id}.${field}` as TranslationKey;
+          expect(t(key)).not.toBe(key);
+        }
       }
     }
     expect(buildCards(fresh(), undefined, false)).toContain('Catapult');
+  });
+  test('skill translations replace labels and fall back without changing game rules', () => {
+    const tree = skillTrees.find((value) => value.tower === 'sentinel')!;
+    const before = JSON.stringify(tree);
+    const de = createTranslator('de', {
+      de: {
+        'content.branches.sentinel.frost': 'Frostmagie',
+        'content.skills.sentinel.frost-attune.name': 'Kälte',
+        'content.skills.sentinel.frost-attune.description': 'Verlangsamt das primäre Ziel.',
+      },
+    });
+    const localized = localizeSkillTree(tree, de.t);
+    expect(localized.branches[0]).toBe('Frostmagie');
+    const chill = localized.nodes.find((node) => node.id === 'frost-attune')!;
+    expect(chill.name).toBe('Kälte');
+    expect(chill.description).toBe('Verlangsamt das primäre Ziel.');
+    expect(localized.nodes.find((node) => node.id === 'frost-capstone')!.name).toBe('Deep freeze');
+    for (const node of tree.nodes) {
+      expect(localized.nodes.find((value) => value.id === node.id)).toMatchObject(node);
+    }
+    expect(JSON.stringify(tree)).toBe(before);
+  });
+  test('shared catalogs do not carry duplicated display text', () => {
+    const rows = [
+      ...towers,
+      ...units,
+      ...waves,
+      ...tiles,
+      ...skillTrees.flatMap((tree) => tree.nodes),
+    ];
+    for (const row of rows) {
+      expect(row).not.toHaveProperty('name');
+      expect(row).not.toHaveProperty('description');
+    }
   });
 });

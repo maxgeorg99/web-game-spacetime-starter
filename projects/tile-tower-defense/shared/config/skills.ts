@@ -4,13 +4,11 @@ import type { SkillTree } from './types';
 export const skillTrees: readonly SkillTree[] = [
   {
     tower: 'watchtower',
-    branches: ['Sharpshooter', 'Ranger', 'Executioner'],
+    branchIds: ['sharpshooter', 'ranger', 'executioner'],
     nodes: [
       {
         id: 'quick-string',
         icon: 'icons/skill-48',
-        name: 'Quick string',
-        description: '+15% attack speed / rank',
         branch: 0,
         tier: 1,
         maxRank: 3,
@@ -21,8 +19,6 @@ export const skillTrees: readonly SkillTree[] = [
       {
         id: 'volley',
         icon: 'icons/skill-110',
-        name: 'Rapid volley',
-        description: '+25% attack speed / rank',
         branch: 0,
         tier: 2,
         maxRank: 2,
@@ -34,8 +30,6 @@ export const skillTrees: readonly SkillTree[] = [
       {
         id: 'longbow',
         icon: 'icons/skill-75',
-        name: 'Longbow',
-        description: '+12% range / rank',
         branch: 1,
         tier: 1,
         maxRank: 3,
@@ -46,8 +40,6 @@ export const skillTrees: readonly SkillTree[] = [
       {
         id: 'eagle-eye',
         icon: 'icons/skill-31',
-        name: 'Eagle eye',
-        description: '+20% damage / rank',
         branch: 1,
         tier: 2,
         maxRank: 2,
@@ -59,8 +51,6 @@ export const skillTrees: readonly SkillTree[] = [
       {
         id: 'barbed',
         icon: 'icons/skill-90',
-        name: 'Barbed arrows',
-        description: '+20% damage / rank',
         branch: 2,
         tier: 1,
         maxRank: 3,
@@ -71,8 +61,6 @@ export const skillTrees: readonly SkillTree[] = [
       {
         id: 'execution',
         icon: 'icons/skill-105',
-        name: 'Heavy draw',
-        description: '+35% damage / rank',
         branch: 2,
         tier: 2,
         maxRank: 2,
@@ -85,13 +73,11 @@ export const skillTrees: readonly SkillTree[] = [
   },
   {
     tower: 'catapult',
-    branches: ['Siegecraft', 'Artillery', 'Shrapnel'],
+    branchIds: ['siegecraft', 'artillery', 'shrapnel'],
     nodes: [
       {
         id: 'counterweight',
         icon: 'icons/skill-115',
-        name: 'Counterweight',
-        description: '+20% damage / rank',
         branch: 0,
         tier: 1,
         maxRank: 3,
@@ -102,8 +88,6 @@ export const skillTrees: readonly SkillTree[] = [
       {
         id: 'boulder',
         icon: 'icons/skill-90',
-        name: 'Great boulders',
-        description: '+35% damage / rank',
         branch: 0,
         tier: 2,
         maxRank: 2,
@@ -115,8 +99,6 @@ export const skillTrees: readonly SkillTree[] = [
       {
         id: 'trajectory',
         icon: 'icons/skill-75',
-        name: 'Trajectory',
-        description: '+12% range / rank',
         branch: 1,
         tier: 1,
         maxRank: 3,
@@ -127,8 +109,6 @@ export const skillTrees: readonly SkillTree[] = [
       {
         id: 'winch',
         icon: 'icons/skill-48',
-        name: 'Quick winch',
-        description: '+25% attack speed / rank',
         branch: 1,
         tier: 2,
         maxRank: 2,
@@ -140,8 +120,6 @@ export const skillTrees: readonly SkillTree[] = [
       {
         id: 'fragments',
         icon: 'icons/skill-65',
-        name: 'Fragments',
-        description: '+0.2 tiles splash / rank',
         branch: 2,
         tier: 1,
         maxRank: 3,
@@ -152,8 +130,6 @@ export const skillTrees: readonly SkillTree[] = [
       {
         id: 'scatter',
         icon: 'icons/skill-70',
-        name: 'Scattershot',
-        description: '+20% damage / rank',
         branch: 2,
         tier: 2,
         maxRank: 2,

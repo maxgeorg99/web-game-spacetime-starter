@@ -3,8 +3,6 @@ export const towers = [
   {
     id: 'watchtower',
     projectile: { art: 'arrow', speed: 7 },
-    name: 'Watchtower',
-    description: 'Quick arrows. A dependable first line.',
     art: 'archer',
     avatar: 'archer',
     cost: 50,
@@ -16,8 +14,6 @@ export const towers = [
   {
     id: 'catapult',
     projectile: { art: 'rock', speed: 4 },
-    name: 'Catapult',
-    description: 'Heavy stones strike clustered enemies.',
     art: 'catapult',
     avatar: 'catapult-avatar',
     cost: 90,
@@ -29,8 +25,6 @@ export const towers = [
   {
     id: 'sentinel',
     projectile: { art: 'magic/arcane-bolt', speed: 6 },
-    name: 'Mage Tower',
-    description: 'Arcane bolts. Invest in frost, fire or lightning to shape its spells.',
     art: 'mage-arcane',
     avatar: 'mage-arcane',
     cost: 120,

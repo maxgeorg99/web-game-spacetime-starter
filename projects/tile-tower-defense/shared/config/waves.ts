@@ -2,16 +2,12 @@ import type { WaveDef } from './types';
 export const waves = [
   {
     id: 'first-footsteps',
-    name: 'First footsteps',
-    description: 'A scouting party approaches. Build near the bend.',
     interval: 1.5,
     healthMultiplier: 1,
     groups: [{ unit: 'goblin', count: 7 }],
   },
   {
     id: 'raiding-party',
-    name: 'Raiding party',
-    description: 'Serpents follow a spider vanguard. Cover the bend with towers.',
     interval: 1.2,
     healthMultiplier: 1.1,
     groups: [
@@ -21,8 +17,6 @@ export const waves = [
   },
   {
     id: 'green-tide',
-    name: 'The green tide',
-    description: 'A close-packed swarm. Splash damage earns its keep.',
     interval: 0.65,
     healthMultiplier: 1.3,
     groups: [
@@ -32,8 +26,6 @@ export const waves = [
   },
   {
     id: 'heavy-footfall',
-    name: 'Heavy footfall',
-    description: 'The first siege tortoises. Specialize your towers.',
     interval: 1.1,
     healthMultiplier: 1.4,
     groups: [
@@ -43,8 +35,6 @@ export const waves = [
   },
   {
     id: 'last-light',
-    name: 'Last light',
-    description: 'Hold the island through the first major assault. The wider world awaits.',
     interval: 0.85,
     healthMultiplier: 1.6,
     groups: [
@@ -55,8 +45,6 @@ export const waves = [
   },
   {
     id: 'marsh-runners',
-    name: 'Marsh runners',
-    description: 'Snakes, spiders and gnolls rush the coast. Cover the whole road.',
     interval: 0.75,
     healthMultiplier: 1.7,
     groups: [
@@ -76,8 +64,6 @@ export const waves = [
   },
   {
     id: 'rising-tide',
-    name: 'Rising tide',
-    description: 'Fast fish travel in tight schools. Prepare overlapping fire.',
     interval: 0.55,
     healthMultiplier: 1.8,
     groups: [
@@ -93,8 +79,6 @@ export const waves = [
   },
   {
     id: 'bone-banner',
-    name: 'The bone banner',
-    description: 'Goblin lancers lead skulls and shamans. Do not let the shamans reach the keep.',
     interval: 0.8,
     healthMultiplier: 1.9,
     groups: [
@@ -114,8 +98,6 @@ export const waves = [
   },
   {
     id: 'wildwood-dash',
-    name: 'Wildwood dash',
-    description: 'Gnomes and thieves race ahead of satyr archers. Range matters.',
     interval: 0.45,
     healthMultiplier: 2,
     groups: [
@@ -135,8 +117,6 @@ export const waves = [
   },
   {
     id: 'scaled-column',
-    name: 'The scaled column',
-    description: 'Turtles anchor a column of lizards and lizardmen.',
     interval: 0.85,
     healthMultiplier: 2,
     groups: [
@@ -156,8 +136,6 @@ export const waves = [
   },
   {
     id: 'forest-giants',
-    name: 'Forest giants',
-    description: 'Pandas and bears precede a minotaur rear guard. Invest in sustained damage.',
     interval: 0.95,
     healthMultiplier: 2.1,
     groups: [
@@ -177,8 +155,6 @@ export const waves = [
   },
   {
     id: 'ashen-procession',
-    name: 'Ashen procession',
-    description: 'Skeleton mages, pyromancers and mages march in close formation.',
     interval: 0.5,
     healthMultiplier: 2.2,
     groups: [
@@ -198,8 +174,6 @@ export const waves = [
   },
   {
     id: 'iron-company',
-    name: 'The iron company',
-    description: 'Dwarves absorb the opening fire before faster knights arrive.',
     interval: 0.8,
     healthMultiplier: 2.3,
     groups: [
@@ -215,8 +189,6 @@ export const waves = [
   },
   {
     id: 'moonlit-hunt',
-    name: 'Moonlit hunt',
-    description: 'Werewolves, gryphons and centaurs leave little time to react.',
     interval: 0.65,
     healthMultiplier: 2.4,
     groups: [
@@ -236,8 +208,6 @@ export const waves = [
   },
   {
     id: 'mountain-breakers',
-    name: 'Mountain breakers',
-    description: 'Ogres and stone golems advance slowly with enormous health pools.',
     interval: 1.25,
     healthMultiplier: 2.4,
     groups: [
@@ -253,8 +223,6 @@ export const waves = [
   },
   {
     id: 'hollow-cavalcade',
-    name: 'Hollow cavalcade',
-    description: 'Gargoyles draw fire while headless horsemen close the distance.',
     interval: 0.8,
     healthMultiplier: 2.5,
     groups: [
@@ -270,8 +238,6 @@ export const waves = [
   },
   {
     id: 'hellgate',
-    name: 'Hellgate',
-    description: 'Demons and cerberus punish every breach. Keep damage is severe.',
     interval: 0.9,
     healthMultiplier: 2.6,
     groups: [
@@ -287,8 +253,6 @@ export const waves = [
   },
   {
     id: 'dragonfall',
-    name: 'Dragonfall',
-    description: 'Dragons enter the road behind a fast gryphon vanguard.',
     interval: 0.75,
     healthMultiplier: 2.7,
     groups: [
@@ -308,8 +272,6 @@ export const waves = [
   },
   {
     id: 'gathering-storm',
-    name: 'The gathering storm',
-    description: 'Fast raiders, durable golems and demons test every part of your defense.',
     interval: 0.65,
     healthMultiplier: 2.8,
     groups: [
@@ -333,8 +295,6 @@ export const waves = [
   },
   {
     id: 'last-horizon',
-    name: 'The last horizon',
-    description: 'Hold against the final host: knights, cerberus, dragons and an ogre rear guard.',
     interval: 0.7,
     healthMultiplier: 3,
     groups: [

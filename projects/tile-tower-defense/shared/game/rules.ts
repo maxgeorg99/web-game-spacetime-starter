@@ -185,7 +185,7 @@ export function upgradeFailure(s: State, tower: Tower, nodeId: string): UpgradeF
   }
 }
 
-/** Keep the server's existing error messages; clients translate the structured reason. */
+/** Server diagnostics use stable skill IDs; clients translate the structured reason. */
 export function upgradeReason(s: State, tower: Tower, nodeId: string): string | undefined {
   const failure = upgradeFailure(s, tower, nodeId);
   switch (failure?.kind) {
@@ -200,7 +200,7 @@ export function upgradeReason(s: State, tower: Tower, nodeId: string): string | 
     case 'maxed':
       return 'Max rank';
     case 'prerequisite':
-      return `Requires ${treeDef(tower.kind).nodes.find((n) => n.id === failure.skill)!.name} ${failure.rank}`;
+      return `Requires ${failure.skill} ${failure.rank}`;
     case 'gold':
       return `Need ${failure.amount} gold`;
   }

@@ -7,8 +7,6 @@ export interface TowerDef {
   avatar: string;
   projectile: ProjectileDef;
   id: string;
-  name: string;
-  description: string;
   art: string;
   cost: number;
   damage: number;
@@ -20,8 +18,6 @@ export interface UnitDef {
   projectile?: ProjectileDef;
   avatar: string;
   id: string;
-  name: string;
-  description: string;
   art: string;
   health: number;
   damage: number;
@@ -37,8 +33,6 @@ export type Stat = 'damage' | 'range' | 'attackSpeed' | 'splash';
 export interface SkillNode {
   icon: string;
   id: string;
-  name: string;
-  description: string;
   branch: number;
   tier: number;
   maxRank: number;
@@ -52,21 +46,17 @@ export interface SkillNode {
 export interface SkillTree {
   pointLimit?: number;
   tower: string;
-  branches: readonly string[];
+  branchIds: readonly string[];
   nodes: readonly SkillNode[];
 }
 export interface WaveDef {
   id: string;
-  name: string;
-  description: string;
   interval: number;
   healthMultiplier: number;
   groups: readonly { unit: string; count: number }[];
 }
 export interface TileDef {
   id: string;
-  name: string;
-  description: string;
   color: number;
   art?: string;
   buildable: boolean;
