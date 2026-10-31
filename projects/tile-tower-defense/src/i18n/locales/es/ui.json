@@ -183,5 +183,8 @@
   "match.finished": "Partida terminada",
   "match.lobbyHint": "El primer capitán inicia cuando se hayan unido 2–4 jugadores. Comparte esta sesión con tus amigos.",
   "match.finishedHint": "Partida terminada. Crea otra sesión para volver a jugar.",
-  "wave.manual": "Iniciar oleada ▷"
+  "wave.manual": "Iniciar oleada ▷",
+  "draft.chooseDiscovery": "Elige un descubrimiento y una dirección para alargar el camino.",
+  "draft.chooseDirection": "Elige una dirección en la entrada · toca otra vez para ampliar",
+  "draft.pathPreview": "+{{count}} de camino · {{land}} casillas nuevas"
 }

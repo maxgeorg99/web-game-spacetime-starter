@@ -1,3 +1,4 @@
+import { pathFor, pathExtensions, extensionAt } from '../shared/game/paths';
 import { mageAspect, mageMastered } from '../shared/game/magic';
 import { magicColors } from '../shared/config/magic';
 import { landmarkArt, watchtowerGroundY } from '../shared/config/presentation';
@@ -8,7 +9,7 @@ import { t } from './i18n';
 import { factionArt, factions, type Faction } from '../shared/config/factions';
 import { worldIslands } from '../shared/config/world';
 import Phaser from 'phaser';
-import { road, tileDef, towerDef, unitDef } from '../shared/config';
+import { tileDef, towerDef, unitDef } from '../shared/config';
 import { effectiveStats, expansionCells, onRoad, position, sameCell } from '../shared/game/rules';
 import type { Point } from '../shared/game/model';
 import type { State } from '../shared/game/model';
@@ -104,6 +105,25 @@ export class IslandView {
       true,
     );
   }
+  bounds() {
+    const cells = [
+      ...this.state.tiles,
+      ...(this.state.phase === 'draft'
+        ? pathExtensions(this.state).flatMap((option) => option.land)
+        : []),
+    ];
+    const points = cells.map((p) => this.project(p));
+    const left = Math.min(...points.map((p) => p.x)) - 80;
+    const right = Math.max(...points.map((p) => p.x)) + 80;
+    const top = Math.min(...points.map((p) => p.y)) - 125;
+    const bottom = Math.max(...points.map((p) => p.y)) + 85;
+    return {
+      x: (left + right) / 2,
+      y: (top + bottom) / 2,
+      width: right - left,
+      height: bottom - top,
+    };
+  }
   private drawLand() {
     this.catapults.clear();
     this.land.removeAll(true);
@@ -112,7 +132,7 @@ export class IslandView {
     for (const tile of list) {
       const { x, y } = this.project(tile),
         g = this.add.graphics(),
-        path = onRoad(tile);
+        path = onRoad(tile, s);
       this.polygon(
         g,
         [
@@ -185,7 +205,7 @@ export class IslandView {
       }
       this.land.add(g);
       const building = s.towers.find((t) => sameCell(t, tile));
-      const core = sameCell(tile, road[road.length - 1]);
+      const core = sameCell(tile, pathFor(s)[pathFor(s).length - 1]);
       const def = tileDef(tile.kind);
       const art = core
         ? 'keep'
@@ -240,7 +260,7 @@ export class IslandView {
         this.land.add(sprite);
       }
     }
-    const entry = this.project(road[0]);
+    const entry = this.project(pathFor(s)[0]);
     this.land.add(
       this.add
         .text(entry.x, entry.y - 36, t('island.incoming'), {
@@ -261,6 +281,39 @@ export class IslandView {
     const g = this.highlight;
     g.clear();
     this.previewLabel?.setVisible(false);
+    if (this.state.phase === 'draft' && this.state.path) {
+      const entry = this.project(pathFor(this.state)[0]);
+      for (const option of pathExtensions(this.state)) {
+        const end = this.project(option.entrance);
+        const selected = !!this.hover && sameCell(this.hover, option.entrance);
+        const color = selected ? 0xffdc85 : 0xe7dbb5;
+        for (const cell of option.path) {
+          const p = this.project(cell);
+          this.polygon(
+            g,
+            [
+              [p.x - 43, p.y],
+              [p.x, p.y - 21],
+              [p.x + 43, p.y],
+              [p.x, p.y + 21],
+            ],
+            color,
+            selected ? 0.5 : 0.16,
+          );
+        }
+        g.lineStyle(selected ? 4 : 2, color, 0.9).lineBetween(entry.x, entry.y, end.x, end.y);
+        const angle = Math.atan2(end.y - entry.y, end.x - entry.x);
+        g.fillStyle(color, 1).fillTriangle(
+          end.x,
+          end.y,
+          end.x - 18 * Math.cos(angle - 0.5),
+          end.y - 18 * Math.sin(angle - 0.5),
+          end.x - 18 * Math.cos(angle + 0.5),
+          end.y - 18 * Math.sin(angle + 0.5),
+        );
+        g.lineStyle(3, color, 0.9).strokeEllipse(end.x, end.y, 76, 38);
+      }
+    }
     if (this.state.phase === 'draft') {
       for (const cell of expansionCells(this.state)) {
         const p = this.project(cell);
@@ -293,8 +346,36 @@ export class IslandView {
       );
       let lines = [t('draft.invalid')];
       if (valid) {
+        const extension = extensionAt(this.state, cell);
+        if (extension) {
+          for (const land of extension.land) {
+            const p = this.project(land);
+            const road = extension.path.some((q) => sameCell(q, land));
+            this.polygon(
+              g,
+              [
+                [p.x - 43, p.y],
+                [p.x, p.y - 21],
+                [p.x + 43, p.y],
+                [p.x, p.y + 21],
+              ],
+              road ? 0xc8b991 : sameCell(land, extension.discovery) ? color : 0xa6bb79,
+              0.55,
+            );
+          }
+        }
         const effect = placementEffect(this.state, this.draftKind, cell);
-        lines = [t('draft.preview', effect)];
+        lines = [
+          ...(extension
+            ? [
+                t('draft.pathPreview', {
+                  count: extension.path.length,
+                  land: extension.land.length,
+                }),
+              ]
+            : []),
+          t('draft.preview', effect),
+        ];
         if (effect.towers) {
           lines.push(t('draft.blessing', { count: effect.towers }));
         }
@@ -315,7 +396,8 @@ export class IslandView {
               : this.draftKind === 'windmill'
                 ? terrainBonuses.windmillRadius
                 : 1.01;
-          if (Math.hypot(other.x - cell.x, other.y - cell.y) <= range) {
+          const source = extension?.discovery ?? cell;
+          if (Math.hypot(other.x - source.x, other.y - source.y) <= range) {
             const target = this.project(other);
             g.lineStyle(2, color, 0.8).lineBetween(p.x, p.y, target.x, target.y);
             g.strokeEllipse(target.x, target.y, 72, 36);
@@ -375,6 +457,7 @@ export class IslandView {
     const s = this.state,
       key = JSON.stringify([
         s.tiles,
+        s.path,
         s.towers.map((t) => [t.id, t.x, t.y, t.kind, t.school, t.ranks]),
       ]);
     if (key !== this.landKey) {
@@ -429,7 +512,7 @@ export class IslandView {
       for (const f of fighters) {
         live.add(f.id);
         const def = unitDef(f.kind),
-          p = this.project(position(f.progress));
+          p = this.project(position(f.progress, this.state));
         const faction = ally
           ? this.faction
           : f.captainSlot !== undefined
@@ -449,17 +532,20 @@ export class IslandView {
           this.actors.set(f.id, actor);
         }
         const next = this.project(
-          position(Math.max(0, Math.min(road.length - 1, f.progress + (ally ? -0.1 : 0.1)))),
+          position(
+            Math.max(0, Math.min(pathFor(s).length - 1, f.progress + (ally ? -0.1 : 0.1))),
+            s,
+          ),
         );
         const opponents = ally ? s.enemies : s.recruits;
         const target = opponents.find(
           (unit) =>
             Math.hypot(
-              position(unit.progress).x - position(f.progress).x,
-              position(unit.progress).y - position(f.progress).y,
+              position(unit.progress, this.state).x - position(f.progress, this.state).x,
+              position(unit.progress, this.state).y - position(f.progress, this.state).y,
             ) <= def.range,
         );
-        const facing = target ? this.project(position(target.progress)) : next;
+        const facing = target ? this.project(position(target.progress, this.state)) : next;
         if (Math.abs(facing.x - p.x) > 0.01) {
           actor.sprite.setFlipX(facing.x < p.x);
         }

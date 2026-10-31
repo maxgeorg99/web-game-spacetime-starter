@@ -43,7 +43,7 @@ export function freshWorld(): WorldState {
       owner: null,
       sequence: 0,
       cycles: 0,
-      state: fresh(),
+      state: fresh(true),
     })),
     flights: [],
     nextFlight: 1,
@@ -77,7 +77,7 @@ export function joinWorld(
   if (name) {
     seat.name = name;
   }
-  seat.state = world.round ? fresh() : (previous ?? fresh());
+  seat.state = world.round ? fresh(true) : (previous ?? fresh());
   continueCampaign(seat);
   return next;
 }

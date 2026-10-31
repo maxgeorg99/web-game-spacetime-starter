@@ -2,10 +2,10 @@ import { bevyUnits } from './bevy-units';
 import { factions } from './factions';
 /** Screen-space offsets for island renderers, separate from each island's logical tile coordinates. */
 export const worldIslands = [
-  { slot: 0, x: -850, y: -560, faction: 'blue', color: factions.blue.color },
-  { slot: 1, x: 850, y: -560, faction: 'yellow', color: factions.yellow.color },
-  { slot: 2, x: -850, y: 620, faction: 'red', color: factions.red.color },
-  { slot: 3, x: 850, y: 620, faction: 'purple', color: factions.purple.color },
+  { slot: 0, x: -1500, y: -1100, faction: 'blue', color: factions.blue.color },
+  { slot: 1, x: 1500, y: -1100, faction: 'yellow', color: factions.yellow.color },
+  { slot: 2, x: -1500, y: 1100, faction: 'red', color: factions.red.color },
+  { slot: 3, x: 1500, y: 1100, faction: 'purple', color: factions.purple.color },
 ] as const;
 export const worldBalance = {
   draftSeconds: 10,

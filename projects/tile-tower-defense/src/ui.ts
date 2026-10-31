@@ -279,7 +279,11 @@ export class UI {
       lost: t('hint.lost'),
     };
     element('instruction').textContent =
-      this.tab === 'send' && state.phase !== 'draft' ? t('hint.send') : hints[state.phase];
+      state.path && state.phase === 'draft'
+        ? t(this.draftKind ? 'draft.chooseDirection' : 'draft.chooseDiscovery')
+        : this.tab === 'send' && state.phase !== 'draft'
+          ? t('hint.send')
+          : hints[state.phase];
     if (round?.phase === 'lobby') {
       element('instruction').textContent = t('match.lobbyHint');
     } else if (round?.phase === 'finished') {

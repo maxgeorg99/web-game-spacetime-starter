@@ -75,6 +75,9 @@ export interface State {
   version: 2;
   phase: 'prepare' | 'combat' | 'draft' | 'won' | 'lost';
   wave: number;
+  /** Absent in legacy saves, which keep the original fixed road. */
+  path?: Point[];
+  expansions?: number;
   gold: number;
   meat: number;
   lives: number;

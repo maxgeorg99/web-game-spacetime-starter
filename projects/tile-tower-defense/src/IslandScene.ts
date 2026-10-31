@@ -1,3 +1,4 @@
+import { pathFor } from '../shared/game/paths';
 import { t } from './i18n';
 import { assetUrl } from './assets';
 import { factionArt } from '../shared/config/factions';
@@ -26,6 +27,7 @@ export class IslandScene extends Phaser.Scene {
   private touchPositions = new Map<number, Point>();
   private pinch?: { distance: number; zoom: number; anchor: Point };
   private focused = false;
+  private framingSignature = '';
   private focusSlot: number | null = null;
   private database?: string;
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -73,15 +75,18 @@ export class IslandScene extends Phaser.Scene {
       this.views.push(view);
       this.labels.push(
         this.add
-          .text(island.x + 500, island.y + 110, island.name, {
+          .text(island.x + 500, island.y + 426, island.name, {
             fontFamily: 'Fira',
-            fontSize: '20px',
+            fontSize: '12px',
             resolution: 3,
             color: '#465d57',
             backgroundColor: '#f9f7e9',
-            padding: { x: 12, y: 6 },
+            padding: { x: 6, y: 3 },
+            align: 'center',
+            wordWrap: { width: 220 },
           })
-          .setOrigin(0.5),
+          .setOrigin(0.5, 0)
+          .setDepth(1000),
       );
     }
     this.input.addPointer(1);
@@ -233,7 +238,12 @@ export class IslandScene extends Phaser.Scene {
       return;
     }
     this.focusSlot = slot;
-    this.frame(island.x + 500, island.y + 330, 600, 380, 1.4);
+    const bounds = this.views[slot]?.bounds();
+    if (bounds) {
+      this.frame(bounds.x, bounds.y, bounds.width, bounds.height, 1.4);
+    } else {
+      this.frame(island.x + 500, island.y + 330, 600, 380, 1.4);
+    }
   }
   overview() {
     if (!this.cameras.main) {
@@ -244,7 +254,18 @@ export class IslandScene extends Phaser.Scene {
       return;
     }
     this.focusSlot = null;
-    this.frame(500, 330, 2600, 1850, 1.4);
+    const bounds = this.views
+      .filter((_view, slot) => !this.store.world?.round || this.store.world.seats[slot]?.owner)
+      .map((view) => view.bounds());
+    if (!bounds.length) {
+      this.focusIsland(0);
+      return;
+    }
+    const left = Math.min(...bounds.map((b) => b.x - b.width / 2)),
+      right = Math.max(...bounds.map((b) => b.x + b.width / 2));
+    const top = Math.min(...bounds.map((b) => b.y - b.height / 2)),
+      bottom = Math.max(...bounds.map((b) => b.y + b.height / 2));
+    this.frame((left + right) / 2, (top + bottom) / 2, right - left, bottom - top, 1.4);
   }
   /** Fit the island into the visible battlefield between compact controls. */
   private frame(x: number, y: number, width: number, height: number, maxZoom: number) {
@@ -330,6 +351,9 @@ export class IslandScene extends Phaser.Scene {
       }
       this.views[slot].state = this.store.online ? (seat?.state ?? fresh()) : this.store.state;
       this.views[slot].render();
+      const path = pathFor(this.views[slot].state);
+      const keep = this.views[slot].project(path[path.length - 1]);
+      this.labels[slot].setPosition(keep.x, keep.y + 32);
       if (this.store.online) {
         this.labels[slot].setText(
           `${worldIslands[slot].name}${seat?.owner ? (slot === this.store.ownSlot ? t('world.you') : ' · ' + (seat.name ?? t('world.captain', { id: seat.owner.slice(-4) }))) : ' · ' + t('world.unclaimed')}`,
@@ -340,6 +364,17 @@ export class IslandScene extends Phaser.Scene {
       this.focused = true;
       if (this.store.ownSlot !== null || !this.store.online) {
         this.focusIsland(this.store.ownSlot ?? 0);
+      } else {
+        this.overview();
+      }
+    }
+    const framing = JSON.stringify(
+      this.views.map((view) => [view.state.tiles.length, view.state.phase === 'draft']),
+    );
+    if (framing !== this.framingSignature) {
+      this.framingSignature = framing;
+      if (this.focusSlot !== null) {
+        this.focusIsland(this.focusSlot);
       } else {
         this.overview();
       }
@@ -389,10 +424,18 @@ export class IslandScene extends Phaser.Scene {
   private flightPosition(flight: Flight, elapsed: number) {
     const from = worldIslands[flight.from],
       to = worldIslands[flight.to];
+    const origin = this.store.world?.seats[flight.from]?.state;
+    const destination = this.store.world?.seats[flight.to]?.state;
+    const start = origin
+      ? this.views[flight.from].project(pathFor(origin)[pathFor(origin).length - 1])
+      : { x: from.x + 500, y: from.y + 330 };
+    const end = destination
+      ? this.views[flight.to].project(pathFor(destination)[0])
+      : { x: to.x + 500, y: to.y + 210 };
     const progress = Phaser.Math.Clamp(elapsed / worldBalance.flightSeconds, 0, 1);
     return {
-      x: Phaser.Math.Linear(from.x + 500, to.x + 500, progress),
-      y: Phaser.Math.Linear(from.y + 330, to.y + 210, progress) - Math.sin(progress * Math.PI) * 70,
+      x: Phaser.Math.Linear(start.x, end.x, progress),
+      y: Phaser.Math.Linear(start.y, end.y, progress) - Math.sin(progress * Math.PI) * 70,
     };
   }
   private updateFlights(time: number, delta: number) {

@@ -183,5 +183,8 @@
   "match.finished": "Spiel beendet",
   "match.lobbyHint": "Der erste Kapitän startet, sobald 2–4 Spieler beigetreten sind. Teile die Sitzung mit deinen Freunden.",
   "match.finishedHint": "Spiel beendet. Erstelle eine neue Sitzung für das nächste Spiel.",
-  "wave.manual": "Welle starten ▷"
+  "wave.manual": "Welle starten ▷",
+  "draft.chooseDiscovery": "Entdeckung wählen, dann den Weg verlängern.",
+  "draft.chooseDirection": "Richtung am Eingang wählen · erneut tippen zum Erweitern",
+  "draft.pathPreview": "+{{count}} Wegfelder · {{land}} neue Felder"
 }

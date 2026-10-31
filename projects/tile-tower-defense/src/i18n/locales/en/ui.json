@@ -183,5 +183,8 @@
   "match.finished": "Match finished",
   "match.lobbyHint": "The first captain starts when 2–4 players have joined. Share this session with your friends.",
   "match.finishedHint": "Match over. Create a new session to play again.",
-  "wave.manual": "Start wave ▷"
+  "wave.manual": "Start wave ▷",
+  "draft.chooseDiscovery": "Choose a discovery, then extend the road in one direction.",
+  "draft.chooseDirection": "Preview a direction at the entrance · tap again to expand",
+  "draft.pathPreview": "+{{count}} road · {{land}} new tiles"
 }

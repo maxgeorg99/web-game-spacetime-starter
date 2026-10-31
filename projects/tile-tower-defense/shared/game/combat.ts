@@ -1,6 +1,7 @@
+import { pathFor } from './paths';
 import { magicSpell, tickMagic, migrateMages } from './magic';
 import { launch, advanceProjectiles } from './projectiles';
-import { balance, road, towerDef, unitDef, waves } from '../config';
+import { balance, towerDef, unitDef, waves } from '../config';
 import type { Fighter, State } from './model';
 import { command, distance, effectiveStats, finishWave, position } from './rules';
 
@@ -20,6 +21,7 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
   }
   migrateMages(s);
   const dt = balance.tickSeconds;
+  const road = pathFor(s);
   s.impacts = [];
   for (const fighter of [...s.enemies, ...s.recruits]) {
     tickMagic(fighter, dt);
@@ -40,7 +42,7 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
     }
     const stats = effectiveStats(tower, s);
     const target = s.enemies
-      .filter((e) => e.health > 0 && distance(tower, position(e.progress)) <= stats.range)
+      .filter((e) => e.health > 0 && distance(tower, position(e.progress, s)) <= stats.range)
       .sort((a, b) => b.progress - a.progress || a.id - b.id)[0];
     if (!target) {
       continue;
@@ -59,14 +61,15 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
       return;
     }
     const def = unitDef(f.kind),
-      p = position(f.progress);
+      p = position(f.progress, s);
     f.cooldown = Math.max(0, f.cooldown - dt);
     const living = opponents.filter((o) => o.health > 0);
     const target = living
-      .filter((o) => distance(p, position(o.progress)) <= def.range)
+      .filter((o) => distance(p, position(o.progress, s)) <= def.range)
       .sort(
         (a, b) =>
-          distance(p, position(a.progress)) - distance(p, position(b.progress)) || a.id - b.id,
+          distance(p, position(a.progress, s)) - distance(p, position(b.progress, s)) ||
+          a.id - b.id,
       )[0];
     if (target) {
       if (f.cooldown <= 0) {
@@ -74,7 +77,7 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
           launch(s, p, target, def.projectile, def.damage, 0, direction === -1, 12);
         } else {
           target.health -= def.damage;
-          s.impacts.push({ ...position(target.progress), splash: 0, ally: direction === -1 });
+          s.impacts.push({ ...position(target.progress, s), splash: 0, ally: direction === -1 });
         }
         f.cooldown = def.cooldown;
       }

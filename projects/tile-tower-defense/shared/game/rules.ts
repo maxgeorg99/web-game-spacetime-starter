@@ -1,3 +1,4 @@
+import { pathFor, pathExtensions, extensionAt, extensionLand, applyExtension } from './paths';
 import { magePoints, branchPoints, mageAspect, migrateMages } from './magic';
 import { magicBalance, schools } from '../config/magic';
 import { terrainBonuses } from '../config/drafting';
@@ -6,8 +7,8 @@ import { balance, road, towerDef, treeDef, unitDef, tileDef, waves, type TileId 
 import type { Command, Point, State, Tower } from './model';
 export const sameCell = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
-export const onRoad = (p: Point) => road.some((v) => sameCell(p, v));
-export function fresh(): State {
+export const onRoad = (p: Point, state?: State) => pathFor(state).some((v) => sameCell(p, v));
+export function fresh(expanding = false): State {
   const land: State['tiles'] = [];
   for (let y = -2; y <= 2; y++) {
     for (let x = -2; x <= 2; x++) {
@@ -16,6 +17,7 @@ export function fresh(): State {
   }
   return {
     version: 2,
+    ...(expanding ? { path: road.map((p) => ({ ...p })), expansions: 0 } : {}),
     phase: 'prepare',
     wave: 0,
     gold: balance.startGold,
@@ -35,7 +37,8 @@ export function fresh(): State {
     impacts: [],
   };
 }
-export function position(progress: number): Point {
+export function position(progress: number, state?: State): Point {
+  const road = pathFor(state);
   const i = Math.min(road.length - 1, Math.max(0, Math.floor(progress))),
     a = road[i],
     b = road[Math.min(i + 1, road.length - 1)],
@@ -85,6 +88,9 @@ export function effectiveStats(
   };
 }
 export function expansionCells(s: State): Point[] {
+  if (s.path) {
+    return pathExtensions(s).map((option) => option.entrance);
+  }
   if (s.tiles.length >= balance.maxTiles) {
     return [];
   }
@@ -137,7 +143,9 @@ export function income(s: State) {
 }
 /** The preview includes changed income on existing neighbors, not just the placed tile. */
 export function placementEffect(s: State, kind: TileId, point: Point) {
-  const after = { ...s, tiles: [...s.tiles, { ...point, kind }] };
+  const extension = s.path ? extensionAt(s, point) : undefined;
+  const added = extension ? extensionLand(extension, kind) : [{ ...point, kind }];
+  const after = { ...s, tiles: [...s.tiles, ...added] };
   const beforeIncome = income(s),
     afterIncome = income(after);
   return {
@@ -211,7 +219,7 @@ export function command(current: State, action: Command): State {
     if (current.phase !== 'won' && current.phase !== 'lost') {
       throw Error('Finish the run before restarting.');
     }
-    return fresh();
+    return fresh(!!current.path);
   }
   if (current.phase === 'won' || current.phase === 'lost') {
     throw Error('This run has ended.');
@@ -235,7 +243,7 @@ export function command(current: State, action: Command): State {
       if (
         !tile ||
         !tileDef(tile.kind).buildable ||
-        onRoad(tile) ||
+        onRoad(tile, s) ||
         s.towers.some((t) => sameCell(t, tile))
       ) {
         throw Error('Choose empty buildable land off the road.');
@@ -302,7 +310,7 @@ export function command(current: State, action: Command): State {
       s.recruits.push({
         id: s.nextId++,
         kind: def.id,
-        progress: road.length - 1,
+        progress: pathFor(s).length - 1,
         health: def.health,
         maxHealth: def.health,
         cooldown: 0,
@@ -338,7 +346,16 @@ export function command(current: State, action: Command): State {
       if (action.kind === 'relic') {
         s.lives = Math.min(balance.keepHealth, s.lives + terrainBonuses.relicHealing);
       }
-      s.tiles.push({ x: action.x, y: action.y, kind: tileDef(action.kind).id });
+      const kind = tileDef(action.kind).id;
+      if (s.path) {
+        const extension = extensionAt(s, action);
+        if (!extension) {
+          throw Error('Choose an open direction at the entrance.');
+        }
+        applyExtension(s, extension, kind);
+      } else {
+        s.tiles.push({ x: action.x, y: action.y, kind });
+      }
       s.offers = [];
       s.phase = 'prepare';
       break;

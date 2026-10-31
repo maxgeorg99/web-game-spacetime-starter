@@ -1,7 +1,7 @@
 import { t } from './i18n';
 import { assetUrl } from './assets';
 import { audioMix, soundCues, type SoundCue } from '../shared/config/audio';
-import { road } from '../shared/config';
+import { pathFor } from '../shared/game/paths';
 import type { State } from '../shared/game/model';
 import type { GameStore } from './store';
 import type { IslandScene } from './IslandScene';
@@ -197,7 +197,10 @@ export class GameAudio {
         }
       }
       if (current.lives < previous.lives) {
-        this.play('keep', this.scene.soundGain(seat.slot, road[road.length - 1]));
+        this.play(
+          'keep',
+          this.scene.soundGain(seat.slot, pathFor(state)[pathFor(state).length - 1]),
+        );
       }
       for (const projectile of state.projectiles) {
         if (!previous.projectiles.has(projectile.id)) {

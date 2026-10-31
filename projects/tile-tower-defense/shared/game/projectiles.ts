@@ -21,7 +21,7 @@ export function launch(
     y: from.y,
     origin: { x: from.x, y: from.y },
     target: target.id,
-    aim: position(target.progress),
+    aim: position(target.progress, state),
     art: definition.art,
     speed: definition.speed,
     damage,
@@ -41,7 +41,7 @@ export function advanceProjectiles(state: State, delta: number) {
     const opponents = projectile.ally ? state.enemies : state.recruits;
     const target = opponents.find((unit) => unit.id === projectile.target && unit.health > 0);
     if (target) {
-      projectile.aim = position(target.progress);
+      projectile.aim = position(target.progress, state);
     }
     const remaining = distance(projectile, projectile.aim);
     projectile.age += delta;
@@ -53,7 +53,7 @@ export function advanceProjectiles(state: State, delta: number) {
         if (
           unit.id === target?.id ||
           (projectile.splash > 0 &&
-            distance(position(unit.progress), projectile.aim) <= projectile.splash)
+            distance(position(unit.progress, state), projectile.aim) <= projectile.splash)
         ) {
           unit.health -= projectile.damage;
           if (unit.id === target?.id && projectile.magic) {
@@ -67,7 +67,7 @@ export function advanceProjectiles(state: State, delta: number) {
         for (const unit of opponents) {
           if (
             unit.health > 0 &&
-            distance(position(unit.progress), projectile.aim) <= magicBalance.igniteRadius
+            distance(position(unit.progress, state), projectile.aim) <= magicBalance.igniteRadius
           ) {
             unit.health -= projectile.damage;
           }
@@ -92,12 +92,12 @@ export function advanceProjectiles(state: State, delta: number) {
             (unit) =>
               unit.health > 0 &&
               !visited.includes(unit.id) &&
-              distance(position(unit.progress), projectile.aim) <= spell.jumpRange,
+              distance(position(unit.progress, state), projectile.aim) <= spell.jumpRange,
           )
           .sort(
             (a, b) =>
-              distance(position(a.progress), projectile.aim) -
-                distance(position(b.progress), projectile.aim) || a.id - b.id,
+              distance(position(a.progress, state), projectile.aim) -
+                distance(position(b.progress, state), projectile.aim) || a.id - b.id,
           )[0];
         if (next) {
           chained.push({
@@ -106,7 +106,7 @@ export function advanceProjectiles(state: State, delta: number) {
             origin: { ...projectile.aim },
             id: state.nextId++,
             target: next.id,
-            aim: position(next.progress),
+            aim: position(next.progress, state),
             age: 0,
             launchHeight: 12,
             art: 'magic/lightning-bolt',

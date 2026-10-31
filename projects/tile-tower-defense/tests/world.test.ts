@@ -164,7 +164,7 @@ test('all four players draft for ten seconds, auto-place, then launch together a
   world = JSON.parse(JSON.stringify(world));
   stepWorld(world);
   expect(world.round?.phase).toBe('prepare');
-  world.seats.forEach((s, i) => expect(s.state.tiles.length).toBe(lengths[i] + 1));
+  world.seats.forEach((s, i) => expect(s.state.tiles.length).toBe(lengths[i] + 9));
   for (let tick = 0; tick < 199; tick++) {
     stepWorld(world);
   }
