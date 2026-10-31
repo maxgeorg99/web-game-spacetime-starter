@@ -2,10 +2,19 @@ import { magicSpell, tickMagic, migrateMages } from './magic';
 import { launch, advanceProjectiles } from './projectiles';
 import { balance, road, towerDef, unitDef, waves } from '../config';
 import type { Fighter, State } from './model';
-import { distance, effectiveStats, finishWave, position } from './rules';
+import { command, distance, effectiveStats, finishWave, position } from './rules';
 
 /** One fixed simulation step. Both workshop and server call this exact function. */
-export function step(s: State, defendBetweenWaves = false) {
+export function step(s: State, defendBetweenWaves = false, automaticWaves = true) {
+  if (automaticWaves && s.phase === 'prepare') {
+    s.preparationRemaining = Math.max(
+      0,
+      (s.preparationRemaining ?? balance.wavePreparationSeconds) - balance.tickSeconds,
+    );
+    if (s.preparationRemaining <= 0.000001) {
+      Object.assign(s, command(s, { type: 'start' }));
+    }
+  }
   if (s.phase !== 'combat' && (!defendBetweenWaves || s.phase === 'lost')) {
     return;
   }

@@ -17,6 +17,7 @@ export class IslandScene extends Phaser.Scene {
   onInspect: (slot: number) => void = () => {};
   private views: IslandView[] = [];
   private labels: Phaser.GameObjects.Text[] = [];
+  private shadows: Phaser.GameObjects.Ellipse[] = [];
   private airships = new Map<number, Phaser.GameObjects.Container>();
   private flightSnapshots = new Map<number, { elapsed: number; receivedAt: number }>();
   private unsubscribe?: () => void;
@@ -62,7 +63,7 @@ export class IslandScene extends Phaser.Scene {
       ? worldIslands
       : [{ slot: 0, name: t('island.yours'), x: 0, y: 0, color: 0x6e9cbe }];
     for (const island of islands) {
-      this.add.ellipse(island.x + 500, island.y + 465, 390, 62, 0x647f80, 0.12);
+      this.shadows.push(this.add.ellipse(island.x + 500, island.y + 465, 390, 62, 0x647f80, 0.12));
       const view = new IslandView(
         this,
         fresh(),
@@ -158,6 +159,7 @@ export class IslandScene extends Phaser.Scene {
       }
       const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       for (let slot = 0; slot < this.views.length; slot++) {
+        if (this.store.world?.round && !this.store.world.seats[slot]?.owner) continue;
         const view = this.views[slot],
           cell = view.unproject(point.x, point.y);
         if (
@@ -317,6 +319,13 @@ export class IslandScene extends Phaser.Scene {
     }
     for (let slot = 0; slot < this.views.length; slot++) {
       const seat = this.store.world?.seats[slot];
+      const visible = !this.store.world?.round || !!seat?.owner;
+      this.labels[slot].setVisible(visible);
+      this.shadows[slot].setVisible(visible);
+      if (!visible) {
+        this.views[slot].reset();
+        continue;
+      }
       this.views[slot].state = this.store.online ? (seat?.state ?? fresh()) : this.store.state;
       this.views[slot].render();
       if (this.store.online) {

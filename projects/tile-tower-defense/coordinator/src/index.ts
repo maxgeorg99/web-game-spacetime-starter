@@ -206,7 +206,7 @@ export const receive_world_slots = db.reducer(
     if (!reporter || !ctx.db.session.id.find(reporter.sessionId)) {
       throw new SenderError('Registered world only.');
     }
-    if (args.capacity !== 4 || args.claimed > args.capacity) {
+    if (args.capacity < 2 || args.capacity > 4 || args.claimed > args.capacity) {
       throw new SenderError('Invalid world capacity.');
     }
     const row = { ...args, sessionId: reporter.sessionId, updatedAt: ctx.timestamp };

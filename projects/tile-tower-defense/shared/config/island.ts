@@ -80,6 +80,7 @@ export const balance = {
   waveGold: 45,
   waveMeat: 7,
   tickSeconds: 0.1,
+  wavePreparationSeconds: 20,
   maxRecruits: 12,
   islandRadius: 4,
   maxTiles: 49,

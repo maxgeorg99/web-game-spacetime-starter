@@ -45,6 +45,10 @@ export class UI {
     scene.onSelect = (point) => this.selectCell(point);
     store.subscribe(() => this.render());
     button('start').onclick = () => {
+      if (store.world?.round) {
+        void store.send({ type: 'begin' });
+        return;
+      }
       const ended = ['won', 'lost'].includes(store.state.phase);
       void store.send({ type: ended ? 'restart' : 'start' });
     };
@@ -197,6 +201,11 @@ export class UI {
       this.store.ownSlot,
       this.store.ready,
       this.store.pending,
+      this.store.world?.round && [
+        this.store.world.round.phase,
+        Math.ceil(this.store.world.round.remaining),
+      ],
+      this.store.world?.seats.map((s) => s.owner),
     ]);
     if (!force && signature === this.signature) {
       return;
@@ -237,7 +246,30 @@ export class UI {
         ? t('wave.defending')
         : state.phase === 'draft'
           ? t('wave.placeTile')
-          : t('wave.start');
+          : this.store.world && !this.store.world.round
+            ? t('wave.manual')
+            : t('wave.start', {
+                seconds: Math.ceil(state.preparationRemaining ?? balance.wavePreparationSeconds),
+              });
+
+    const round = this.store.world?.round;
+    if (round) {
+      const seats = this.store.world!.seats.filter((s) => s.owner);
+      const host = seats[0]?.slot === this.store.ownSlot;
+      const label =
+        round.phase === 'lobby'
+          ? t('match.lobby', { count: seats.length })
+          : round.phase === 'finished'
+            ? t('match.finished')
+            : round.phase === 'combat'
+              ? t('match.combat')
+              : t(round.phase === 'draft' ? 'match.draft' : 'match.prepare', {
+                  seconds: Math.ceil(round.remaining),
+                });
+      element('phase').textContent = label;
+      button('start').textContent = round.phase === 'lobby' && host ? t('match.begin') : label;
+      button('start').disabled = locked || round.phase !== 'lobby' || !host || seats.length < 2;
+    }
 
     const hints = {
       prepare: this.buildKind ? t('hint.placeTower') : t('hint.chooseTower'),
@@ -248,10 +280,18 @@ export class UI {
     };
     element('instruction').textContent =
       this.tab === 'send' && state.phase !== 'draft' ? t('hint.send') : hints[state.phase];
+    if (round?.phase === 'lobby') element('instruction').textContent = t('match.lobbyHint');
+    else if (round?.phase === 'finished')
+      element('instruction').textContent = t('match.finishedHint');
     const tower = state.towers.find((tower) => this.selected && sameCell(tower, this.selected));
     element('selection-panel').hidden = !tower || state.phase === 'draft';
     element('selection').innerHTML = tower
-      ? towerPanel(state, tower, locked, this.store.faction)
+      ? towerPanel(
+          state,
+          tower,
+          locked || (!!round && round.phase !== 'prepare'),
+          this.store.faction,
+        )
       : '';
     element('draft').hidden = state.phase !== 'draft';
     element('action-dock').hidden = state.phase === 'draft' || ended;
@@ -259,8 +299,17 @@ export class UI {
       this.draftKind = undefined;
     }
     this.scene.setDraft(this.draftKind);
-    element('draft-cards').innerHTML = draftCards(state, this.draftKind, locked);
-    element('build-tray').innerHTML = buildCards(state, this.buildKind, locked, this.store.faction);
+    element('draft-cards').innerHTML = draftCards(
+      state,
+      this.draftKind,
+      locked || (!!round && round.phase !== 'draft'),
+    );
+    element('build-tray').innerHTML = buildCards(
+      state,
+      this.buildKind,
+      locked || (!!round && round.phase !== 'prepare'),
+      this.store.faction,
+    );
     element('build-tray').hidden = this.tab !== 'build';
     element('send-tray').hidden = this.tab !== 'send';
     this.worldUI.render();

@@ -29,7 +29,7 @@
   "wave.restart": "Neue Insel ↻",
   "wave.defending": "Verteidigung läuft…",
   "wave.placeTile": "Plättchen platzieren",
-  "wave.start": "Welle starten ▷",
+  "wave.start": "Jetzt starten · automatisch in {{seconds}}s",
   "hint.placeTower": "Wähle freies Bauland · Esc zum Abbrechen",
   "hint.chooseTower": "Wähle einen Turm und platziere ihn auf deiner Insel",
   "hint.combat": "Beobachte deine Verteidigung oder schicke Einheiten zum Gegner",
@@ -174,5 +174,14 @@
   "mage.aspect.arcane": "Arkan",
   "mage.aspect.frost": "Frost",
   "mage.aspect.fire": "Feuer",
-  "mage.aspect.lightning": "Blitz"
+  "mage.aspect.lightning": "Blitz",
+  "match.lobby": "Lobby · {{count}}/4 Spieler",
+  "match.begin": "Spiel starten",
+  "match.draft": "Land wählen · {{seconds}}s",
+  "match.prepare": "Bauen · {{seconds}}s",
+  "match.combat": "Welle läuft",
+  "match.finished": "Spiel beendet",
+  "match.lobbyHint": "Der erste Kapitän startet, sobald 2–4 Spieler beigetreten sind. Teile die Sitzung mit deinen Freunden.",
+  "match.finishedHint": "Spiel beendet. Erstelle eine neue Sitzung für das nächste Spiel.",
+  "wave.manual": "Welle starten ▷"
 }

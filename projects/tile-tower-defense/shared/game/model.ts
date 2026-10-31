@@ -85,6 +85,7 @@ export interface State {
   offers: TileId[];
   queue: UnitId[];
   spawnIn: number;
+  preparationRemaining?: number;
   nextId: number;
   kills: number;
   retired: number;

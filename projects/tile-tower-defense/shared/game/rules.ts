@@ -322,6 +322,7 @@ export function command(current: State, action: Command): State {
       );
       s.spawnIn = 0;
       s.phase = 'combat';
+      s.preparationRemaining = balance.wavePreparationSeconds;
       break;
     }
     case 'expand': {

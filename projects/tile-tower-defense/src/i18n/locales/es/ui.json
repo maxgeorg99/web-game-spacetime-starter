@@ -29,7 +29,7 @@
   "wave.restart": "Nueva isla ↻",
   "wave.defending": "Defendiendo…",
   "wave.placeTile": "Colocar loseta",
-  "wave.start": "Iniciar oleada ▷",
+  "wave.start": "Iniciar ahora · automático en {{seconds}}s",
   "hint.placeTower": "Elige un terreno libre donde construir · Esc para cancelar",
   "hint.chooseTower": "Elige una torre y colócala en tu isla",
   "hint.combat": "Observa tus defensas o envía unidades a un rival",
@@ -174,5 +174,14 @@
   "mage.aspect.arcane": "Arcano",
   "mage.aspect.frost": "Escarcha",
   "mage.aspect.fire": "Fuego",
-  "mage.aspect.lightning": "Rayo"
+  "mage.aspect.lightning": "Rayo",
+  "match.lobby": "Sala · {{count}}/4 jugadores",
+  "match.begin": "Iniciar partida",
+  "match.draft": "Elegir terreno · {{seconds}}s",
+  "match.prepare": "Construir · {{seconds}}s",
+  "match.combat": "Oleada activa",
+  "match.finished": "Partida terminada",
+  "match.lobbyHint": "El primer capitán inicia cuando se hayan unido 2–4 jugadores. Comparte esta sesión con tus amigos.",
+  "match.finishedHint": "Partida terminada. Crea otra sesión para volver a jugar.",
+  "wave.manual": "Iniciar oleada ▷"
 }

@@ -3,7 +3,9 @@ import { expect, test } from 'bun:test';
 import { freshWorld, joinWorld, worldCommand, stepWorld } from '../shared/game/world';
 
 function twoCaptains() {
-  return joinWorld(joinWorld(freshWorld(), 'alice'), 'bob');
+  const world = freshWorld();
+  delete world.round; // Existing independent-world save compatibility.
+  return joinWorld(joinWorld(world, 'alice'), 'bob');
 }
 
 test('multiplayer placeholder tower fields do not turn other orders into tower commands', () => {
@@ -130,4 +132,60 @@ test('captain names can change without replacing an owned island', () => {
   expect(renamed.seats[0].state.gold).toBe(77);
   expect(world.seats[0].name).toBe('Sky Captain');
   expect(renamed.seats.filter((seat) => seat.owner)).toHaveLength(1);
+});
+
+test('new match waits for host and two players; reconnect survives and late joins spectate', () => {
+  let world = joinWorld(freshWorld(), 'alice');
+  expect(stepWorld(world)).toBe(false);
+  expect(() => worldCommand(world, 'alice', 0, { type: 'begin' })).toThrow('two players');
+  world = joinWorld(world, 'bob');
+  expect(() => worldCommand(world, 'bob', 0, { type: 'begin' })).toThrow('host');
+  expect(() =>
+    worldCommand(world, 'alice', 0, { type: 'send', target: 1, kind: 'archer', count: 1 }),
+  ).toThrow('not active');
+  world = worldCommand(world, 'alice', 0, { type: 'begin' });
+  expect(world.round?.phase).toBe('draft');
+  expect(joinWorld(world, 'carol')).toBe(world);
+  expect(joinWorld(world, 'alice')).toBe(world);
+  expect(() => worldCommand(world, 'alice', 1, { type: 'start' })).toThrow('together');
+});
+
+test('all four players draft for ten seconds, auto-place, then launch together after twenty seconds', () => {
+  let world = freshWorld();
+  for (const id of ['a', 'b', 'c', 'd']) world = joinWorld(world, id);
+  world = worldCommand(world, 'a', 0, { type: 'begin' });
+  const lengths = world.seats.map((s) => s.state.tiles.length);
+  for (let tick = 0; tick < 99; tick++) stepWorld(world);
+  expect(world.round?.phase).toBe('draft');
+  world = JSON.parse(JSON.stringify(world));
+  stepWorld(world);
+  expect(world.round?.phase).toBe('prepare');
+  world.seats.forEach((s, i) => expect(s.state.tiles.length).toBe(lengths[i] + 1));
+  for (let tick = 0; tick < 199; tick++) stepWorld(world);
+  expect(world.seats.every((s) => s.state.phase === 'prepare')).toBe(true);
+  stepWorld(world);
+  expect(world.round?.phase).toBe('combat');
+  expect(world.seats.every((s) => s.state.phase === 'combat' && s.state.queue.length > 0)).toBe(
+    true,
+  );
+});
+
+test('round waits for the last surviving island and does not restart eliminated islands', () => {
+  let world = joinWorld(joinWorld(freshWorld(), 'a'), 'b');
+  world = worldCommand(world, 'a', 0, { type: 'begin' });
+  world.round = { phase: 'combat', remaining: 0 };
+  world.seats[0].state.phase = 'draft';
+  world.seats[1].state.phase = 'combat';
+  world.seats[1].state.queue = ['turtle'];
+  stepWorld(world);
+  expect(world.round.phase).toBe('combat');
+  world.seats[1].state.phase = 'draft';
+  world.seats[1].state.enemies = [];
+  world.seats[1].state.queue = [];
+  stepWorld(world);
+  expect(world.round.phase).toBe('draft');
+  world.seats[1].state.phase = 'lost';
+  stepWorld(world);
+  expect(world.round.phase).toBe('finished');
+  expect(() => worldCommand(world, 'b', 0, { type: 'restart' })).toThrow('not active');
 });

@@ -209,7 +209,12 @@ export const tick = db.reducer({ onSchedule: clock }, { timer: clock.rowType }, 
     (ctx.timestamp.microsSinceUnixEpoch >= config.nextReportAt ||
       (!config.lastError && config.lastClaimed !== claimed))
   ) {
-    ctx.db.slotOutbox.insert({ msgId: 0n, target: config.target, claimed, capacity: 4 });
+    ctx.db.slotOutbox.insert({
+      msgId: 0n,
+      target: config.target,
+      claimed,
+      capacity: worldState?.round && worldState.round.phase !== 'lobby' ? claimed : 4,
+    });
     ctx.db.reporting.id.update({ ...config, pending: true });
   }
   for (const row of ctx.db.island.iter()) {
@@ -217,7 +222,7 @@ export const tick = db.reducer({ onSchedule: clock }, { timer: clock.rowType }, 
       continue;
     }
     const s: State = restoreState(row.state);
-    if (s.phase === 'combat') {
+    if (s.phase === 'combat' || s.phase === 'prepare') {
       step(s);
       ctx.db.island.owner.update({ ...row, state: JSON.stringify(s), updated: ctx.timestamp });
     } else if (

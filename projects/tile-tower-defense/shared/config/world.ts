@@ -8,6 +8,8 @@ export const worldIslands = [
   { slot: 3, x: 850, y: 620, faction: 'purple', color: factions.purple.color },
 ] as const;
 export const worldBalance = {
+  draftSeconds: 10,
+  preparationSeconds: 20,
   flightSeconds: 8,
   landingInterval: 0.65,
   maxFlightUnits: 6,

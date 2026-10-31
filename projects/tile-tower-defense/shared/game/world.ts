@@ -30,8 +30,11 @@ export interface WorldState {
   seats: WorldSeat[];
   flights: Flight[];
   nextFlight: number;
+  // Absent on existing worlds: preserve their independent campaigns.
+  round?: { phase: 'lobby' | 'draft' | 'prepare' | 'combat' | 'finished'; remaining: number };
 }
-export type WorldAction = Command | { type: 'send'; target: number; kind: string; count: number };
+export type WorldAction =
+  { type: 'begin' } | Command | { type: 'send'; target: number; kind: string; count: number };
 export function freshWorld(): WorldState {
   return {
     version: 1,
@@ -44,6 +47,7 @@ export function freshWorld(): WorldState {
     })),
     flights: [],
     nextFlight: 1,
+    round: { phase: 'lobby', remaining: 0 },
   };
 }
 export function joinWorld(
@@ -61,6 +65,7 @@ export function joinWorld(
     renamed.seats[existing.slot].name = name;
     return renamed;
   }
+  if (world.round && world.round.phase !== 'lobby') return world;
   const next: WorldState = JSON.parse(JSON.stringify(world));
   const seat = next.seats.find((seat) => !seat.owner);
   if (!seat) {
@@ -70,7 +75,7 @@ export function joinWorld(
   if (name) {
     seat.name = name;
   }
-  seat.state = previous ?? fresh();
+  seat.state = world.round ? fresh() : (previous ?? fresh());
   continueCampaign(seat);
   return next;
 }
@@ -87,6 +92,24 @@ export function worldCommand(
   }
   if (seat.sequence !== sequence) {
     throw Error('Your island changed. Try the order again.');
+  }
+  if (action.type === 'begin') {
+    if (!next.round || next.round.phase !== 'lobby') throw Error('Match already started.');
+    if (next.seats.find((s) => s.owner)?.owner !== owner) throw Error('Only the host can start.');
+    if (next.seats.filter((s) => s.owner).length < 2) throw Error('Wait for at least two players.');
+    beginDraft(next);
+    seat.sequence++;
+    return next;
+  }
+  if (next.round) {
+    if (next.round.phase === 'lobby' || next.round.phase === 'finished')
+      throw Error('Match is not active.');
+    if (action.type === 'start' || action.type === 'restart')
+      throw Error('Waves start together automatically.');
+    if (action.type === 'expand' && next.round.phase !== 'draft')
+      throw Error('Drafting has ended.');
+    if (['build', 'upgrade', 'sell'].includes(action.type) && next.round.phase !== 'prepare')
+      throw Error('Wait for the shared preparation phase.');
   }
   if (action.type === 'send') {
     if (!recruitableUnits.some((unit) => unit.id === action.kind)) {
@@ -161,6 +184,7 @@ function continueCampaign(seat: WorldSeat) {
 }
 /** Advance every occupied island, including unattended defenses, with one authoritative clock. */
 export function stepWorld(world: WorldState): boolean {
+  if (world.round?.phase === 'lobby' || world.round?.phase === 'finished') return false;
   let changed = false;
   for (const seat of world.seats) {
     changed = migrateMages(seat.state) || changed;
@@ -206,14 +230,61 @@ export function stepWorld(world: WorldState): boolean {
       changed = true;
     }
     if (
+      (!!world.round && seat.state.phase === 'prepare') ||
       seat.state.phase === 'combat' ||
       seat.state.enemies.length ||
       seat.state.projectiles.length
     ) {
-      step(seat.state, true);
+      step(seat.state, true, false);
       continueCampaign(seat);
       changed = true;
     }
   }
+  if (world.round) {
+    const active = world.seats.filter((s) => s.owner && s.state.phase !== 'lost');
+    if (active.length <= 1) {
+      world.round = { phase: 'finished', remaining: 0 };
+      world.flights = [];
+      return true;
+    }
+    if (world.round.phase === 'combat') {
+      if (
+        active.every((s) => s.state.phase !== 'combat') &&
+        !world.flights.length &&
+        active.every((s) => !s.state.enemies.length)
+      )
+        beginDraft(world);
+    } else {
+      world.round.remaining = Math.max(0, world.round.remaining - balance.tickSeconds);
+      if (world.round.remaining <= 0.000001) {
+        if (world.round.phase === 'draft') {
+          for (const seat of active) {
+            if (seat.state.phase !== 'draft') continue;
+            const cell = expansionCells(seat.state)[0];
+            const kind = seat.state.offers[0];
+            if (cell && kind) seat.state = command(seat.state, { type: 'expand', kind, ...cell });
+            else {
+              seat.state.phase = 'prepare';
+              seat.state.offers = [];
+            }
+          }
+          world.round = { phase: 'prepare', remaining: worldBalance.preparationSeconds };
+        } else {
+          for (const seat of active) seat.state = command(seat.state, { type: 'start' });
+          world.round = { phase: 'combat', remaining: 0 };
+        }
+      }
+    }
+    return true;
+  }
   return changed;
+}
+function beginDraft(world: WorldState) {
+  world.round = { phase: 'draft', remaining: worldBalance.draftSeconds };
+  for (const seat of world.seats) {
+    if (!seat.owner || seat.state.phase === 'lost') continue;
+    seat.state.phase = expansionCells(seat.state).length ? 'draft' : 'prepare';
+    if (seat.state.phase === 'draft' && !seat.state.offers.length)
+      seat.state.offers = draftOffers(seat.state);
+  }
 }

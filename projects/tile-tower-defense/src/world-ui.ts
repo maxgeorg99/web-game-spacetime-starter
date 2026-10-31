@@ -88,6 +88,7 @@ export class WorldUI {
       this.store.state.meat,
       this.store.pending,
       this.store.ready,
+      this.store.world?.round?.phase,
       this.target,
       this.count,
       this.store.ownSlot,
@@ -97,6 +98,7 @@ export class WorldUI {
     }
     this.signature = signature;
     document.getElementById('world-navigation')!.innerHTML = world.seats
+      .filter((seat) => !this.store.world?.round || seat.owner)
       .map(
         (seat) => `
       <button aria-label="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" title="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" data-island="${seat.slot}" class="${seat.slot === this.store.ownSlot ? 'own-island' : ''}">
@@ -119,6 +121,7 @@ export class WorldUI {
       : `<option>${th('world.noOpponent')}</option>`;
     select.disabled = !opponents.length;
     const locked =
+      ['lobby', 'finished'].includes(this.store.world?.round?.phase ?? '') ||
       !this.store.ready ||
       this.store.pending ||
       this.store.ownSlot === null ||
