@@ -70,6 +70,13 @@ export default __remoteModule({
       identity: __t.identity(),
     },
   },
+  "removeSession": {
+    name: "remove_session",
+    signatureHash: 73844487961316029839216723333164524778665211395610326233201229900618640063472n,
+    params: {
+      id: __t.u32(),
+    },
+  },
   "retrySession": {
     name: "retry_session",
     signatureHash: 73844487961316029839216723333164524778665211395610326233201229900618640063472n,

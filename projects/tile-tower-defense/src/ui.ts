@@ -280,9 +280,11 @@ export class UI {
     };
     element('instruction').textContent =
       this.tab === 'send' && state.phase !== 'draft' ? t('hint.send') : hints[state.phase];
-    if (round?.phase === 'lobby') element('instruction').textContent = t('match.lobbyHint');
-    else if (round?.phase === 'finished')
+    if (round?.phase === 'lobby') {
+      element('instruction').textContent = t('match.lobbyHint');
+    } else if (round?.phase === 'finished') {
       element('instruction').textContent = t('match.finishedHint');
+    }
     const tower = state.towers.find((tower) => this.selected && sameCell(tower, this.selected));
     element('selection-panel').hidden = !tower || state.phase === 'draft';
     element('selection').innerHTML = tower

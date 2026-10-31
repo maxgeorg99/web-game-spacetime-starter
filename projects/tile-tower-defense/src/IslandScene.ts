@@ -159,7 +159,9 @@ export class IslandScene extends Phaser.Scene {
       }
       const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       for (let slot = 0; slot < this.views.length; slot++) {
-        if (this.store.world?.round && !this.store.world.seats[slot]?.owner) continue;
+        if (this.store.world?.round && !this.store.world.seats[slot]?.owner) {
+          continue;
+        }
         const view = this.views[slot],
           cell = view.unproject(point.x, point.y);
         if (

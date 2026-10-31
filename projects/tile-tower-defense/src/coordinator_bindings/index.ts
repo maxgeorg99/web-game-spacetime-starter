@@ -42,6 +42,7 @@ import ProvisionResultReducer from "./provision_result_reducer";
 import ReceiveWorldSlotsReducer from "./receive_world_slots_reducer";
 import RegisterWorldReducer from "./register_world_reducer";
 import RegisterWorldReporterReducer from "./register_world_reporter_reducer";
+import RemoveSessionReducer from "./remove_session_reducer";
 import RetrySessionReducer from "./retry_session_reducer";
 import SetNameReducer from "./set_name_reducer";
 import VisitSessionReducer from "./visit_session_reducer";
@@ -114,6 +115,7 @@ const reducersSchema = __reducers(
   __reducerSchema("receive_world_slots", ReceiveWorldSlotsReducer),
   __reducerSchema("register_world", RegisterWorldReducer),
   __reducerSchema("register_world_reporter", RegisterWorldReporterReducer),
+  __reducerSchema("remove_session", RemoveSessionReducer),
   __reducerSchema("retry_session", RetrySessionReducer),
   __reducerSchema("set_name", SetNameReducer),
   __reducerSchema("visit_session", VisitSessionReducer),

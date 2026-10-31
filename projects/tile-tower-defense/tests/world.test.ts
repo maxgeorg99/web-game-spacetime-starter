@@ -152,16 +152,22 @@ test('new match waits for host and two players; reconnect survives and late join
 
 test('all four players draft for ten seconds, auto-place, then launch together after twenty seconds', () => {
   let world = freshWorld();
-  for (const id of ['a', 'b', 'c', 'd']) world = joinWorld(world, id);
+  for (const id of ['a', 'b', 'c', 'd']) {
+    world = joinWorld(world, id);
+  }
   world = worldCommand(world, 'a', 0, { type: 'begin' });
   const lengths = world.seats.map((s) => s.state.tiles.length);
-  for (let tick = 0; tick < 99; tick++) stepWorld(world);
+  for (let tick = 0; tick < 99; tick++) {
+    stepWorld(world);
+  }
   expect(world.round?.phase).toBe('draft');
   world = JSON.parse(JSON.stringify(world));
   stepWorld(world);
   expect(world.round?.phase).toBe('prepare');
   world.seats.forEach((s, i) => expect(s.state.tiles.length).toBe(lengths[i] + 1));
-  for (let tick = 0; tick < 199; tick++) stepWorld(world);
+  for (let tick = 0; tick < 199; tick++) {
+    stepWorld(world);
+  }
   expect(world.seats.every((s) => s.state.phase === 'prepare')).toBe(true);
   stepWorld(world);
   expect(world.round?.phase).toBe('combat');

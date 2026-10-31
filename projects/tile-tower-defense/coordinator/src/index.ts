@@ -273,3 +273,26 @@ export const complete_provision = db.reducer(
     ctx.db.provisionLease.sessionId.delete(id);
   },
 );
+
+/** Remove one test session from the directory; database deletion is an operator action. */
+export const remove_session = db.reducer({ id: t.u32() }, (ctx, { id }) => {
+  if (!ctx.db.administrator.id.find(1)?.owner.isEqual(ctx.sender)) {
+    throw new SenderError('Administrator only.');
+  }
+  const row = ctx.db.session.id.find(id);
+  if (!row) {
+    return;
+  }
+  if (row.status === 'pending') {
+    throw new SenderError('Wait for provisioning to finish before removing this session.');
+  }
+  for (const member of [...ctx.db.membership.iter()]) {
+    if (member.sessionId === id) {
+      ctx.db.membership.key.delete(member.key);
+    }
+  }
+  ctx.db.slots.sessionId.delete(id);
+  ctx.db.provisionLease.sessionId.delete(id);
+  ctx.db.worldReporter.sessionId.delete(id);
+  ctx.db.session.id.delete(id);
+});
