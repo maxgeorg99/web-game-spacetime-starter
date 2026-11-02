@@ -195,7 +195,8 @@
     gap: 6px;
   }
   #send-cards {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(148px, 1fr));
     justify-content: flex-start;
     overflow-x: auto;
     overflow-y: hidden;
@@ -204,7 +205,6 @@
     scroll-snap-type: x proximity;
   }
   #send-cards .action-card {
-    flex: 0 0 112px;
     scroll-snap-align: start;
   }
   .unit-stats {
@@ -222,14 +222,6 @@
   }
   .expedition-controls input {
     width: 52px;
-  }
-  #flight-status {
-    max-height: 40px;
-    overflow: auto;
-    font-size: 11px;
-  }
-  #flight-status:empty {
-    display: none;
   }
   .selection-panel {
     top: auto;
@@ -359,4 +351,35 @@
     width: auto;
     display: flex;
   }
+}
+
+@media (max-width: 760px) {
+  #wave-preview[open] {
+    max-height: min(38vh, 280px);
+  }
+  #wave-preview[open] .wave-unit small {
+    display: block;
+    font-size: 11px;
+  }
+}
+
+/* Keep all three wave values together, including on the expanded mobile preview. */
+#wave-preview .wave-unit .wave-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
+.wave-stat-row .unit-trait {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  background: none;
+}
+.wave-stat-row .stat-icon {
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
 }

@@ -1,3 +1,5 @@
+import type { UnitDef } from './types';
+import type { UnitId } from './units';
 export * from './types';
 export * from './towers';
 export * from './units';
@@ -17,7 +19,7 @@ export function towerDef(id: string) {
   }
   return def;
 }
-export function unitDef(id: string) {
+export function unitDef(id: string): UnitDef & { id: UnitId } {
   const def = units.find((v) => v.id === id);
   if (!def) {
     throw Error('Unknown unit.');

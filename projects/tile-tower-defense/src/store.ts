@@ -166,7 +166,7 @@ export class GameStore {
         target: 'target' in action ? action.target : 0,
         count: 'count' in action ? action.count : 0,
         action: action.type,
-        kind: 'kind' in action ? action.kind : '',
+        kind: 'kind' in action ? (action.kind ?? '') : '',
         x: 'x' in action ? action.x : 0,
         y: 'y' in action ? action.y : 0,
         tower: 'tower' in action ? action.tower : 0,

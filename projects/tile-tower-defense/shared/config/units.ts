@@ -47,6 +47,7 @@ const legacyUnits = [
   },
   {
     id: 'goblin',
+    defenseType: 'agility',
     avatar: 'avatars/goblin',
     art: 'swarm',
     health: 45,
@@ -61,6 +62,7 @@ const legacyUnits = [
   },
   {
     id: 'raider',
+    defenseType: 'armor',
     avatar: 'avatars/raider',
     art: 'raider',
     health: 115,
@@ -75,6 +77,7 @@ const legacyUnits = [
   },
   {
     id: 'brute',
+    defenseType: 'armor',
     avatar: 'avatars/brute',
     art: 'siege',
     health: 300,

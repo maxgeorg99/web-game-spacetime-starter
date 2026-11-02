@@ -1,3 +1,4 @@
+import { resultRetentionSeconds } from '../../shared/config/lifecycle';
 import { schema, table, t, SenderError } from 'spacetimedb/server';
 import { cleanName } from '../../shared/game/names';
 
@@ -86,10 +87,12 @@ export const create_session = db.reducer({ name: t.string() }, (ctx, args) => {
   if (!ctx.db.captain.owner.find(ctx.sender)) {
     throw new SenderError('Choose your captain name first.');
   }
-  if (ctx.db.session.count() >= 32n) {
+  if ([...ctx.db.session.iter()].filter((row) => row.status !== 'finished').length >= 32) {
     throw new SenderError('Session capacity reached.');
   }
-  const owned = [...ctx.db.session.iter()].filter((row) => row.creator.isEqual(ctx.sender));
+  const owned = [...ctx.db.session.iter()].filter(
+    (row) => row.creator.isEqual(ctx.sender) && row.status !== 'finished',
+  );
   if (owned.length >= 4) {
     throw new SenderError('You can create up to four persistent sessions.');
   }
@@ -206,6 +209,17 @@ export const receive_world_slots = db.reducer(
     if (!reporter || !ctx.db.session.id.find(reporter.sessionId)) {
       throw new SenderError('Registered world only.');
     }
+    const session = ctx.db.session.id.find(reporter.sessionId)!;
+    if (args.capacity === 0 && args.claimed === 0) {
+      if (session.status === 'ready') {
+        ctx.db.session.id.update({ ...session, status: 'finished', lastActivity: ctx.timestamp });
+        ctx.db.slots.sessionId.delete(session.id);
+      }
+      return;
+    }
+    if (session.status === 'finished') {
+      return;
+    }
     if (args.capacity < 2 || args.capacity > 4 || args.claimed > args.capacity) {
       throw new SenderError('Invalid world capacity.');
     }
@@ -295,4 +309,18 @@ export const remove_session = db.reducer({ id: t.u32() }, (ctx, { id }) => {
   ctx.db.provisionLease.sessionId.delete(id);
   ctx.db.worldReporter.sessionId.delete(id);
   ctx.db.session.id.delete(id);
+});
+
+/** Any named captain may trigger idempotent cleanup, but only after the world's terminal report. */
+export const authorize_cleanup = db.reducer({ id: t.u32() }, (ctx, { id }) => {
+  const row = ctx.db.session.id.find(id);
+  if (
+    !ctx.db.captain.owner.find(ctx.sender) ||
+    !row ||
+    row.status !== 'finished' ||
+    ctx.timestamp.microsSinceUnixEpoch - row.lastActivity.microsSinceUnixEpoch <
+      BigInt(resultRetentionSeconds) * 1_000_000n
+  ) {
+    throw new SenderError('Finished world is not ready for cleanup.');
+  }
 });

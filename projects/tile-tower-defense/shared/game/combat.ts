@@ -1,3 +1,4 @@
+import { damageMultiplier } from '../config/damage';
 import { pathFor } from './paths';
 import { magicSpell, tickMagic, migrateMages } from './magic';
 import { launch, advanceProjectiles } from './projectiles';
@@ -52,7 +53,18 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
     const definition = spell
       ? { ...towerDef(tower.kind).projectile, art: `magic/${spell.school}-bolt` }
       : towerDef(tower.kind).projectile;
-    launch(s, tower, target, definition, stats.damage, stats.splash, true, 48, spell);
+    launch(
+      s,
+      tower,
+      target,
+      definition,
+      stats.damage,
+      stats.splash,
+      true,
+      48,
+      spell,
+      towerDef(tower.kind).attackType,
+    );
     tower.cooldown = stats.cooldown;
   }
   // Recruits and enemies acquire spatial targets. Melee contact blocks passage; ranged units may stop earlier.
@@ -73,10 +85,26 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
       )[0];
     if (target) {
       if (f.cooldown <= 0) {
-        if ('projectile' in def) {
-          launch(s, p, target, def.projectile, def.damage, 0, direction === -1, 12);
+        if (def.projectile) {
+          launch(
+            s,
+            p,
+            target,
+            def.projectile,
+            def.damage,
+            0,
+            direction === -1,
+            12,
+            undefined,
+            'attackType' in def ? def.attackType : undefined,
+          );
         } else {
-          target.health -= def.damage;
+          target.health -=
+            def.damage *
+            damageMultiplier(
+              'attackType' in def ? def.attackType : undefined,
+              'defenseType' in unitDef(target.kind) ? unitDef(target.kind).defenseType : undefined,
+            );
           s.impacts.push({ ...position(target.progress, s), splash: 0, ally: direction === -1 });
         }
         f.cooldown = def.cooldown;

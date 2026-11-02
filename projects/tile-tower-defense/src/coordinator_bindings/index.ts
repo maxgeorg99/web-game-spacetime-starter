@@ -34,6 +34,7 @@ import {
 } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AuthorizeCleanupReducer from "./authorize_cleanup_reducer";
 import AuthorizeProvisionReducer from "./authorize_provision_reducer";
 import ClaimProvisionReducer from "./claim_provision_reducer";
 import CompleteProvisionReducer from "./complete_provision_reducer";
@@ -107,6 +108,7 @@ const tablesSchema = __schema({
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
+  __reducerSchema("authorize_cleanup", AuthorizeCleanupReducer),
   __reducerSchema("authorize_provision", AuthorizeProvisionReducer),
   __reducerSchema("claim_provision", ClaimProvisionReducer),
   __reducerSchema("complete_provision", CompleteProvisionReducer),

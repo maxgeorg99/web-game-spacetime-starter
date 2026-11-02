@@ -1,6 +1,17 @@
 /** UI assets are data too: previews and controls should not hard-code content-specific paths. */
 export const uiIcons = {
   gold: 'icons/gold',
+  blunt: 'icons/blunt',
+  pierce: 'icons/pierce',
+  divine: 'icons/divine',
+  magic: 'icons/magic',
+  armor: 'icons/armor',
+  agility: 'icons/agility',
+  mystical: 'icons/mystical',
+  speed: 'icons/speed',
+  cooldown: 'icons/cooldown',
+  'keep-damage': 'keep',
+
   meat: 'icons/meat',
   health: 'icons/health',
   damage: 'icons/damage',

@@ -2,6 +2,7 @@ import type { TowerDef } from './types';
 export const towers = [
   {
     id: 'watchtower',
+    attackType: 'pierce',
     projectile: { art: 'arrow', speed: 7 },
     art: 'archer',
     avatar: 'archer',
@@ -13,6 +14,7 @@ export const towers = [
   },
   {
     id: 'catapult',
+    attackType: 'blunt',
     projectile: { art: 'rock', speed: 4 },
     art: 'catapult',
     avatar: 'catapult-avatar',
@@ -24,6 +26,7 @@ export const towers = [
   },
   {
     id: 'sentinel',
+    attackType: 'magic',
     projectile: { art: 'magic/arcane-bolt', speed: 6 },
     art: 'mage-arcane',
     avatar: 'mage-arcane',

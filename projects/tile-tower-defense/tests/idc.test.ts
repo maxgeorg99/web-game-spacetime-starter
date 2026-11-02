@@ -79,7 +79,7 @@ integration(
     // Ordinary callers (even the publisher) cannot impersonate a world on the IDC reducer.
     expect((await call(coordinator, 'receive_world_slots', [4, 4])).ok).toBe(false);
     const strangerResponse = await fetch(`${host}/v1/identity`, { method: 'POST' });
-    const stranger = (await strangerResponse.json()) as { token: string };
+    const stranger = (await strangerResponse.json()) as { token: string; identity: string };
     expect(
       (await call(worldA, 'configure_reporting', [target], `Bearer ${stranger.token}`)).ok,
     ).toBe(false);
@@ -134,6 +134,43 @@ integration(
     await until(
       async () => (await query(worldB, 'SELECT last_error FROM reporting'))[0]?.[0] === '',
     );
+    // A publisher-registered test sender exercises terminal reports without waiting for combat.
+    const terminal = `idc-terminal-${suffix}`;
+    await ok(coordinator, 'register_world', ['Terminal', terminal, host.replace('http:', 'ws:')]);
+    const terminalId = (await query(coordinator, 'SELECT id, database FROM session')).find(
+      (row) => row[1] === terminal,
+    )![0] as number;
+    await ok(coordinator, 'register_world_reporter', [
+      terminalId,
+      identityArgument(stranger.identity),
+    ]);
+    const report = (claimed: number, capacity: number) =>
+      call(coordinator, 'receive_world_slots', [claimed, capacity], `Bearer ${stranger.token}`);
+    expect((await call(coordinator, 'receive_world_slots', [0, 0])).ok).toBe(false);
+    expect((await report(2, 4)).ok).toBe(true);
+    expect((await report(0, 0)).ok).toBe(true);
+    expect(
+      (await query(coordinator, `SELECT status FROM session WHERE id = ${terminalId}`))[0][0],
+    ).toBe('finished');
+    expect(
+      await query(coordinator, `SELECT * FROM slots WHERE session_id = ${terminalId}`),
+    ).toHaveLength(0);
+    const retiredAt = JSON.stringify(
+      await query(coordinator, `SELECT last_activity FROM session WHERE id = ${terminalId}`),
+    );
+    expect((await report(2, 4)).ok).toBe(true);
+    expect((await report(0, 0)).ok).toBe(true);
+    expect(
+      JSON.stringify(
+        await query(coordinator, `SELECT last_activity FROM session WHERE id = ${terminalId}`),
+      ),
+    ).toBe(retiredAt);
+    expect(
+      await query(coordinator, `SELECT * FROM slots WHERE session_id = ${terminalId}`),
+    ).toHaveLength(0);
+    await ok(coordinator, 'set_name', ['Test captain']);
+    expect((await call(coordinator, 'authorize_cleanup', [terminalId])).ok).toBe(false);
+    expect((await call(coordinator, 'visit_session', [terminalId])).ok).toBe(false);
     // Heartbeats keep unchanged occupancy fresh without browser polling.
     const first = JSON.stringify(
       await query(coordinator, `SELECT updated_at FROM slots WHERE session_id = ${idA}`),

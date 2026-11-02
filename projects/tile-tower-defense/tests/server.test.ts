@@ -1,6 +1,7 @@
 import { test, expect } from 'bun:test';
 import { DbConnection } from '../src/module_bindings';
 import type { State } from '../shared/game/model';
+import type { WorldState } from '../shared/game/world';
 const uri = process.env.TEST_SPACETIME_URI ?? 'ws://127.0.0.1:3105';
 const database = process.env.TEST_SPACETIME_DB ?? 'tile-tower-defense-local';
 async function connect(token?: string) {
@@ -101,6 +102,62 @@ test('server owns commands, isolates identities, rejects replays, and reconnects
     }
   }
 }, 30000);
+
+test('COM lobby authorization and autonomous actions replicate to humans and reconnects', async () => {
+  const connections: DbConnection[] = [];
+  try {
+    const host = await connect();
+    connections.push(host.conn);
+    // This integration suite must use a disposable database, never a player's saved world.
+    if (host.conn.db.world.id.find(1)) {
+      throw Error('COM integration requires a fresh world database.');
+    }
+    const guest = await connect();
+    connections.push(guest.conn);
+    await host.conn.reducers.worldEnter({ name: 'Host' });
+    await guest.conn.reducers.worldEnter({ name: 'Guest' });
+    const snapshot = () => JSON.parse(host.conn.db.world.id.find(1)!.state) as WorldState;
+    await until(() => snapshot().seats.filter((seat) => seat.owner).length === 2);
+    const order = { ...args, kind: 'rook', target: 0, count: 0, action: 'add-com' };
+    expect((await Promise.allSettled([guest.conn.reducers.worldAct(order)]))[0].status).toBe(
+      'rejected',
+    );
+    await host.conn.reducers.worldAct(order);
+    await until(() => !!snapshot().seats[2].com);
+    expect(snapshot().seats[2].name).toBe('Rook Emberwake');
+    expect(snapshot().seats[2].com?.captain).toBe('rook');
+    await host.conn.reducers.worldAct({ ...order, sequence: 1, action: 'begin' });
+    await until(() => snapshot().seats[2].state.expansions === 1);
+    expect(
+      (
+        await Promise.allSettled([
+          host.conn.reducers.worldAct({ ...order, sequence: 2, action: 'remove-com', target: 2 }),
+        ])
+      )[0].status,
+    ).toBe('rejected');
+    host.conn.disconnect();
+    const reconnected = await connect(host.token);
+    connections.push(reconnected.conn);
+    await until(() => {
+      const world = JSON.parse(reconnected.conn.db.world.id.find(1)!.state) as WorldState;
+      return (
+        world.seats[2].state.towers.length >= 2 && world.flights.some((flight) => flight.from === 2)
+      );
+    }, 25000);
+    const world = JSON.parse(reconnected.conn.db.world.id.find(1)!.state) as WorldState;
+    expect(world.seats[2].com).toBeDefined();
+    expect(world.seats[2].state.gold).toBeLessThan(180);
+    expect(world.seats[2].state.meat).toBeLessThan(16);
+    await until(() => {
+      const other = JSON.parse(guest.conn.db.world.id.find(1)!.state) as WorldState;
+      return other.seats[2].state.towers.length >= 2;
+    });
+  } finally {
+    for (const connection of connections) {
+      connection.disconnect();
+    }
+  }
+}, 40000);
 
 test('server purchases mage branches, rejects a locked capstone and replicates spell effects', async () => {
   const { conn } = await connect();

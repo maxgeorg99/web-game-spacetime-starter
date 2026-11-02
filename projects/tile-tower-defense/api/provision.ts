@@ -51,6 +51,42 @@ export default async function provision(req: IncomingMessage, res: ServerRespons
       signal: AbortSignal.timeout(15_000),
     });
   try {
+    if (new URL(req.url ?? '/', 'http://localhost').searchParams.get('cleanup') === '1') {
+      const allowed = await call('authorize_cleanup', [id], authorization);
+      if (!allowed.ok) {
+        reply(403, 'World is not ready for cleanup.');
+        return;
+      }
+      const directory = await fetch(`${host}/v1/database/${coordinator}/sql`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: `SELECT database, status FROM session WHERE id = ${id}`,
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!directory.ok) {
+        throw Error('Directory unavailable');
+      }
+      const rows = (await directory.json()) as { rows: [string, string][] }[];
+      const [database, status] = rows[0]?.rows[0] ?? [];
+      if (status !== 'finished' || !/^tile-td-[a-f0-9]{12}-\d+$/.test(database ?? '')) {
+        reply(409, 'World cannot be cleaned up.');
+        return;
+      }
+      const deleted = await fetch(`${host}/v1/database/${database}`, {
+        method: 'DELETE',
+        headers: { Authorization: admin },
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!deleted.ok && deleted.status !== 404) {
+        throw Error('Cleanup interrupted');
+      }
+      const removed = await call('remove_session', [id]);
+      if (!removed.ok) {
+        throw Error('Directory cleanup interrupted');
+      }
+      reply(200, 'Finished world removed.');
+      return;
+    }
     const allowed = await call('authorize_provision', [id], authorization);
     if (!allowed.ok) {
       reply(403, 'Only the world creator can start provisioning.');
@@ -115,7 +151,9 @@ export default async function provision(req: IncomingMessage, res: ServerRespons
     // Never leak upstream bodies or credentials. An uncertain publish keeps its durable lease.
     reply(
       503,
-      'World creation was interrupted. Retry in ten minutes; your world will be preserved.',
+      new URL(req.url ?? '/', 'http://localhost').searchParams.get('cleanup') === '1'
+        ? 'World cleanup was interrupted. It will be retried.'
+        : 'World creation was interrupted. Retry in ten minutes; your world will be preserved.',
     );
   }
 }

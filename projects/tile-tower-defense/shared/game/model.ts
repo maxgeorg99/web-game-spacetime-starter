@@ -1,3 +1,4 @@
+import type { AttackType } from '../config/damage';
 import type { MageAspect, School } from '../config/magic';
 import type { TileId, TowerId, UnitId } from '../config';
 export interface Point {
@@ -21,7 +22,7 @@ export interface Fighter {
   chill?: { remaining: number; strength: number };
   freeze?: number;
   freezeGuard?: number;
-  burn?: { remaining: number; dps: number; stacks: number };
+  burn?: { attackType?: AttackType; remaining: number; dps: number; stacks: number };
 
   /** Expedition origin; absent on neutral enemies and local defenders. */
   captainSlot?: number;
@@ -51,6 +52,7 @@ export interface MagicPayload {
   chained?: boolean;
 }
 export interface Projectile extends Point {
+  attackType?: AttackType;
   origin?: Point;
   magic?: MagicPayload;
   id: number;

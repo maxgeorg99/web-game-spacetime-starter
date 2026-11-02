@@ -1,3 +1,4 @@
+import { resultRetentionSeconds } from '../shared/config/lifecycle';
 import { DbConnection } from '../src/coordinator_bindings';
 import { databaseIdentity, identityArgument } from './lib/world-reporting';
 
@@ -47,7 +48,9 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
     connection?.disconnect();
   });
 }
-console.log(`Provisioner watching ${coordinator}. Existing worlds are never cleared or deleted.`);
+console.log(
+  `Provisioner watching ${coordinator}. Finished worlds are removed after the result grace period.`,
+);
 while (!stopped) {
   try {
     connection = await new Promise<DbConnection>((resolve, reject) => {
@@ -115,6 +118,25 @@ while (!stopped) {
           server,
         ]);
         await result(session.id, true);
+      }
+      for (const session of connection.db.session.iter()) {
+        if (
+          session.status !== 'finished' ||
+          Date.now() - Number(session.lastActivity.microsSinceUnixEpoch / 1000n) <
+            resultRetentionSeconds * 1000
+        ) {
+          continue;
+        }
+        if (!/^tile-td-[a-f0-9]{12}-\d+$/.test(session.database)) {
+          continue;
+        }
+        const lookup = await fetch(`${connectionUri}/v1/database/${session.database}/identity`);
+        if (lookup.ok) {
+          await cli(['delete', session.database, '--server', server, '--yes']);
+        } else if (lookup.status !== 404) {
+          throw Error('Cleanup lookup failed.');
+        }
+        await cli(['call', coordinator, 'remove_session', String(session.id), '--server', server]);
       }
       await Bun.sleep(2000);
     }

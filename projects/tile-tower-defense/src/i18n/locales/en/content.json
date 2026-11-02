@@ -84,7 +84,7 @@
   "content.units.king.name": "King",
   "content.units.king.description": "Heavy invader. Deals 3 keep damage if it gets through.",
   "content.units.swordsman.name": "Swordsman",
-  "content.units.swordsman.description": "Steady invader. Deals 1 keep damage if it gets through.",
+  "content.units.swordsman.description": "All-rounder. Deals 1 keep damage if it gets through.",
   "content.units.squire.name": "Squire",
   "content.units.squire.description": "A sturdy guard who meets enemies on the road.",
   "content.units.ranger.name": "Ranger",
@@ -219,5 +219,6 @@
   "content.skills.sentinel.lightning-power.name": "Conduction",
   "content.skills.sentinel.lightning-power.description": "Keep 5% more damage per jump per rank (base 70%).",
   "content.skills.sentinel.lightning-capstone.name": "Overcharge",
-  "content.skills.sentinel.lightning-capstone.description": "Every 4th cast gains 2 additional jumps with no damage lost between targets."
+  "content.skills.sentinel.lightning-capstone.description": "Every 4th cast gains 2 additional jumps with no damage lost between targets.",
+  "content.units.swordsman.role": "All-rounder"
 }

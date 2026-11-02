@@ -1,5 +1,6 @@
 /** Client-only mix settings. Files live inside this project's public/audio directory. */
 export const soundCues = {
+  victory: { file: 'victory.mp3', gain: 0.55, cooldownMs: 1500 },
   click: { file: 'click.mp3', gain: 0.3, cooldownMs: 100 },
   error: { file: 'error.mp3', gain: 0.45, cooldownMs: 500 },
   build: { file: 'build.mp3', gain: 0.45, cooldownMs: 150 },

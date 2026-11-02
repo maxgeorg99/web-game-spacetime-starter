@@ -84,7 +84,7 @@
   "content.units.king.name": "König",
   "content.units.king.description": "Schwerer Angreifer. Verursacht 3 Schaden an der Burg, wenn er durchkommt.",
   "content.units.swordsman.name": "Schwertkämpfer",
-  "content.units.swordsman.description": "Solider Angreifer. Verursacht 1 Schaden an der Burg, wenn er durchkommt.",
+  "content.units.swordsman.description": "Allrounder. Verursacht 1 Schaden an der Burg, wenn er durchkommt.",
   "content.units.squire.name": "Knappe",
   "content.units.squire.description": "Ein robuster Wächter, der Gegner auf dem Weg abfängt.",
   "content.units.ranger.name": "Waldläufer",
@@ -219,5 +219,6 @@
   "content.skills.sentinel.lightning-power.name": "Leitfähigkeit",
   "content.skills.sentinel.lightning-power.description": "Pro Rang bleiben bei jedem Sprung 5% mehr Schaden erhalten (Basis: 70%).",
   "content.skills.sentinel.lightning-capstone.name": "Überladung",
-  "content.skills.sentinel.lightning-capstone.description": "Jeder 4. Zauber erhält 2 zusätzliche Sprünge ohne Schadensverlust zwischen den Zielen."
+  "content.skills.sentinel.lightning-capstone.description": "Jeder 4. Zauber erhält 2 zusätzliche Sprünge ohne Schadensverlust zwischen den Zielen.",
+  "content.units.swordsman.role": "Allrounder"
 }

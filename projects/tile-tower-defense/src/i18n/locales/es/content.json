@@ -84,7 +84,7 @@
   "content.units.king.name": "Rey",
   "content.units.king.description": "Invasor pesado. Causa 3 de daño a la fortaleza si logra pasar.",
   "content.units.swordsman.name": "Espadachín",
-  "content.units.swordsman.description": "Invasor equilibrado. Causa 1 de daño a la fortaleza si logra pasar.",
+  "content.units.swordsman.description": "Combatiente versátil. Causa 1 de daño a la fortaleza si logra pasar.",
   "content.units.squire.name": "Escudero",
   "content.units.squire.description": "Un guardia resistente que intercepta a los enemigos en el camino.",
   "content.units.ranger.name": "Explorador",
@@ -219,5 +219,6 @@
   "content.skills.sentinel.lightning-power.name": "Conductividad",
   "content.skills.sentinel.lightning-power.description": "Conserva un 5% más de daño en cada salto por rango (base: 70%).",
   "content.skills.sentinel.lightning-capstone.name": "Sobrecarga",
-  "content.skills.sentinel.lightning-capstone.description": "Cada 4.º hechizo obtiene 2 saltos adicionales sin perder daño entre objetivos."
+  "content.skills.sentinel.lightning-capstone.description": "Cada 4.º hechizo obtiene 2 saltos adicionales sin perder daño entre objetivos.",
+  "content.units.swordsman.role": "Versátil"
 }

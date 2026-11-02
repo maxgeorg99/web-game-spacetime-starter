@@ -1,3 +1,4 @@
+import { comCaptains, comCaptain, type ComCaptainId } from '../config/com';
 import { migrateMages } from './magic';
 import { recruitableUnits } from '../config/bevy-units';
 import { balance, unitDef } from '../config';
@@ -8,6 +9,8 @@ import { step } from './combat';
 import type { Command, State } from './model';
 
 export interface WorldSeat {
+  /** Synthetic owner IDs never authenticate as a SpacetimeDB identity. */
+  com?: { captain?: ComCaptainId; seed?: number; decisionIn: number; raidIn: number };
   name?: string;
   slot: number;
   owner: string | null;
@@ -27,6 +30,8 @@ export interface Flight {
 }
 export interface WorldState {
   version: 1;
+  seed?: number;
+  comSerial?: number;
   seats: WorldSeat[];
   flights: Flight[];
   nextFlight: number;
@@ -34,10 +39,15 @@ export interface WorldState {
   round?: { phase: 'lobby' | 'draft' | 'prepare' | 'combat' | 'finished'; remaining: number };
 }
 export type WorldAction =
-  { type: 'begin' } | Command | { type: 'send'; target: number; kind: string; count: number };
-export function freshWorld(): WorldState {
+  | { type: 'begin' }
+  | { type: 'add-com'; kind?: string }
+  | { type: 'remove-com'; target: number }
+  | Command
+  | { type: 'send'; target: number; kind: string; count: number };
+export function freshWorld(seed = 1): WorldState {
   return {
     version: 1,
+    seed: seed >>> 0,
     seats: worldIslands.map((island) => ({
       slot: island.slot,
       owner: null,
@@ -94,6 +104,47 @@ export function worldCommand(
   }
   if (seat.sequence !== sequence) {
     throw Error('Your island changed. Try the order again.');
+  }
+  if (action.type === 'add-com' || action.type === 'remove-com') {
+    if (!next.round || next.round.phase !== 'lobby') {
+      throw Error('COM players can only change in the lobby.');
+    }
+    if (next.seats.find((s) => s.owner && !s.com)?.owner !== owner) {
+      throw Error('Only the host can manage COM players.');
+    }
+    if (action.type === 'add-com') {
+      const empty = next.seats.find((s) => !s.owner);
+      if (!empty) {
+        throw Error('All four seats are occupied.');
+      }
+      const used = new Set(
+        next.seats.filter((s) => s.com).map((s) => comCaptain(s.com?.captain, s.slot).id),
+      );
+      const captain = action.kind
+        ? comCaptains.find((captain) => captain.id === action.kind)
+        : comCaptains.find((captain) => !used.has(captain.id));
+      if (!captain || used.has(captain.id)) {
+        throw Error('Choose an available COM captain.');
+      }
+      next.comSerial = (next.comSerial ?? 0) + 1;
+      empty.owner = `com:${empty.slot}`;
+      empty.name = captain.name;
+      empty.com = {
+        captain: captain.id,
+        seed: ((next.seed ?? 1) ^ Math.imul(next.comSerial, 2654435761) ^ empty.slot) >>> 0,
+        decisionIn: 0.5 + empty.slot * 0.4,
+        raidIn: captain.raidSeconds / 2,
+      };
+      empty.state = fresh(true);
+    } else {
+      const target = next.seats.find((s) => s.slot === action.target);
+      if (!target?.com) {
+        throw Error('Choose a COM player to remove.');
+      }
+      next.seats[target.slot] = freshWorld().seats[target.slot];
+    }
+    seat.sequence++;
+    return next;
   }
   if (action.type === 'begin') {
     if (!next.round || next.round.phase !== 'lobby') {
@@ -256,7 +307,7 @@ export function stepWorld(world: WorldState): boolean {
   }
   if (world.round) {
     const active = world.seats.filter((s) => s.owner && s.state.phase !== 'lost');
-    if (active.length <= 1) {
+    if (active.length <= 1 || !active.some((seat) => !seat.com)) {
       world.round = { phase: 'finished', remaining: 0 };
       world.flights = [];
       return true;

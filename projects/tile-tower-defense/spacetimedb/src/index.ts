@@ -1,4 +1,5 @@
 import { cleanName } from '../../shared/game/names';
+import { stepComs } from '../../shared/game/com';
 import {
   freshWorld,
   joinWorld,
@@ -193,7 +194,8 @@ export const tick = db.reducer({ onSchedule: clock }, { timer: clock.rowType }, 
   }
   const shared = ctx.db.world.id.find(1);
   const worldState: WorldState | undefined = shared ? JSON.parse(shared.state) : undefined;
-  if (shared && worldState && stepWorld(worldState)) {
+  const comChanged = worldState ? stepComs(worldState) : false;
+  if (shared && worldState && (stepWorld(worldState) || comChanged)) {
     ctx.db.world.id.update({
       ...shared,
       state: JSON.stringify(worldState),
@@ -201,7 +203,8 @@ export const tick = db.reducer({ onSchedule: clock }, { timer: clock.rowType }, 
       updated: ctx.timestamp,
     });
   }
-  const claimed = worldState?.seats.filter((seat) => seat.owner).length ?? 0;
+  const finished = worldState?.round?.phase === 'finished';
+  const claimed = finished ? 0 : (worldState?.seats.filter((seat) => seat.owner).length ?? 0);
   const config = ctx.db.reporting.id.find(1);
   if (
     config &&
@@ -213,7 +216,12 @@ export const tick = db.reducer({ onSchedule: clock }, { timer: clock.rowType }, 
       msgId: 0n,
       target: config.target,
       claimed,
-      capacity: worldState?.round && worldState.round.phase !== 'lobby' ? claimed : 4,
+      // Reserved terminal report: only an authenticated world can retire its session.
+      capacity: finished
+        ? 0
+        : worldState?.round && worldState.round.phase !== 'lobby'
+          ? claimed
+          : 4,
     });
     ctx.db.reporting.id.update({ ...config, pending: true });
   }
@@ -237,7 +245,9 @@ export const tick = db.reducer({ onSchedule: clock }, { timer: clock.rowType }, 
 // The world is created lazily so publishing over an existing solo database needs no destructive reset.
 export const world_join = db.reducer((ctx) => {
   const row = ctx.db.world.id.find(1);
-  const current: WorldState = row ? JSON.parse(row.state) : freshWorld();
+  const current: WorldState = row
+    ? JSON.parse(row.state)
+    : freshWorld(Number(ctx.timestamp.microsSinceUnixEpoch & 0xffffffffn));
   const previous = ctx.db.island.owner.find(ctx.sender);
   const next = joinWorld(
     current,
@@ -304,7 +314,9 @@ export const world_enter = db.reducer({ name: t.string() }, (ctx, args) => {
     throw new SenderError(String(error));
   }
   const row = ctx.db.world.id.find(1);
-  const current: WorldState = row ? JSON.parse(row.state) : freshWorld();
+  const current: WorldState = row
+    ? JSON.parse(row.state)
+    : freshWorld(Number(ctx.timestamp.microsSinceUnixEpoch & 0xffffffffn));
   const previous = ctx.db.island.owner.find(ctx.sender);
   const next = joinWorld(
     current,

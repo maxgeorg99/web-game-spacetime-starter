@@ -1,3 +1,5 @@
+import { damageMatrix, type AttackType, type DefenseType } from '../shared/config/damage';
+import { unitHighlights, unitTraitIcons } from '../shared/config/unit-presentation';
 import { mageAspect, mageMastered, magePoints, branchPoints } from '../shared/game/magic';
 import { schools, magicColors } from '../shared/config/magic';
 import { discoveries, rarityColors } from '../shared/config/drafting';
@@ -25,6 +27,49 @@ import { portrait, sheets } from './art';
 export function icon(name: keyof typeof uiIcons) {
   return `<img class="stat-icon" src="${assetUrl(`art/${uiIcons[name]}.png`)}" alt="" />`;
 }
+const statSymbols = {
+  health: 'health',
+  speed: 'speed',
+  leak: 'keep-damage',
+  damage: 'damage',
+  range: 'range',
+  cooldown: 'cooldown',
+} as const;
+
+/** Symbols stay compact; localized names remain available to assistive tech and hover. */
+export function stat(kind: keyof typeof statSymbols, value: number | string) {
+  const label = t(`stat.${kind}`);
+  return `<span class="compact-stat" role="img" aria-label="${escapeHtml(`${label}: ${value}`)}" title="${escapeHtml(label)}"><span aria-hidden="true">${icon(statSymbols[kind])} ${escapeHtml(String(value))}</span></span>`;
+}
+
+export function combatTypes(unit: { attackType?: AttackType; defenseType?: DefenseType }) {
+  const attack = unit.attackType;
+  const defense = unit.defenseType;
+  const matchup = attack
+    ? Object.entries(damageMatrix[attack])
+        .map(([kind, value]) => `${t(`defense.${kind as DefenseType}`)} ×${value}`)
+        .join(' · ')
+    : '';
+  const incoming = defense
+    ? Object.entries(damageMatrix)
+        .map(([kind, values]) => `${t(`attack.${kind as AttackType}`)} ×${values[defense]}`)
+        .join(' · ')
+    : '';
+  return `${attack ? `<span class="unit-trait" title="${escapeHtml(matchup)}">${icon(attack)} ${th(`attack.${attack}`)}</span>` : ''}${defense ? `<span class="unit-trait" title="${escapeHtml(incoming)}">${icon(defense)} ${th(`defense.${defense}`)}</span>` : ''}`;
+}
+
+export function unitTraits(unit: UnitDef) {
+  const speed =
+    unit.speed >= unitHighlights.fastSpeed
+      ? 'fast'
+      : unit.speed <= unitHighlights.slowSpeed
+        ? 'slow'
+        : undefined;
+  const trait = (kind: 'fast' | 'slow' | 'tough') =>
+    `<span class="unit-trait trait-${kind}">${icon(unitTraitIcons[kind])}${th(`trait.${kind}`)}</span>`;
+  return `<span class="unit-trait-row">${combatTypes({ defenseType: unit.defenseType })}${speed ? trait(speed) : ''}</span>${unit.health >= unitHighlights.toughHealth ? trait('tough') : ''}`;
+}
+
 export function avatar(unit: UnitDef, faction?: Faction) {
   if (unit.avatar in sheets) {
     return portrait(faction ? factionArt(unit.avatar, faction) : unit.avatar);
@@ -46,7 +91,7 @@ export function buildCards(
     <button class="action-card ${selected === tower.id ? 'chosen' : ''}" data-build="${tower.id}"
       ${disabled(locked || state.phase !== 'prepare' || state.gold < tower.cost)} title="${escapeHtml(tower.description)}">
       ${portrait(factionArt(tower.avatar, faction))}
-      <span class="card-name">${escapeHtml(tower.name)}</span>
+      <span class="card-name">${escapeHtml(tower.name)}</span><span class="unit-traits">${combatTypes(tower)}</span>
       <span class="card-cost">${icon('gold')}${tower.cost}</span>
     </button>
   `,
@@ -122,13 +167,13 @@ export function towerPanel(state: State, tower: Tower, locked: boolean, faction:
     )
     .join('');
   return `
-    <div class="tower-heading">${portrait(factionArt(tower.kind === 'sentinel' ? `mage-${mageAspect(tower)}` : definition.avatar, faction))}<div><h2>${escapeHtml(definition.name)}</h2><span>${th('tower.specialize')}</span></div></div>
+    <div class="tower-heading">${portrait(factionArt(tower.kind === 'sentinel' ? `mage-${mageAspect(tower)}` : definition.avatar, faction))}<div><h2>${escapeHtml(definition.name)}</h2></div></div>
     <div class="tower-stats">
-      <span title="${th('tower.damage')}">${icon('damage')}${number(stats.damage)}</span>
-      <span title="${th('tower.range')}">${icon('range')}${number(stats.range)}</span>
-      <span title="${th('tower.cooldown')}">${th('tower.secondsPerShot', { seconds: number(stats.cooldown) })}</span>
+      ${stat('damage', number(stats.damage))}
+      ${stat('range', number(stats.range))}
+      ${stat('cooldown', `${number(stats.cooldown)}s`)}
     </div>
-    ${tower.kind === 'sentinel' ? `<div class="mage-summary"><b>${th('mage.points', { count: magePoints(tower), limit: tree.pointLimit! })}</b><span>${th(`mage.aspect.${mageAspect(tower)}`)}${mageMastered(tower) ? ` · ${th('mage.mastered')}` : ''}</span><p>${th('mage.hybrids')}</p></div>` : ''}
+    ${tower.kind === 'sentinel' ? `<div class="mage-summary"><b>${th('mage.points', { count: magePoints(tower), limit: tree.pointLimit! })}</b><span>${th(`mage.aspect.${mageAspect(tower)}`)}${mageMastered(tower) ? ` · ${th('mage.mastered')}` : ''}</span><details class="stat-help"><summary>${th('ui.details')}</summary><p>${th('mage.hybrids')}</p></details></div>` : ''}
     <div class="skill-tree">${branches}</div>
     <button class="sell" data-sell="yes" ${disabled(locked || state.phase !== 'prepare')}>
       ${th('tower.sell')} ${icon('gold')}${Math.floor(tower.spent * balance.sellFraction)}
@@ -151,8 +196,8 @@ function catalogSkill(tree: LocalizedSkillTree, node: Localized<SkillNode>) {
 function catalogTower(tower: Localized<TowerDef>) {
   const tree = treeDef(tower.id);
   return `
-    <article>${portrait(tower.avatar)}<h3>${escapeHtml(tower.name)}</h3><code>${tower.id}</code>
-      <p>${escapeHtml(tower.description)}</p>
+    <article>${portrait(tower.avatar)}<h3>${escapeHtml(tower.name)}</h3>
+      <p>${escapeHtml(tower.description)}</p><p>${combatTypes(tower)}</p>
       ${tree.pointLimit ? `<p>${th('mage.hybrids')}</p>` : ''}
       <p>${th('catalog.towerStats', { gold: tower.cost, damage: tower.damage, range: tower.range, seconds: tower.cooldown })}</p>
       ${tree.branches
@@ -171,8 +216,8 @@ function catalogTower(tower: Localized<TowerDef>) {
 }
 function catalogUnit(unit: Localized<UnitDef>) {
   return `
-    <article>${avatar(unit)}<h3>${escapeHtml(unit.name)}</h3><code>${unit.id}</code>
-      <p>${escapeHtml(unit.description)}</p>
+    <article>${avatar(unit)}<h3>${escapeHtml(unit.name)}</h3>
+      <p>${escapeHtml(unit.description)}</p><p>${combatTypes(unit.recruitable ? { defenseType: unit.defenseType } : unit)}</p>
       <p>${icon('health')}${th('catalog.unitHealth', { health: unit.health })} · ${icon('damage')}${th('catalog.unitDamage', { damage: unit.damage })}<br />
         ${th('catalog.unitTiming', { seconds: unit.cooldown, speed: unit.speed, range: unit.range })}<br />
         ${unit.recruitable ? `${icon('meat')}${th('catalog.recruitCost', { cost: unit.meatCost })}` : `${icon('gold')}${th('catalog.reward', { reward: unit.reward, damage: unit.leak })}`}

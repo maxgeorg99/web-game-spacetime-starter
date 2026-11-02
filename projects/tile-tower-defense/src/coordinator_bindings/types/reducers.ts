@@ -6,6 +6,7 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
+import AuthorizeCleanupReducer from "../authorize_cleanup_reducer";
 import AuthorizeProvisionReducer from "../authorize_provision_reducer";
 import ClaimProvisionReducer from "../claim_provision_reducer";
 import CompleteProvisionReducer from "../complete_provision_reducer";
@@ -19,6 +20,7 @@ import RetrySessionReducer from "../retry_session_reducer";
 import SetNameReducer from "../set_name_reducer";
 import VisitSessionReducer from "../visit_session_reducer";
 
+export type AuthorizeCleanupParams = __Infer<typeof AuthorizeCleanupReducer>;
 export type AuthorizeProvisionParams = __Infer<typeof AuthorizeProvisionReducer>;
 export type ClaimProvisionParams = __Infer<typeof ClaimProvisionReducer>;
 export type CompleteProvisionParams = __Infer<typeof CompleteProvisionReducer>;

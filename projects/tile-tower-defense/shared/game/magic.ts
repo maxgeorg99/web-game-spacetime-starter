@@ -1,3 +1,5 @@
+import { damageMultiplier, type AttackType } from '../config/damage';
+import { unitDef } from '../config';
 import {
   mageTree,
   magicBalance as b,
@@ -52,7 +54,7 @@ export function magicSpell(tower: Tower, damage: number): MagicPayload {
     visited: [],
   };
 }
-export function applyMagic(target: Fighter, spell: MagicPayload) {
+export function applyMagic(target: Fighter, spell: MagicPayload, attackType?: AttackType) {
   if (spell.chained) {
     return;
   }
@@ -69,6 +71,7 @@ export function applyMagic(target: Fighter, spell: MagicPayload) {
   if (spell.burnDps) {
     const previous = target.burn;
     target.burn = {
+      ...(attackType ? { attackType } : {}),
       dps: Math.max(previous?.dps ?? 0, spell.burnDps),
       remaining: Math.max(previous?.remaining ?? 0, spell.burnSeconds),
       stacks: Math.max(
@@ -84,7 +87,11 @@ export function tickMagic(fighter: Fighter, dt: number) {
     return;
   }
   if (fighter.burn) {
-    fighter.health -= fighter.burn.dps * fighter.burn.stacks * Math.min(dt, fighter.burn.remaining);
+    fighter.health -=
+      fighter.burn.dps *
+      fighter.burn.stacks *
+      Math.min(dt, fighter.burn.remaining) *
+      damageMultiplier(fighter.burn.attackType, unitDef(fighter.kind).defenseType);
     fighter.burn.remaining = Math.max(0, fighter.burn.remaining - dt);
     if (!fighter.burn.remaining) {
       delete fighter.burn;

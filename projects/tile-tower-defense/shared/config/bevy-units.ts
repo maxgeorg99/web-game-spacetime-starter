@@ -6,6 +6,8 @@ import type { UnitDef } from './types';
 export const bevyUnits = [
   {
     id: 'warrior',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/warrior',
     avatar: 'avatars/warrior',
     health: 50.0,
@@ -20,6 +22,8 @@ export const bevyUnits = [
   },
   {
     id: 'archer',
+    attackType: 'pierce',
+    defenseType: 'agility',
     art: 'units/archer',
     avatar: 'avatars/archer',
     health: 30.0,
@@ -38,6 +42,8 @@ export const bevyUnits = [
   },
   {
     id: 'lancer',
+    attackType: 'pierce',
+    defenseType: 'armor',
     art: 'units/lancer',
     avatar: 'avatars/lancer',
     health: 80.0,
@@ -52,6 +58,8 @@ export const bevyUnits = [
   },
   {
     id: 'monk',
+    attackType: 'divine',
+    defenseType: 'mystical',
     art: 'units/monk',
     avatar: 'avatars/monk',
     health: 80.0,
@@ -66,6 +74,8 @@ export const bevyUnits = [
   },
   {
     id: 'skull',
+    attackType: 'magic',
+    defenseType: 'mystical',
     art: 'units/skull',
     avatar: 'avatars/skull',
     health: 70.0,
@@ -80,6 +90,8 @@ export const bevyUnits = [
   },
   {
     id: 'paddle_fish',
+    attackType: 'blunt',
+    defenseType: 'agility',
     art: 'units/paddle_fish',
     avatar: 'avatars/paddle_fish',
     health: 40.0,
@@ -94,6 +106,8 @@ export const bevyUnits = [
   },
   {
     id: 'harpoon_fish',
+    attackType: 'pierce',
+    defenseType: 'agility',
     art: 'units/harpoon_fish',
     avatar: 'avatars/harpoon_fish',
     health: 35.0,
@@ -108,6 +122,8 @@ export const bevyUnits = [
   },
   {
     id: 'goblin_lancer',
+    attackType: 'pierce',
+    defenseType: 'armor',
     art: 'units/goblin_lancer',
     avatar: 'avatars/goblin_lancer',
     health: 60.0,
@@ -122,6 +138,8 @@ export const bevyUnits = [
   },
   {
     id: 'shaman',
+    attackType: 'magic',
+    defenseType: 'mystical',
     art: 'units/shaman',
     avatar: 'avatars/shaman',
     health: 30.0,
@@ -136,6 +154,8 @@ export const bevyUnits = [
   },
   {
     id: 'thief',
+    attackType: 'pierce',
+    defenseType: 'agility',
     art: 'units/thief',
     avatar: 'avatars/thief',
     health: 25.0,
@@ -150,6 +170,8 @@ export const bevyUnits = [
   },
   {
     id: 'snake',
+    attackType: 'magic',
+    defenseType: 'agility',
     art: 'units/snake',
     avatar: 'avatars/snake',
     health: 20.0,
@@ -164,6 +186,8 @@ export const bevyUnits = [
   },
   {
     id: 'turtle',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/turtle',
     avatar: 'avatars/turtle',
     health: 120.0,
@@ -178,6 +202,8 @@ export const bevyUnits = [
   },
   {
     id: 'minotaur',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/minotaur',
     avatar: 'avatars/minotaur',
     health: 150.0,
@@ -192,6 +218,8 @@ export const bevyUnits = [
   },
   {
     id: 'gnoll',
+    attackType: 'pierce',
+    defenseType: 'armor',
     art: 'units/gnoll',
     avatar: 'avatars/gnoll',
     health: 45.0,
@@ -206,6 +234,8 @@ export const bevyUnits = [
   },
   {
     id: 'spider',
+    attackType: 'magic',
+    defenseType: 'agility',
     art: 'units/spider',
     avatar: 'avatars/spider',
     health: 25.0,
@@ -220,6 +250,8 @@ export const bevyUnits = [
   },
   {
     id: 'panda',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/panda',
     avatar: 'avatars/panda',
     health: 100.0,
@@ -234,6 +266,8 @@ export const bevyUnits = [
   },
   {
     id: 'lizard',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/lizard',
     avatar: 'avatars/lizard',
     health: 60.0,
@@ -248,6 +282,8 @@ export const bevyUnits = [
   },
   {
     id: 'bear',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/bear',
     avatar: 'avatars/bear',
     health: 140.0,
@@ -262,6 +298,8 @@ export const bevyUnits = [
   },
   {
     id: 'gnome',
+    attackType: 'blunt',
+    defenseType: 'agility',
     art: 'units/gnome',
     avatar: 'avatars/gnome',
     health: 25.0,
@@ -276,6 +314,8 @@ export const bevyUnits = [
   },
   {
     id: 'ogre',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/ogre',
     avatar: 'avatars/ogre',
     health: 400.0,
@@ -290,6 +330,8 @@ export const bevyUnits = [
   },
   {
     id: 'dragon',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/dragon',
     avatar: 'units/dragon',
     health: 200.0,
@@ -304,6 +346,8 @@ export const bevyUnits = [
   },
   {
     id: 'mage',
+    attackType: 'magic',
+    defenseType: 'mystical',
     art: 'units/mage',
     avatar: 'units/mage',
     health: 80.0,
@@ -318,6 +362,8 @@ export const bevyUnits = [
   },
   {
     id: 'knight',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/knight',
     avatar: 'units/knight',
     health: 150.0,
@@ -332,6 +378,8 @@ export const bevyUnits = [
   },
   {
     id: 'werewolf',
+    attackType: 'pierce',
+    defenseType: 'agility',
     art: 'units/werewolf',
     avatar: 'avatars/werewolf',
     health: 85.0,
@@ -346,6 +394,8 @@ export const bevyUnits = [
   },
   {
     id: 'demon',
+    attackType: 'magic',
+    defenseType: 'mystical',
     art: 'units/demon',
     avatar: 'avatars/demon',
     health: 180.0,
@@ -360,6 +410,8 @@ export const bevyUnits = [
   },
   {
     id: 'stone_golem',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/stone_golem',
     avatar: 'avatars/stone_golem',
     health: 500.0,
@@ -374,6 +426,8 @@ export const bevyUnits = [
   },
   {
     id: 'lizardman',
+    attackType: 'pierce',
+    defenseType: 'armor',
     art: 'units/lizardman',
     avatar: 'avatars/lizardman',
     health: 70.0,
@@ -388,6 +442,8 @@ export const bevyUnits = [
   },
   {
     id: 'cerberus',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/cerberus',
     avatar: 'avatars/cerberus',
     health: 200.0,
@@ -402,6 +458,8 @@ export const bevyUnits = [
   },
   {
     id: 'skeleton_mage',
+    attackType: 'magic',
+    defenseType: 'mystical',
     art: 'units/skeleton_mage',
     avatar: 'avatars/skeleton_mage',
     health: 40.0,
@@ -416,6 +474,8 @@ export const bevyUnits = [
   },
   {
     id: 'gryphon',
+    attackType: 'pierce',
+    defenseType: 'agility',
     art: 'units/gryphon',
     avatar: 'avatars/gryphon',
     health: 90.0,
@@ -430,6 +490,8 @@ export const bevyUnits = [
   },
   {
     id: 'headless_horseman',
+    attackType: 'magic',
+    defenseType: 'mystical',
     art: 'units/headless_horseman',
     avatar: 'avatars/headless_horseman',
     health: 160.0,
@@ -444,6 +506,8 @@ export const bevyUnits = [
   },
   {
     id: 'pyromancer',
+    attackType: 'magic',
+    defenseType: 'mystical',
     art: 'units/pyromancer',
     avatar: 'avatars/pyromancer',
     health: 50.0,
@@ -458,6 +522,8 @@ export const bevyUnits = [
   },
   {
     id: 'dwarf',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/dwarf',
     avatar: 'units/dwarf',
     health: 120.0,
@@ -472,6 +538,8 @@ export const bevyUnits = [
   },
   {
     id: 'gargoyle',
+    attackType: 'blunt',
+    defenseType: 'mystical',
     art: 'units/gargoyle',
     avatar: 'avatars/gargoyle',
     health: 200.0,
@@ -486,6 +554,8 @@ export const bevyUnits = [
   },
   {
     id: 'satyr_archer',
+    attackType: 'pierce',
+    defenseType: 'agility',
     art: 'units/satyr_archer',
     avatar: 'avatars/satyr_archer',
     health: 40.0,
@@ -500,6 +570,8 @@ export const bevyUnits = [
   },
   {
     id: 'centaur',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/centaur',
     avatar: 'avatars/centaur',
     health: 110.0,
@@ -514,6 +586,8 @@ export const bevyUnits = [
   },
   {
     id: 'berserker',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/berserker',
     avatar: 'avatars/berserker',
     health: 90.0,
@@ -528,6 +602,8 @@ export const bevyUnits = [
   },
   {
     id: 'horseman',
+    attackType: 'pierce',
+    defenseType: 'armor',
     art: 'units/horseman',
     avatar: 'avatars/horseman',
     health: 100.0,
@@ -542,6 +618,8 @@ export const bevyUnits = [
   },
   {
     id: 'king',
+    attackType: 'blunt',
+    defenseType: 'armor',
     art: 'units/king',
     avatar: 'avatars/king',
     health: 160.0,
@@ -556,6 +634,8 @@ export const bevyUnits = [
   },
   {
     id: 'swordsman',
+    attackType: 'pierce',
+    defenseType: 'armor',
     art: 'units/swordsman',
     avatar: 'avatars/swordsman',
     health: 75.0,

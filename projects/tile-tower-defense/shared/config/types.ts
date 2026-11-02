@@ -1,9 +1,11 @@
+import type { AttackType, DefenseType } from './damage';
 /** Data only: keep these definitions serializable for later catalog seeding. Distances are tiles; time is seconds. */
 export interface ProjectileDef {
   art: string;
   speed: number;
 }
 export interface TowerDef {
+  attackType: AttackType;
   avatar: string;
   projectile: ProjectileDef;
   id: string;
@@ -15,6 +17,8 @@ export interface TowerDef {
   splash: number;
 }
 export interface UnitDef {
+  attackType?: AttackType;
+  defenseType?: DefenseType;
   projectile?: ProjectileDef;
   avatar: string;
   id: string;

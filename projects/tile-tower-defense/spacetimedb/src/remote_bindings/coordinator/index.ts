@@ -5,6 +5,13 @@ import { t as __t, remoteModule as __remoteModule, TypeBuilder as __TypeBuilder,
 
 const __receiverModule: unique symbol = globalThis.Symbol() as typeof __receiverModule;
 export default __remoteModule({
+  "authorizeCleanup": {
+    name: "authorize_cleanup",
+    signatureHash: 73844487961316029839216723333164524778665211395610326233201229900618640063472n,
+    params: {
+      id: __t.u32(),
+    },
+  },
   "authorizeProvision": {
     name: "authorize_provision",
     signatureHash: 73844487961316029839216723333164524778665211395610326233201229900618640063472n,

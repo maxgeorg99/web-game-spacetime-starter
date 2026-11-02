@@ -1,10 +1,11 @@
+import { comCaptains, comCaptain } from '../shared/config/com';
 import { t, th, escapeHtml } from './i18n';
 import { assetUrl } from './assets';
-import { recruitableUnits, factions, worldIslands, unitDef } from './i18n/content';
+import { recruitableUnits, factions, worldIslands } from './i18n/content';
 import { worldBalance } from '../shared/config/world';
 import type { GameStore } from './store';
 import type { IslandScene } from './IslandScene';
-import { avatar, icon } from './views';
+import { avatar, icon, stat, unitTraits } from './views';
 
 /** World navigation never changes whose island the HUD commands control. */
 export class WorldUI {
@@ -42,6 +43,32 @@ export class WorldUI {
     };
     document.getElementById('world-home')!.onclick = () => scene.focusIsland(store.ownSlot ?? 0);
     document.getElementById('world-overview')!.onclick = () => scene.overview();
+    const picker = document.getElementById('captain-picker') as HTMLDialogElement;
+    document.getElementById('add-com')!.onclick = () => {
+      this.render(true);
+      picker.showModal();
+    };
+    document.getElementById('captain-picker-close')!.onclick = () => picker.close();
+    document.getElementById('captain-choices')!.onclick = (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        'button[data-captain]',
+      );
+      if (!button || button.disabled) {
+        return;
+      }
+      const captain = comCaptains.find((captain) => captain.id === button.dataset.captain);
+      if (!captain) {
+        return;
+      }
+      const existing = store.world?.seats.find(
+        (seat) => seat.com && comCaptain(seat.com.captain, seat.slot).id === captain.id,
+      );
+      void store.send(
+        existing
+          ? { type: 'remove-com', target: existing.slot }
+          : { type: 'add-com', kind: captain.id },
+      );
+    };
     document.getElementById('opponent')!.onchange = (event) => {
       this.target = Number((event.target as HTMLSelectElement).value);
       this.render(true);
@@ -80,13 +107,15 @@ export class WorldUI {
       world.seats.map((seat) => [
         seat.owner,
         seat.name,
+        seat.com?.captain,
+        !!seat.com,
         seat.state.lives,
         seat.state.phase,
         seat.state.wave,
       ]),
-      world.flights.map((flight) => [flight.id, flight.remaining, Math.floor(flight.elapsed)]),
       this.store.state.meat,
       this.store.pending,
+      this.store.error,
       this.store.ready,
       this.store.world?.round?.phase,
       this.target,
@@ -97,12 +126,40 @@ export class WorldUI {
       return;
     }
     this.signature = signature;
+    const host = world.seats.find((seat) => seat.owner && !seat.com)?.slot === this.store.ownSlot;
+    const canManage = host && this.store.world?.round?.phase === 'lobby';
+    const addCom = document.getElementById('add-com') as HTMLButtonElement;
+    addCom.hidden = !canManage;
+    addCom.disabled = !this.store.ready || this.store.pending;
+    const picker = document.getElementById('captain-picker') as HTMLDialogElement;
+    if (!canManage && picker.open) {
+      picker.close();
+    }
+    const full = world.seats.every((seat) => seat.owner);
+    document.getElementById('captain-choices')!.innerHTML = comCaptains
+      .map((captain) => {
+        const selected = world.seats.some(
+          (seat) => seat.com && comCaptain(seat.com.captain, seat.slot).id === captain.id,
+        );
+        const disabled =
+          !canManage || !this.store.ready || this.store.pending || (!selected && full);
+        return `<article class="captain-choice ${selected ? 'selected' : ''}" data-personality="${captain.id}">
+        <div class="captain-portrait-stage"><img src="${assetUrl(`art/${captain.portrait}.png`)}" alt="${escapeHtml(captain.name)}"></div>
+        <h3>${escapeHtml(captain.name)}</h3>
+        <strong class="captain-playstyle">${th(`captain.${captain.id}.style`)}</strong>
+        <p>${th(`captain.${captain.id}.description`)}</p>
+        <button data-captain="${captain.id}" ${disabled ? 'disabled' : ''} aria-label="${th(selected ? 'match.removeNamedCom' : 'captain.addNamed', { name: captain.name })}">${th(selected ? 'captain.remove' : full ? 'captain.full' : 'captain.add')}</button>
+        <small>${selected ? th('captain.inSession') : th(`captain.${captain.id}.signature`)}</small>
+      </article>`;
+      })
+      .join('');
+    document.getElementById('captain-picker-status')!.textContent = this.store.error;
     document.getElementById('world-navigation')!.innerHTML = world.seats
       .filter((seat) => !this.store.world?.round || seat.owner)
       .map(
         (seat) => `
       <button aria-label="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" title="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" data-island="${seat.slot}" class="${seat.slot === this.store.ownSlot ? 'own-island' : ''}">
-        <img class="captain-avatar" src="${assetUrl(`art/${factions[worldIslands[seat.slot].faction].avatar}.png`)}" alt="${th('world.captainColor', { color: factions[worldIslands[seat.slot].faction].name })}" style="border-color:#${worldIslands[seat.slot].color.toString(16)}">
+        <img class="captain-avatar" src="${assetUrl(`art/${seat.com ? comCaptain(seat.com.captain, seat.slot).portrait : factions[worldIslands[seat.slot].faction].avatar}.png`)}" alt="${th('world.captainColor', { color: factions[worldIslands[seat.slot].faction].name })}" style="border-color:#${worldIslands[seat.slot].color.toString(16)}">
         <span><b>${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}${seat.slot === this.store.ownSlot ? t('world.you') : ''}</b>
           <small>${seat.owner ? th('world.healthStatus', { health: seat.state.lives, status: seat.state.phase === 'combat' ? t('world.fighting') : seat.state.phase === 'lost' ? t('world.defeated') : t('world.preparing') }) : t('world.unclaimed')}</small>
         </span>
@@ -131,29 +188,15 @@ export class WorldUI {
       .map((unit) => {
         const cost = unit.meatCost * this.count;
         return `<button class="action-card" data-send="${unit.id}" ${locked || cost > this.store.state.meat ? 'disabled' : ''} title="${th('world.sendTitle', { troops: t('count.troops', { count: this.count }), unit: unit.name, damage: unit.leak })}">
-        ${avatar(unit, this.store.faction)}<span class="card-name">${escapeHtml(unit.name)}</span><span class="unit-stats">${th('world.unitStats', { health: unit.health, damage: unit.leak })}<br>${th('world.speed', { speed: unit.speed.toFixed(2) })}</span><span class="card-cost">${icon('meat')}${cost}</span>
+        ${avatar(unit, this.store.faction)}<span class="card-name">${escapeHtml(unit.name)}</span><span class="unit-stats">${stat('health', `${unit.health} HP`)}${stat('leak', `${unit.leak} DMG`)}</span><span class="unit-traits">${unitTraits(unit)}</span><span class="card-cost">${icon('meat')}${cost}</span>
       </button>`;
       })
       .join('');
-    const flights = world.flights.filter(
-      (flight) => flight.from === this.store.ownSlot || flight.to === this.store.ownSlot,
-    );
-    document.getElementById('flight-status')!.textContent =
-      flights
-        .map((flight) => {
-          const inbound = flight.to === this.store.ownSlot;
-          const destination = worldIslands[inbound ? flight.from : flight.to].name;
-          const time = Math.max(0, Math.ceil(worldBalance.flightSeconds - flight.elapsed));
-          return t(inbound ? 'flight.incoming' : 'flight.outgoing', {
-            destination,
-            troops: t('count.troops', { count: flight.remaining }),
-            unit: unitDef(flight.unit).name,
-            arrival: time ? t('flight.seconds', { seconds: time }) : t('flight.landing'),
-          });
-        })
-        .join(' / ') ||
-      (!opponents.length
-        ? t('world.waiting')
-        : t('count.unitsPerAirship', { count: this.count, seconds: worldBalance.flightSeconds }));
+    document.getElementById('unit-comparison')!.innerHTML = recruitableUnits
+      .map(
+        (unit) =>
+          `<div class="unit-comparison-row"><b>${escapeHtml(unit.name)}</b><span class="unit-stats">${stat('health', unit.health)}${stat('speed', Number(unit.speed.toFixed(2)))}${stat('leak', unit.leak)}</span></div>`,
+      )
+      .join('');
   }
 }

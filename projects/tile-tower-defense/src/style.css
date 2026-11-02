@@ -736,9 +736,6 @@ dialog::backdrop {
   margin: 0;
   text-transform: capitalize;
 }
-#wave-description {
-  display: none;
-}
 #wave-units {
   display: flex;
   gap: 12px;
@@ -843,12 +840,7 @@ dialog::backdrop {
 .expedition-controls input {
   width: 48px;
 }
-#flight-status {
-  font-size: 10px;
-  color: #76866d;
-  padding: 8px 4px 2px;
-  line-height: 1.5;
-}
+
 #wave-units {
   flex-wrap: wrap;
 }
@@ -883,9 +875,8 @@ dialog::backdrop {
 /* Keep the full roster inside the game dock without covering the battlefield. */
 #send-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  max-height: min(34vh, 290px);
-  overflow-y: auto;
+  grid-template-columns: repeat(4, minmax(148px, 1fr));
+  overflow-x: auto;
   overscroll-behavior: contain;
   gap: 8px;
 }
@@ -1132,4 +1123,372 @@ body {
   max-height: calc(100dvh - 125px);
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+/* Captain selection belongs with match controls, outside the build/recruit dock. */
+.wave-hud > .captain-picker-open {
+  background: #f5f2df;
+  color: #344735;
+  border: 2px solid #78905a;
+  box-shadow: 0 3px 0 #6b7952;
+}
+#captain-picker {
+  width: min(820px, calc(100vw - 32px));
+  padding: 24px;
+}
+.captain-picker-hint {
+  margin: 0 0 20px;
+  color: #65705e;
+}
+.captain-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.captain-choice {
+  --captain-color: #a64e3b;
+  padding: 14px;
+  background: #f3f0df;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: center;
+}
+.captain-choice[data-personality='mara'] {
+  --captain-color: #506d5a;
+}
+.captain-choice[data-personality='ivo'] {
+  --captain-color: #947128;
+}
+.captain-choice.selected {
+  border-color: var(--captain-color);
+}
+.captain-portrait-stage {
+  height: 150px;
+  display: grid;
+  place-items: end center;
+  background: #e1e4cd;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.captain-portrait-stage img {
+  width: 144px;
+  height: 144px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.captain-choice h3 {
+  font-size: 18px;
+  margin: 16px 0 5px;
+  color: #35432f;
+}
+.captain-playstyle {
+  color: var(--captain-color);
+  font-size: 13px;
+}
+.captain-choice p {
+  font-size: 14px;
+  line-height: 1.45;
+  color: #56604f;
+  flex: 1;
+  margin: 10px 0 16px;
+}
+.captain-choice button {
+  background: var(--captain-color);
+  color: #fffbed;
+  padding: 10px;
+  border-radius: 5px;
+  min-height: 42px;
+}
+.captain-choice button:hover:not(:disabled),
+.captain-choice button:focus-visible,
+.captain-choice button:active:not(:disabled) {
+  background: var(--captain-color);
+  color: #fffbed;
+  border-color: var(--captain-color);
+}
+.captain-choice button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+.captain-choice button:active:not(:disabled) {
+  filter: brightness(0.9);
+}
+.captain-choice small {
+  min-height: 30px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #65705e;
+}
+#captain-picker-status {
+  color: #a04736;
+  margin-bottom: 0;
+}
+@media (max-width: 600px) {
+  #captain-picker {
+    padding: 16px;
+  }
+  .captain-choices {
+    grid-template-columns: 1fr;
+  }
+  .captain-choice {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: 5px 12px;
+    text-align: left;
+  }
+  .captain-portrait-stage {
+    grid-row: span 4;
+    height: 100px;
+    align-self: start;
+  }
+  .captain-portrait-stage img {
+    width: 96px;
+    height: 96px;
+  }
+  .captain-choice h3,
+  .captain-choice p,
+  .captain-choice small {
+    margin: 0;
+  }
+  .captain-choice button,
+  .captain-choice small {
+    grid-column: 2;
+  }
+  .captain-choice p {
+    font-size: 12px;
+  }
+  .wave-hud {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+/* Compact stats keep explanations available without repeating labels on every card. */
+.compact-stat {
+  display: inline-flex;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.unit-stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  line-height: 1.5;
+}
+.stat-help {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.stat-help summary {
+  cursor: pointer;
+  padding: 6px 0;
+}
+.stat-help p {
+  margin: 4px 0 8px;
+}
+.mage-summary .stat-help {
+  flex-basis: 100%;
+}
+.stat-legend {
+  font-size: 13px;
+  line-height: 1.6;
+}
+#income {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+#wave-preview > summary {
+  cursor: pointer;
+  min-height: 28px;
+}
+#wave-preview > summary::after {
+  content: '▾';
+  margin-left: auto;
+}
+#wave-preview[open] > summary::after {
+  content: '▴';
+}
+
+.unit-traits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px 7px;
+}
+.unit-trait {
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.unit-trait + .unit-trait::before {
+  content: '·';
+  margin-right: 7px;
+  color: #788078;
+}
+.trait-fast {
+  color: #39703a;
+}
+.trait-slow {
+  color: #a64138;
+}
+.trait-tough {
+  color: #496476;
+}
+.trait-siege {
+  color: #705776;
+}
+.unit-comparison-row {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 6px 0;
+  border-top: 1px solid #52675e26;
+}
+#unit-comparison {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+#match-result {
+  width: min(440px, calc(100vw - 32px));
+  text-align: center;
+  padding: 36px 28px;
+  border: 3px solid #8c9e67;
+}
+#match-result::backdrop {
+  background: rgb(24 35 28 / 65%);
+}
+#match-result[open] {
+  animation: result-arrive 380ms ease-out both;
+}
+.result-emblem {
+  width: 112px;
+  height: 112px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: #dde5bc;
+  border: 3px solid #a9b977;
+  display: grid;
+  place-items: center;
+}
+.result-emblem img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+#match-result[data-outcome='victory'] .result-emblem {
+  animation: result-glow 1.8s ease-in-out 2;
+}
+#match-result[data-outcome='defeat'] {
+  border-color: #987166;
+}
+#match-result[data-outcome='defeat'] .result-emblem {
+  background: #dfd3ca;
+  border-color: #987166;
+}
+#result-title {
+  margin: 0 0 12px;
+  font-size: 36px;
+}
+#result-message {
+  line-height: 1.5;
+}
+#result-stats {
+  color: #65705e;
+  font-size: 13px;
+  margin: 20px 0;
+}
+.result-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+@keyframes result-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes result-glow {
+  50% {
+    box-shadow:
+      0 0 0 12px rgb(197 176 91 / 18%),
+      0 0 34px #cfbd77;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #match-result[open],
+  #match-result .result-emblem {
+    animation: none;
+  }
+}
+
+#send-cards .unit-traits {
+  flex-direction: column;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+#send-cards .unit-trait {
+  white-space: nowrap;
+}
+#send-cards .unit-trait + .unit-trait::before {
+  content: none;
+}
+
+#send-cards .unit-stats {
+  flex-wrap: nowrap;
+  gap: 6px;
+  font-size: 11px;
+}
+#send-cards .unit-stats .stat-icon {
+  width: 14px;
+  height: 14px;
+}
+
+#send-cards .unit-trait-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+#build-tray .unit-trait,
+#send-cards .unit-trait,
+#send-cards .compact-stat > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  line-height: 16px;
+}
+#build-tray .unit-trait .stat-icon,
+#build-tray .card-cost .stat-icon,
+#send-cards .unit-trait .stat-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Preserve the source boot's pixel shading while distinguishing movement traits. */
+.trait-fast .stat-icon {
+  filter: grayscale(1) sepia(1) saturate(4) hue-rotate(65deg);
+}
+.trait-slow .stat-icon {
+  filter: grayscale(1) sepia(1) saturate(5) hue-rotate(320deg);
+}
+
+@media (min-width: 701px) and (min-height: 551px) {
+  .bottom-hud:has(#send-tray:not([hidden])) {
+    width: min(650px, calc(100% - 32px));
+  }
 }

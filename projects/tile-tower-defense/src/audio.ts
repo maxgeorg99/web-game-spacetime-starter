@@ -1,3 +1,4 @@
+import { matchOutcome, type MatchOutcome } from '../shared/game/outcome';
 import { t } from './i18n';
 import { assetUrl } from './assets';
 import { audioMix, soundCues, type SoundCue } from '../shared/config/audio';
@@ -46,6 +47,8 @@ export class GameAudio {
   private snapshots = new Map<number, Snapshot>();
   private flights?: Set<number>;
   private error = '';
+  private outcome?: MatchOutcome;
+  private observed = false;
 
   constructor(
     private store: GameStore,
@@ -155,8 +158,20 @@ export class GameAudio {
   }
   private observe() {
     if (!this.store.ready) {
+      this.outcome = undefined;
+      this.observed = false;
       this.snapshots.clear();
       this.flights = undefined;
+      return;
+    }
+    const outcome = matchOutcome(this.store.world, this.store.ownSlot);
+    if (this.observed && outcome && !this.outcome) {
+      this.stopVoices();
+      this.play(outcome === 'victory' ? 'victory' : 'defeat');
+    }
+    this.outcome = outcome;
+    this.observed = true;
+    if (outcome) {
       return;
     }
     const seats = this.store.online

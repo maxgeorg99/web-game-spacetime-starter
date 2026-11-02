@@ -73,6 +73,9 @@
         </div>
         <div class="wave-hud">
           <div class="wave-number"><span id="wave-number"></span></div>
+          <button id="add-com" class="captain-picker-open" data-i18n="match.addCom" hidden>
+            Add COM
+          </button>
           <button id="start" class="primary">
             <span data-i18n="wave.start">Start wave ▷</span>
           </button>
@@ -108,25 +111,26 @@
                 ><span data-i18n="audio.music">Music</span>
                 <input id="audio-music" type="range" min="0" max="100" value="15"
               /></label>
+              <p data-i18n="world.controls"></p>
               <p id="connection"></p>
               <button id="sessions-open"><span data-i18n="session.title">Sessions</span></button>
             </div>
           </details>
         </div>
       </header>
-      <section
+      <details
         id="wave-preview"
+        open
         class="wave-panel"
         aria-label="Wave preview"
         data-i18n-aria-label="a11y.wavePreview"
       >
-        <div class="wave-caption">
+        <summary class="wave-caption">
           <span id="phase"></span>
           <h2 id="wave-title"></h2>
-        </div>
-        <p id="wave-description"></p>
+        </summary>
         <div id="wave-units"></div>
-      </section>
+      </details>
       <aside id="selection-panel" class="floating-panel selection-panel" hidden>
         <button
           id="selection-close"
@@ -147,11 +151,7 @@
         hidden
       ></aside>
       <div id="world-controls" class="world-controls" hidden>
-        <span
-          ><span data-i18n="world.controls"
-            >Drag to fly · Scroll to zoom · Arrow keys to pan</span
-          ></span
-        ><button id="world-home"><span data-i18n="world.home">My island</span></button
+        <button id="world-home"><span data-i18n="world.home">My island</span></button
         ><button id="world-overview"><span data-i18n="world.overview">World view</span></button>
       </div>
       <section class="bottom-hud">
@@ -185,12 +185,50 @@
                 <input id="passengers" type="number" min="1" max="6" value="1"
               /></label>
             </div>
+            <details class="stat-help">
+              <summary data-i18n="ui.compareStats">Compare stats</summary>
+              <p>
+                <span aria-hidden="true">❤️</span> <span data-i18n="stat.health"></span> ·
+                <span aria-hidden="true">👟</span> <span data-i18n="stat.speed"></span> ·
+                <span aria-hidden="true">🏰</span> <span data-i18n="stat.leak"></span>
+              </p>
+              <div id="unit-comparison"></div>
+            </details>
             <div id="send-cards" class="card-tray"></div>
-            <p id="flight-status"></p>
           </div>
         </div>
       </section>
     </main>
+    <dialog id="captain-picker" aria-labelledby="captain-picker-title">
+      <div class="catalog-head">
+        <h2 id="captain-picker-title" data-i18n="captain.choose">Choose your rival</h2>
+        <button
+          id="captain-picker-close"
+          class="icon-button"
+          data-i18n-aria-label="captain.close"
+          aria-label="Close captain picker"
+        >
+          ×
+        </button>
+      </div>
+      <p class="captain-picker-hint" data-i18n="captain.hint">
+        Three captains. Three ways to conquer your island.
+      </p>
+      <div id="captain-choices" class="captain-choices"></div>
+      <p id="captain-picker-status" role="status" aria-live="polite"></p>
+    </dialog>
+    <dialog id="match-result" aria-labelledby="result-title" aria-describedby="result-message">
+      <div class="result-emblem"><img id="result-portrait" alt="" /></div>
+      <h1 id="result-title"></h1>
+      <p id="result-message"></p>
+      <p id="result-stats"></p>
+      <div class="result-actions">
+        <button id="result-sessions" class="primary" data-i18n="result.sessions">
+          Back to sessions
+        </button>
+        <button id="result-spectate" data-i18n="result.spectate">Spectate</button>
+      </div>
+    </dialog>
     <dialog id="catalog">
       <div class="catalog-head">
         <h2><span data-i18n="catalog.title">Field guide</span></h2>
@@ -202,6 +240,11 @@
           ×
         </button>
       </div>
+      <p class="stat-legend">
+        <span aria-hidden="true">⚔️</span> <span data-i18n="stat.damage"></span> ·
+        <span aria-hidden="true">🎯</span> <span data-i18n="stat.range"></span> ·
+        <span aria-hidden="true">⏱️</span> <span data-i18n="stat.cooldown"></span>
+      </p>
       <div id="catalog-content"></div>
     </dialog>
     <script type="module" src="/src/main.ts"></script>

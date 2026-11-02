@@ -1,3 +1,4 @@
+import { ResultScreen } from './result-screen';
 import { localizeDocument } from './i18n';
 import { SessionMenu } from './session-menu';
 import { GameAudio } from './audio';
@@ -15,6 +16,7 @@ const store = new GameStore(),
 new UI(store, scene);
 new GameAudio(store, scene);
 new SessionMenu(store);
+new ResultScreen(store);
 new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',

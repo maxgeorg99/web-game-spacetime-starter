@@ -6,7 +6,16 @@ import { income, sameCell } from '../shared/game/rules';
 import type { Point } from '../shared/game/model';
 import type { GameStore } from './store';
 import type { IslandScene } from './IslandScene';
-import { buildCards, draftCards, towerPanel, catalogContent, icon, avatar } from './views';
+import {
+  buildCards,
+  draftCards,
+  towerPanel,
+  catalogContent,
+  combatTypes,
+  icon,
+  avatar,
+  stat,
+} from './views';
 
 const element = (id: string) => document.getElementById(id)!;
 const button = (id: string) => element(id) as HTMLButtonElement;
@@ -185,6 +194,8 @@ export class UI {
             capacity: balance.maxRecruits,
           });
 
+    element('army-count').hidden = state.enemies.length === 0 && state.recruits.length === 0;
+
     // Combat positions change at 10 Hz, but controls only redraw when their inputs change.
     const signature = JSON.stringify([
       state.phase,
@@ -226,15 +237,12 @@ export class UI {
         : state.phase === 'lost'
           ? t('wave.destroyed')
           : wave.name;
-    element('wave-description').textContent = ended
-      ? t('wave.result', { count: state.kills })
-      : wave.description;
     element('wave-units').innerHTML = wave.groups
       .map((group) => {
         const unit = unitDef(group.unit);
         return `
         <div class="wave-unit">${avatar(unit)}
-          <span><b>${group.count} × ${escapeHtml(unit.name)}</b><small>${th('wave.unitStats', { health: Math.round(unit.health * wave.healthMultiplier), damage: unit.leak })}</small></span>
+          <span><b>${group.count} × ${escapeHtml(unit.name)}</b><small class="wave-stat-row">${stat('health', `${Math.round(unit.health * wave.healthMultiplier)} HP`)} ${stat('leak', `${unit.leak} DMG`)} ${combatTypes({ defenseType: unit.defenseType })}</small></span>
         </div>
       `;
       })
@@ -291,6 +299,8 @@ export class UI {
     }
     const tower = state.towers.find((tower) => this.selected && sameCell(tower, this.selected));
     element('selection-panel').hidden = !tower || state.phase === 'draft';
+    const towerHelpOpen =
+      element('selection').querySelector<HTMLDetailsElement>('.stat-help')?.open;
     element('selection').innerHTML = tower
       ? towerPanel(
           state,
@@ -299,6 +309,10 @@ export class UI {
           this.store.faction,
         )
       : '';
+    const towerHelp = element('selection').querySelector<HTMLDetailsElement>('.stat-help');
+    if (towerHelp && towerHelpOpen) {
+      towerHelp.open = true;
+    }
     element('draft').hidden = state.phase !== 'draft';
     element('action-dock').hidden = state.phase === 'draft' || ended;
     if (state.phase !== 'draft') {
@@ -324,6 +338,12 @@ export class UI {
       button(`tab-${tab}`).setAttribute('aria-pressed', String(this.tab === tab));
     }
     const earned = income(state);
-    element('income').textContent = t('hud.income', { gold: earned.gold, meat: earned.meat });
+    element('income').innerHTML =
+      `${icon('gold')}+${earned.gold} ${icon('meat')}+${earned.meat} / ${th('ui.wave')}`;
+    element('income').title = t('hud.income', { gold: earned.gold, meat: earned.meat });
+    element('income').setAttribute(
+      'aria-label',
+      t('hud.income', { gold: earned.gold, meat: earned.meat }),
+    );
   }
 }

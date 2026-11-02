@@ -1,3 +1,4 @@
+import { resultRetentionSeconds } from '../shared/config/lifecycle';
 import { t } from './i18n';
 import { DbConnection } from './coordinator_bindings';
 import type { Session, Slots } from './coordinator_bindings/types';
@@ -18,6 +19,7 @@ export class SessionMenu {
   private slots = new Map<number, Slots>();
   private visited = new Set<number>();
   private provisioner = import.meta.env.VITE_PROVISIONER_URL as string | undefined;
+  private cleaning = new Set<number>();
   private attempted = new Set<number>();
   private provisioning = new Set<number>();
   private name = document.getElementById('captain-name') as HTMLInputElement;
@@ -67,6 +69,7 @@ export class SessionMenu {
       if (!document.hidden && !game.ready) {
         this.render();
       }
+      this.cleanupFinished();
     }, 15_000);
     this.connect();
   }
@@ -163,6 +166,32 @@ export class SessionMenu {
       })
       .build();
   }
+  private cleanupFinished() {
+    if (!this.provisioner || !this.connected) {
+      return;
+    }
+    for (const row of this.sessions) {
+      if (
+        row.status !== 'finished' ||
+        this.cleaning.has(row.id) ||
+        Date.now() - Number(row.lastActivity.microsSinceUnixEpoch / 1000n) <
+          resultRetentionSeconds * 1000
+      ) {
+        continue;
+      }
+      const url = new URL(this.provisioner, location.href);
+      url.searchParams.set('id', String(row.id));
+      url.searchParams.set('cleanup', '1');
+      this.cleaning.add(row.id);
+      void fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${this.token}` },
+        signal: AbortSignal.timeout(30_000),
+      })
+        .catch(() => {})
+        .finally(() => this.cleaning.delete(row.id));
+    }
+  }
   private async provision(id: number) {
     if (!this.provisioner || this.provisioning.has(id)) {
       return;
@@ -249,7 +278,7 @@ export class SessionMenu {
     }
     const list = document.getElementById('session-list')!;
     list.replaceChildren();
-    for (const session of this.sessions) {
+    for (const session of this.sessions.filter((session) => session.status !== 'finished')) {
       const row = document.createElement('div');
       row.className = 'session-row';
       const details = document.createElement('div');
@@ -306,7 +335,7 @@ export class SessionMenu {
       row.append(details, button);
       list.append(row);
     }
-    if (!this.sessions.length) {
+    if (!this.sessions.some((session) => session.status !== 'finished')) {
       const empty = document.createElement('p');
       empty.textContent = this.connected ? t('session.empty') : t('session.reconnectHint');
       list.append(empty);

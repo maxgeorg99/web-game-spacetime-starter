@@ -298,3 +298,59 @@ Movement, leak checks, tower acquisition, melee/ranged combat, splash, chain lig
 Added regression coverage for original starting size, valid growth, blocked/repeated orders, saved-route continuity and bounds, expedition continuity, tower/projectile behavior on new roads, leaks and shared automatic drafts. Verification: formatting, lint, all three TypeScript checks, 60 domain/world/path/magic/localization tests and production build pass. Browser playtest and live-server integration are not yet run. No production publish performed. Create a new session to use growing paths; existing saves retain their roads.
 
 Island-label polish: reduced battlefield island/captain labels to 12px, compact padding and bounded text wrapping; labels now anchor directly below each keep rather than above the island. Presentation-only; no server publish needed.
+
+### 2026-11-02 — server-controlled COM opponents
+
+Implemented optional COM seats in shared-match lobbies. The host adds/removes COMs before starting; all captains keep the existing free-for-all rules (confirmed by user). Supports one human with up to three COMs or two humans with up to two COMs. COMs count as occupied seats, cannot displace humans, and cannot be changed after start.
+
+The existing authenticated scheduled tick advances persisted COM decision/raid timers. A bounded deterministic policy drafts offered land, scores affordable tower placements by road coverage, upgrades through normal prerequisites and sends paid expeditions to surviving humans or COMs. Every action uses the existing world command path. No client simulation, external AI service, schema change or generated binding change is required. English/German/Spanish lobby controls added.
+
+Handoff: implementation and regression cases added; gameplay balance, automated tests/typechecks and browser verification remain pending approval. Added server integration coverage for lobby permissions, replicated autonomous actions and reconnect; run `bun run test:server` only against a fresh disposable world database. Existing worlds need the updated world module; no local or production publish performed. See `docs/CONTENT.md` for the manual flow and policy configuration.
+
+COM verification follow-up: user authorized automated checks and local playtesting. Fixed one missing-braces lint error. Formatting, ESLint, all three TypeScript checks, all 64 unit tests and the production frontend build pass (existing large-bundle warning). All three live-server integration tests pass against disposable database `tile-com-verification` on isolated port 3197, including COM host authorization, autonomous drafting/building/sending, replication and reconnect. The persistent local server on 3106, local provisioner and Vite on 5175 are running for manual playtesting. Create a new session to receive the updated module; the three existing local worlds were preserved without republishing or resets. No production deployment or browser gameplay verification performed.
+
+### 2026-11-02 — quieter gameplay UI
+
+Presentation pass: recruit cards use labeled emoji stats (health, movement speed, keep damage) with a touch-accessible symbol key; the action is now “Send troops” in English, German and Spanish. Tower stats share compact damage/range/cooldown symbols, with a field-guide legend. Wave briefing starts collapsed and expands on click/tap; camera help lives in settings. Mage mechanics expand on demand, empty army counts disappear, income uses existing resource art, and repeated instructions/discovery badges are shorter. Removed internal catalog IDs from player-facing cards. Preserved gameplay values and existing COM work.
+
+Handoff: authored files formatted. No lint, typechecks, tests, build or browser verification run for this UI pass, following the manual-playtest preference. Manually review sending, wave expansion, tower explanations and narrow layouts in ?lang=en/de/es. No server changes or publishing required.
+
+Troop-card refinement: replaced always-visible stat numbers with short, softly colored trait badges (Fast, Slow, Tough, High keep damage). Color always accompanies a word and symbol. Neutral values receive no badge; exact health/speed/keep damage remain in the expandable Compare stats list, including on touch devices. Display-only thresholds live in shared/config/unit-presentation.ts and read actual unit config values. All three locales updated. Formatted only; automated and browser verification remain unrun.
+
+Visual restraint follow-up: removed emoji and filled badge backgrounds from troop traits. Cards show at most two quiet text distinctions, separated by a dot, with muted text colors; existing unit portraits and resource art remain the visual focus. Speed is paired with high keep damage when exceptional, otherwise toughness; exact values remain in Compare stats. Formatted; no automated or browser checks run.
+
+Wave copy follow-up: removed the briefing description paragraph and its rendering/styles. Expanded wave previews now show enemy portraits, counts and stats without flavor prose or generic tactical advice. Victory/defeat headings remain. Locale content is preserved for compatibility. Formatted only; no automated or browser verification run.
+
+### Named captains and lobby picker — 2026-11-02
+
+Add COM moved beside Start match. The portrait picker offers unique Rook Emberwake (raider), Mara Stoneguard (guardian), and Ivo Goldleaf (merchant); removal is inside the picker. Persisted world/captain seeds vary legal placements, upgrades, troops, targets and timing while preserving replay/reconnect behavior. Profiles differ in draft scoring, tower preferences and raid budgets; incoming flights influence defensive priorities. Old COM saves migrate without resetting economies. Rook art is PixelLab job 2f38ef64-d678-496f-9fa7-025ae0f99b35, candidate 1; PixelLab allowance was exhausted afterward. User authorized OpenAI image generation for Mara and Ivo. Assets are public/art/captains/{rook,mara,ivo}.png. Prompts: transparent centered 16-bit head-and-shoulders portraits; Rook a crimson sky pirate, Mara a silver-braided armored fortress captain in green, Ivo a white-bearded merchant admiral with brass spectacles and gold coat.
+
+Lint, all TypeScript checks, 67 unit tests, three isolated server tests and production build passed (existing bundle warning). Full browser picker verification remains pending. User authorized cleanup: deleted the four directory-listed local worlds and session records, preserving captain profiles and production. New local sessions use the current module through the running provisioner. Added localized All-rounder label to Swordsman; removed idle flight-summary copy.
+
+### Reference offense/defense types — 2026-11-02
+
+Imported all 40 unit type pairs from the reference units.toml and the exact Blunt/Pierce/Divine/Magic versus Armor/Agility/Mystical matrix from components.rs. Shared authoritative melee, projectile/splash, burn, ignition and chain damage use the matrix. New projectiles persist attack type; legacy untyped shots/statuses and six legacy unit definitions retain flat damage. Towers have offense only because this simulation does not damage towers. Cards, wave preview and field guide expose localized types and matchup tooltips. Keep damage is unchanged. Lint, all three TypeScript checks and 69 unit tests passed; added mixed-defense splash and legacy projectile coverage. New local sessions pick up the module through the provisioner; existing sessions require republishing. Balance playtesting remains necessary.
+
+Type-label correction: Recruit cards and recruitable entries in the field guide now show defense only; wave enemies retain attack and defense labels. Copied the reference project's Blunt, Sword, Divine, WandT2, Defense, Agility and Mystical PNGs into local icons and replaced emoji type badges. Compact stat displays also use source PNGs instead of emoji. Combat behavior is unchanged.
+
+Wave preview correction: show health, keep damage and defense only. Keep damage now uses the keep art rather than the source Unit_Damage sword icon. Fast/Slow/Tough/Siege badges each reuse a local asset. Assigned the legacy opening Cave Spider Agility and the two legacy heavy enemies Armor so initial waves expose meaningful defense counters too; this intentionally applies the matrix to those enemies rather than leaving their damage neutral.
+
+### 2026-11-02 — match result presentation and cleanup
+
+- Added authoritative outcome helper and termination when no living humans remain. Result dialog offers session return or spectating, captain art, reduced-motion-aware animation and victory/defeat cues.
+- Finished sessions retire through the existing authenticated IDC transport, leave the lobby/quotas immediately, and have a two-minute result grace period. Trusted worker and hosted endpoint delete only registered generated finished worlds; repeat reports do not extend retention.
+- Regenerated coordinator client/module bindings. Local coordinator and cleanup worker updated; production deployment remains pending. Hosted physical deletion is client-triggered, not scheduled.
+- Deleted old local sessions 9–12 and their world databases at the user's request. Preserved the newly created session 13.
+- Validation: lint, all three TypeScript targets, 71 domain/localization tests and production build passed (existing bundle-size warning). Three isolated server integration tests and the IDC integration test passed, including authenticated retirement, grace-period rejection and late-report protection.
+
+- Removed bottom incoming/outgoing shipment summaries and stacked Send Units traits one per line.
+
+- Restored always-visible HP and keep-damage values on recruit/send cards (`45 HP`, `1 DMG`) above the separately stacked traits, using existing stat assets.
+
+- Recruit cards omit the redundant high-keep-damage badge, group defense with Fast/Slow, and vertically center stat/trait icons with text.
+
+- Fast and Slow use the existing winged-boot art tinted green/red with matching labels, inspired by the requested status-icon direction.
+
+- Recruit roster uses four columns/two rows, widening the desktop recruit dock and retaining horizontal scrolling on narrow screens.
+
+- Build card type/cost icons now use compact 14px sizing and vertically centered type labels, consistent with recruit cards.
