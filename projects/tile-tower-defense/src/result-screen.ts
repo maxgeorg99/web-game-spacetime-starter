@@ -1,3 +1,4 @@
+import { statisticsMarkup } from './statistics';
 import { matchOutcome } from '../shared/game/outcome';
 import { comCaptain } from '../shared/config/com';
 import { factions } from '../shared/config/factions';
@@ -52,6 +53,7 @@ export class ResultScreen {
         waves: seat.cycles * waves.length + seat.state.wave,
         kills: seat.state.kills,
       });
+      document.getElementById('result-report')!.innerHTML = statisticsMarkup(seat.state.statistics);
       const portrait = document.getElementById('result-portrait') as HTMLImageElement;
       portrait.src = assetUrl(
         `art/${seat.com ? comCaptain(seat.com.captain, seat.slot).portrait : factions[worldIslands[seat.slot].faction].avatar}.png`,

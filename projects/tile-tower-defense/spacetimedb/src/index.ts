@@ -1,3 +1,5 @@
+import { statistics, type RunReport } from '../../shared/game/statistics';
+import { matchOutcome } from '../../shared/game/outcome';
 import { cleanName } from '../../shared/game/names';
 import { stepComs } from '../../shared/game/com';
 import {
@@ -56,7 +58,19 @@ const reporting = table(
   },
 );
 const slotOutbox = coordinator.outbox.receiveWorldSlots({ name: 'slot_outbox' });
+const reportDelivery = table(
+  { name: 'report_delivery' },
+  {
+    id: t.u32().primaryKey(),
+    pending: t.bool(),
+    delivered: t.bool(),
+    retryAt: t.u64(),
+  },
+);
+const reportOutbox = coordinator.outbox.receiveRunReports({ name: 'report_outbox' });
 const db = schema({
+  reportDelivery,
+  reportOutbox,
   island,
   clock,
   world,
@@ -115,6 +129,21 @@ export const on_slot_report = db.reducer(
       nextReportAt: ctx.timestamp.microsSinceUnixEpoch + 30_000_000n,
       lastError: 'err' in result ? result.err.slice(0, 500) || 'Slot report failed.' : '',
     });
+  },
+);
+export const on_run_report = db.reducer(
+  { onResult: reportOutbox },
+  { row: reportOutbox.rowType, result: t.result(t.unit(), t.string()) },
+  (ctx, { result }) => {
+    const delivery = ctx.db.reportDelivery.id.find(1);
+    if (delivery) {
+      ctx.db.reportDelivery.id.update({
+        ...delivery,
+        pending: false,
+        delivered: !('err' in result),
+        retryAt: ctx.timestamp.microsSinceUnixEpoch + 30_000_000n,
+      });
+    }
   },
 );
 export const join = db.reducer((ctx) => {
@@ -206,8 +235,39 @@ export const tick = db.reducer({ onSchedule: clock }, { timer: clock.rowType }, 
   const finished = worldState?.round?.phase === 'finished';
   const claimed = finished ? 0 : (worldState?.seats.filter((seat) => seat.owner).length ?? 0);
   const config = ctx.db.reporting.id.find(1);
+  if (finished && config && worldState) {
+    const delivery = ctx.db.reportDelivery.id.find(1);
+    if (
+      !delivery ||
+      (!delivery.delivered &&
+        !delivery.pending &&
+        ctx.timestamp.microsSinceUnixEpoch >= delivery.retryAt)
+    ) {
+      const reports: RunReport[] = worldState.seats
+        .filter((seat) => seat.owner && !seat.com)
+        .map((seat) => ({
+          version: 1,
+          owner: seat.owner!,
+          name: seat.name ?? '',
+          outcome: matchOutcome(worldState, seat.slot)!,
+          statistics: statistics(seat.state),
+        }));
+      ctx.db.reportOutbox.insert({
+        msgId: 0n,
+        target: config.target,
+        reports: JSON.stringify(reports),
+      });
+      const next = { id: 1, pending: true, delivered: false, retryAt: 0n };
+      if (delivery) {
+        ctx.db.reportDelivery.id.update(next);
+      } else {
+        ctx.db.reportDelivery.insert(next);
+      }
+    }
+  }
   if (
     config &&
+    (!finished || ctx.db.reportDelivery.id.find(1)?.delivered) &&
     !config.pending &&
     (ctx.timestamp.microsSinceUnixEpoch >= config.nextReportAt ||
       (!config.lastError && config.lastClaimed !== claimed))

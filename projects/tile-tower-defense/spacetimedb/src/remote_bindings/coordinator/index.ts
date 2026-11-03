@@ -52,6 +52,13 @@ export default __remoteModule({
       uri: __t.string(),
     },
   },
+  "receiveRunReports": {
+    name: "receive_run_reports",
+    signatureHash: 52148420095764771863438301304201300118553503891942320841466148822592304637856n,
+    params: {
+      reports: __t.string(),
+    },
+  },
   "receiveWorldSlots": {
     name: "receive_world_slots",
     signatureHash: 38417200920331441624088535521930958670694461293295420201366070962485099650873n,

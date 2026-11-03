@@ -30,12 +30,24 @@ export const Membership = __t.object("Membership", {
 });
 export type Membership = __Infer<typeof Membership>;
 
+export const MyRunReports = __t.object("MyRunReports", {});
+export type MyRunReports = __Infer<typeof MyRunReports>;
+
 export const ProvisionLease = __t.object("ProvisionLease", {
   sessionId: __t.u32(),
   attempt: __t.string(),
   expiresAt: __t.u64(),
 });
 export type ProvisionLease = __Infer<typeof ProvisionLease>;
+
+export const RunReport = __t.object("RunReport", {
+  key: __t.string(),
+  owner: __t.identity(),
+  sessionName: __t.string(),
+  finishedAt: __t.timestamp(),
+  report: __t.string(),
+});
+export type RunReport = __Infer<typeof RunReport>;
 
 export const Session = __t.object("Session", {
   id: __t.u32(),

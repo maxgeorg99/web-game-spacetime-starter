@@ -354,3 +354,19 @@ Wave preview correction: show health, keep damage and defense only. Keep damage 
 - Recruit roster uses four columns/two rows, widening the desktop recruit dock and retaining horizontal scrolling on narrow screens.
 
 - Build card type/cost icons now use compact 14px sizing and vertically centered type labels, consistent with recruit cards.
+
+### 2026-11-03 — authoritative strategy statistics and saved reports
+
+Implemented live statistics, individual tower damage/kills/shots, tower-type contribution with damage share, control and damage per invested gold, income/spend breakdowns, and raid arrival/conversion/keep damage. Shared simulation records effective post-resistance damage without overkill and persists projectile/status attribution across reconnects and tower sales. Old snapshots receive explicitly partial reports; new runs begin at zero.
+
+Added expanded match results and private coordinator history for the latest 50 completed matches. Reports survive world/session cleanup; authenticated IDC delivery must be acknowledged before terminal retirement. Retries are idempotent and delayed after failures. Generated bindings refreshed. English, German and Spanish UI included; existing art and full-screen battlefield layout preserved.
+
+Local handoff: persistent SpacetimeDB on 3106, Vite at http://127.0.0.1:5175 and the local provisioner started at the user's request. Local coordinator migrated additively; existing worlds preserved. Create a new session to play the statistics-enabled module. Production remains untouched. Definitions and rollout notes are in docs/CONTENT.md.
+
+Verification complete: 77 unit tests, all three TypeScript targets, ESLint and frontend production build passed (existing bundle-size warning). Three isolated server integration tests passed, including persisted statistics after reconnect. Coordinator integration passed archive authorization, deduplication, identity-scoped private views and retention after session removal. An actual unprotected captain lost a scheduled match; the world delivered its report successfully before retirement. Tests used disposable databases on isolated port 3198. Browser gameplay remains for the user's manual playtest.
+
+Statistics icon follow-up: replaced the HUD text glyph with a crisp chart icon and added existing pixel-art resource/combat icons to metric labels, section headings and table headers across live statistics, results and history. Kept translated text and accessible button naming. Icon mappings live in presentation config. Presentation only; formatted authored files, no automated checks or browser verification run for this follow-up. No database update required.
+
+Statistics simplification: removed Control, Sale returns, troops landed, keep-reaching troop count and conversion percentage from the shared live/result/history report renderer. Offense now shows troops sent, enemy keep damage and meat spent. Removed the conversion/income explanation and shortened damage help to match the visible metrics in all three languages. Existing saved counters remain compatible. Formatted only; no automated checks or browser verification run for this presentation follow-up.
+
+Statistics heading refinement: removed icons from Tower contribution, Economy & investment and Offensive pressure headings across live reports, results and history; individual statistic icons remain. Formatted only; no automated checks or browser verification run.

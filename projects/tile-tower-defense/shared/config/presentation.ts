@@ -33,3 +33,24 @@ export const landmarkArt: Record<string, { width: number; groundY: number }> = {
   'tiles/relic': { width: 76, groundY: 85 / 96 },
   'tiles/windmill': { width: 76, groundY: 88 / 96 },
 };
+
+/** Statistics reuse the same visual meanings as combat and resource controls. */
+export const statisticsIcons = {
+  waves: 'defense',
+  duration: 'cooldown',
+  damage: 'damage',
+  kills: 'pierce',
+  leaks: 'speed',
+  keepLost: 'keep-damage',
+  tower: 'defense',
+  invested: 'gold',
+  efficiency: 'damage',
+  buildGold: 'defense',
+  upgradeGold: 'upgrade',
+  goldEarned: 'gold',
+  meatEarned: 'meat',
+  upgradeShare: 'upgrade',
+  sent: 'pierce',
+  raidDamage: 'keep-damage',
+  meatSpent: 'meat',
+} as const satisfies Record<string, keyof typeof uiIcons>;

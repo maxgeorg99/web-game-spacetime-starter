@@ -1,3 +1,4 @@
+import { freshStatistics, statistics, towerStatistics } from './statistics';
 import { pathFor, pathExtensions, extensionAt, extensionLand, applyExtension } from './paths';
 import { magePoints, branchPoints, mageAspect, migrateMages } from './magic';
 import { magicBalance, schools } from '../config/magic';
@@ -17,6 +18,7 @@ export function fresh(expanding = false): State {
   }
   return {
     version: 2,
+    statistics: freshStatistics(),
     ...(expanding ? { path: road.map((p) => ({ ...p })), expansions: 0 } : {}),
     phase: 'prepare',
     wave: 0,
@@ -252,6 +254,9 @@ export function command(current: State, action: Command): State {
         throw Error('Not enough gold.');
       }
       s.gold -= def.cost;
+      statistics(s).buildGold += def.cost;
+      towerStatistics(s, def.id).built++;
+      towerStatistics(s, def.id).goldSpent += def.cost;
       s.towers.push({
         id: s.nextId++,
         kind: def.id,
@@ -274,6 +279,8 @@ export function command(current: State, action: Command): State {
       }
       const node = treeDef(tower!.kind).nodes.find((n) => n.id === action.node)!;
       s.gold -= node.goldCost;
+      statistics(s).upgradeGold += node.goldCost;
+      towerStatistics(s, tower!.kind).goldSpent += node.goldCost;
       tower!.spent += node.goldCost;
       tower!.ranks[node.id] = (tower!.ranks[node.id] ?? 0) + 1;
       if (tower!.kind === 'sentinel') {
@@ -290,6 +297,7 @@ export function command(current: State, action: Command): State {
         throw Error('Sell between waves.');
       }
       s.gold += Math.floor(tower!.spent * balance.sellFraction);
+      statistics(s).saleGold += Math.floor(tower!.spent * balance.sellFraction);
       s.towers = s.towers.filter((t) => t.id !== tower!.id);
       break;
     case 'recruit': {
@@ -307,6 +315,7 @@ export function command(current: State, action: Command): State {
         throw Error('Your army is full.');
       }
       s.meat -= def.meatCost;
+      statistics(s).meatSpent += def.meatCost;
       s.recruits.push({
         id: s.nextId++,
         kind: def.id,
@@ -371,6 +380,9 @@ export function finishWave(s: State) {
   const earned = income(s);
   s.gold += earned.gold;
   s.meat += earned.meat;
+  statistics(s).waves++;
+  statistics(s).goldIncome += earned.gold;
+  statistics(s).meatIncome += earned.meat;
   s.wave++;
   if (s.wave >= waves.length) {
     s.phase = 'won';

@@ -174,6 +174,7 @@ export function towerPanel(state: State, tower: Tower, locked: boolean, faction:
       ${stat('cooldown', `${number(stats.cooldown)}s`)}
     </div>
     ${tower.kind === 'sentinel' ? `<div class="mage-summary"><b>${th('mage.points', { count: magePoints(tower), limit: tree.pointLimit! })}</b><span>${th(`mage.aspect.${mageAspect(tower)}`)}${mageMastered(tower) ? ` · ${th('mage.mastered')}` : ''}</span><details class="stat-help"><summary>${th('ui.details')}</summary><p>${th('mage.hybrids')}</p></details></div>` : ''}
+    <p id="selected-tower-statistics" data-tower="${tower.id}" class="statistics-note">${th('stats.towerSummary', { damage: Math.round(tower.statistics?.damage ?? 0), kills: tower.statistics?.kills ?? 0, shots: tower.statistics?.shots ?? 0 })}</p>
     <div class="skill-tree">${branches}</div>
     <button class="sell" data-sell="yes" ${disabled(locked || state.phase !== 'prepare')}>
       ${th('tower.sell')} ${icon('gold')}${Math.floor(tower.spent * balance.sellFraction)}

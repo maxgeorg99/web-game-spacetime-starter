@@ -24,6 +24,21 @@ export const Island = __t.object("Island", {
 });
 export type Island = __Infer<typeof Island>;
 
+export const ReportDelivery = __t.object("ReportDelivery", {
+  id: __t.u32(),
+  pending: __t.bool(),
+  delivered: __t.bool(),
+  retryAt: __t.u64(),
+});
+export type ReportDelivery = __Infer<typeof ReportDelivery>;
+
+export const ReportOutbox = __t.object("ReportOutbox", {
+  msgId: __t.u64(),
+  target: __t.identity(),
+  reports: __t.string(),
+});
+export type ReportOutbox = __Infer<typeof ReportOutbox>;
+
 export const Reporting = __t.object("Reporting", {
   id: __t.u32(),
   target: __t.identity(),

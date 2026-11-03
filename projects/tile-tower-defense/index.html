@@ -44,6 +44,11 @@
                 data-i18n-placeholder="form.worldName" /></label
             ><button id="session-create"><span data-i18n="common.create">Create</span></button>
           </div>
+          <details id="run-history">
+            <summary data-i18n="stats.history">Run history</summary>
+            <p data-i18n="stats.historyHint">Your last 50 completed matches.</p>
+            <div id="run-history-list"></div>
+          </details>
           <p id="menu-error" role="alert"></p>
           <button id="coordinator-retry">
             <span data-i18n="connection.reconnect">Reconnect</span>
@@ -88,6 +93,29 @@
             data-i18n-title="a11y.guide"
           >
             ?
+          </button>
+          <button
+            id="statistics-open"
+            class="icon-button"
+            data-i18n-title="stats.title"
+            data-i18n-aria-label="stats.title"
+            aria-label="Statistics"
+            title="Statistics"
+          >
+            <svg
+              class="statistics-button-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M4 3v17h17" />
+              <path d="M8 16v-5M13 16V6M18 16V9" />
+            </svg>
           </button>
           <details class="settings">
             <summary
@@ -222,12 +250,29 @@
       <h1 id="result-title"></h1>
       <p id="result-message"></p>
       <p id="result-stats"></p>
+      <details class="result-report">
+        <summary data-i18n="stats.report">Match report</summary>
+        <div id="result-report"></div>
+      </details>
       <div class="result-actions">
         <button id="result-sessions" class="primary" data-i18n="result.sessions">
           Back to sessions
         </button>
         <button id="result-spectate" data-i18n="result.spectate">Spectate</button>
       </div>
+    </dialog>
+    <dialog id="statistics" aria-labelledby="statistics-title">
+      <div class="catalog-head">
+        <h2 id="statistics-title" data-i18n="stats.title">Statistics</h2>
+        <button
+          id="statistics-close"
+          data-i18n-aria-label="stats.close"
+          aria-label="Close statistics"
+        >
+          ×
+        </button>
+      </div>
+      <div id="statistics-content"></div>
     </dialog>
     <dialog id="catalog">
       <div class="catalog-head">

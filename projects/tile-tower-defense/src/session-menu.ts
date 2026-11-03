@@ -1,3 +1,6 @@
+import { statisticsMarkup } from './statistics';
+import type { RunReport } from '../shared/game/statistics';
+import { escapeHtml, language, th } from './i18n';
 import { resultRetentionSeconds } from '../shared/config/lifecycle';
 import { t } from './i18n';
 import { DbConnection } from './coordinator_bindings';
@@ -123,6 +126,33 @@ export class SessionMenu {
             }
           }
         };
+        const history = () => {
+          if (!current()) {
+            return;
+          }
+          const list = document.getElementById('run-history-list')!;
+          const opened = new Set(
+            Array.from(list.querySelectorAll<HTMLDetailsElement>('details[open]')).map(
+              (node) => node.dataset.key,
+            ),
+          );
+          const rows = [...conn.db.myRunReports.iter()].sort((a, b) =>
+            a.finishedAt.microsSinceUnixEpoch > b.finishedAt.microsSinceUnixEpoch ? -1 : 1,
+          );
+          list.innerHTML = rows.length
+            ? rows
+                .map((row) => {
+                  const report = JSON.parse(row.report) as RunReport;
+                  const date = new Date(
+                    Number(row.finishedAt.microsSinceUnixEpoch / 1000n),
+                  ).toLocaleString(language);
+                  return `<details data-key="${escapeHtml(row.key)}" ${opened.has(row.key) ? 'open' : ''}><summary><b>${th(`result.${report.outcome}`)}</b> · ${escapeHtml(row.sessionName)}<small>${escapeHtml(date)}</small></summary>${statisticsMarkup(report.statistics)}</details>`;
+                })
+                .join('')
+            : `<p>${th('stats.noHistory')}</p>`;
+        };
+        conn.db.myRunReports.onInsert(history);
+        conn.db.myRunReports.onDelete(history);
         conn.db.slots.onInsert(sync);
         conn.db.slots.onUpdate(sync);
         conn.db.slots.onDelete(sync);
@@ -137,6 +167,7 @@ export class SessionMenu {
             if (!current()) {
               return;
             }
+            history();
             this.connected = true;
             this.status = t('session.choose');
             this.name.value = conn.db.captain.owner.find(identity)?.name ?? this.name.value;
@@ -148,6 +179,7 @@ export class SessionMenu {
             }
           })
           .subscribe([
+            'SELECT * FROM my_run_reports',
             'SELECT * FROM session',
             'SELECT * FROM slots',
             `SELECT * FROM captain WHERE owner = 0x${identity.toHexString()}`,

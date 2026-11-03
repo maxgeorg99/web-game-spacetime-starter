@@ -1,3 +1,4 @@
+import { statistics } from './statistics';
 import { comCaptains, comCaptain, type ComCaptainId } from '../config/com';
 import { migrateMages } from './magic';
 import { recruitableUnits } from '../config/bevy-units';
@@ -211,6 +212,8 @@ export function worldCommand(
       throw Error('Not enough meat for this expedition.');
     }
     seat.state.meat -= cost;
+    statistics(seat.state).meatSpent += cost;
+    statistics(seat.state).sent += action.count;
     next.flights.push({
       id: next.nextFlight++,
       from: seat.slot,
@@ -282,6 +285,10 @@ export function stepWorld(world: WorldState): boolean {
       reward: expedition.bounty,
       leak: expedition.keepDamage,
     });
+    const origin = world.seats[flight.from];
+    if (origin) {
+      statistics(origin.state).landed++;
+    }
     flight.remaining--;
     flight.nextSpawn += worldBalance.landingInterval;
   }
@@ -289,6 +296,15 @@ export function stepWorld(world: WorldState): boolean {
   for (const seat of world.seats) {
     if (!seat.owner || seat.state.phase === 'lost') {
       continue;
+    }
+    if (
+      world.round &&
+      seat.state.phase !== 'prepare' &&
+      seat.state.phase !== 'combat' &&
+      !seat.state.enemies.length &&
+      !seat.state.projectiles.length
+    ) {
+      statistics(seat.state).seconds += balance.tickSeconds;
     }
     if (seat.state.impacts.length) {
       seat.state.impacts = [];
@@ -300,7 +316,16 @@ export function stepWorld(world: WorldState): boolean {
       seat.state.enemies.length ||
       seat.state.projectiles.length
     ) {
-      step(seat.state, true, false);
+      step(seat.state, true, false, (enemy, damage) => {
+        if (enemy.captainSlot === undefined) {
+          return;
+        }
+        const origin = world.seats[enemy.captainSlot];
+        if (origin) {
+          statistics(origin.state).raidLeaks++;
+          statistics(origin.state).raidDamage += damage;
+        }
+      });
       continueCampaign(seat);
       changed = true;
     }

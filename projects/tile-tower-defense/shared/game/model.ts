@@ -1,3 +1,4 @@
+import type { Contribution, DamageSource, RunStatistics } from './statistics';
 import type { AttackType } from '../config/damage';
 import type { MageAspect, School } from '../config/magic';
 import type { TileId, TowerId, UnitId } from '../config';
@@ -9,6 +10,7 @@ export interface Land extends Point {
   kind: TileId;
 }
 export interface Tower extends Point {
+  statistics?: Contribution;
   magicVersion?: 1;
   school?: School;
   casts?: number;
@@ -19,10 +21,17 @@ export interface Tower extends Point {
   spent: number;
 }
 export interface Fighter {
-  chill?: { remaining: number; strength: number };
+  chill?: { source?: DamageSource; remaining: number; strength: number };
   freeze?: number;
+  freezeSource?: DamageSource;
   freezeGuard?: number;
-  burn?: { attackType?: AttackType; remaining: number; dps: number; stacks: number };
+  burn?: {
+    source?: DamageSource;
+    attackType?: AttackType;
+    remaining: number;
+    dps: number;
+    stacks: number;
+  };
 
   /** Expedition origin; absent on neutral enemies and local defenders. */
   captainSlot?: number;
@@ -52,6 +61,7 @@ export interface MagicPayload {
   chained?: boolean;
 }
 export interface Projectile extends Point {
+  source?: DamageSource;
   attackType?: AttackType;
   origin?: Point;
   magic?: MagicPayload;
@@ -74,6 +84,7 @@ export interface Impact extends Point {
   ally: boolean;
 }
 export interface State {
+  statistics?: RunStatistics;
   version: 2;
   phase: 'prepare' | 'combat' | 'draft' | 'won' | 'lost';
   wave: number;

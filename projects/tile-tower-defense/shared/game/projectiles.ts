@@ -1,3 +1,4 @@
+import { dealDamage, type DamageSource } from './statistics';
 import { damageMultiplier, type AttackType } from '../config/damage';
 import { unitDef } from '../config';
 import type { ProjectileDef } from '../config';
@@ -17,8 +18,10 @@ export function launch(
   launchHeight: number,
   magic?: MagicPayload,
   attackType?: AttackType,
+  source?: DamageSource,
 ) {
   state.projectiles.push({
+    source,
     id: state.nextId++,
     x: from.x,
     y: from.y,
@@ -59,11 +62,16 @@ export function advanceProjectiles(state: State, delta: number) {
           (projectile.splash > 0 &&
             distance(position(unit.progress, state), projectile.aim) <= projectile.splash)
         ) {
-          unit.health -=
+          dealDamage(
+            state,
+            unit,
             projectile.damage *
-            damageMultiplier(projectile.attackType, unitDef(unit.kind).defenseType);
+              damageMultiplier(projectile.attackType, unitDef(unit.kind).defenseType),
+            projectile.ally,
+            projectile.source,
+          );
           if (unit.id === target?.id && projectile.magic) {
-            applyMagic(unit, projectile.magic, projectile.attackType);
+            applyMagic(unit, projectile.magic, projectile.attackType, projectile.source);
           }
         }
       }
@@ -75,9 +83,14 @@ export function advanceProjectiles(state: State, delta: number) {
             unit.health > 0 &&
             distance(position(unit.progress, state), projectile.aim) <= magicBalance.igniteRadius
           ) {
-            unit.health -=
+            dealDamage(
+              state,
+              unit,
               projectile.damage *
-              damageMultiplier(projectile.attackType, unitDef(unit.kind).defenseType);
+                damageMultiplier(projectile.attackType, unitDef(unit.kind).defenseType),
+              projectile.ally,
+              projectile.source,
+            );
           }
         }
       }

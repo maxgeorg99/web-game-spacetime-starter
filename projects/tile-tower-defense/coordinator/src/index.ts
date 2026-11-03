@@ -1,3 +1,5 @@
+import { Identity } from 'spacetimedb';
+import type { RunReport } from '../../shared/game/statistics';
 import { resultRetentionSeconds } from '../../shared/config/lifecycle';
 import { schema, table, t, SenderError } from 'spacetimedb/server';
 import { cleanName } from '../../shared/game/names';
@@ -56,7 +58,22 @@ const worldReporter = table(
   { name: 'world_reporter' },
   { sessionId: t.u32().primaryKey(), identity: t.identity().unique() },
 );
+// Private reports outlive world/session cleanup; each captain subscribes to their own view.
+const runReport = table(
+  {
+    name: 'run_report',
+    indexes: [{ accessor: 'by_owner', algorithm: 'btree', columns: ['owner'] }],
+  },
+  {
+    key: t.string().primaryKey(),
+    owner: t.identity(),
+    sessionName: t.string(),
+    finishedAt: t.timestamp(),
+    report: t.string(),
+  },
+);
 const db = schema({
+  runReport,
   administrator,
   captain,
   session,
@@ -322,5 +339,61 @@ export const authorize_cleanup = db.reducer({ id: t.u32() }, (ctx, { id }) => {
       BigInt(resultRetentionSeconds) * 1_000_000n
   ) {
     throw new SenderError('Finished world is not ready for cleanup.');
+  }
+});
+
+export const my_run_reports = db.view(
+  { name: 'my_run_reports', public: true },
+  t.array(runReport.rowType),
+  (ctx) => [...ctx.db.runReport.by_owner.filter(ctx.sender)],
+);
+
+/** Only a publisher-registered world may submit immutable final results. */
+export const receive_run_reports = db.reducer({ reports: t.string() }, (ctx, { reports }) => {
+  const reporter = ctx.db.worldReporter.identity.find(ctx.sender);
+  const session = reporter && ctx.db.session.id.find(reporter.sessionId);
+  if (!session) {
+    throw new SenderError('Registered world only.');
+  }
+  if (reports.length > 100_000) {
+    throw new SenderError('Report too large.');
+  }
+  const rows = JSON.parse(reports) as RunReport[];
+  if (
+    !Array.isArray(rows) ||
+    rows.length > 4 ||
+    rows.some(
+      (row) =>
+        row.version !== 1 ||
+        !/^[a-f0-9]{64}$/i.test(row.owner) ||
+        !['victory', 'defeat', 'draw'].includes(row.outcome) ||
+        row.statistics?.version !== 1,
+    )
+  ) {
+    throw new SenderError('Invalid run report.');
+  }
+  for (const report of rows) {
+    const key = `${ctx.sender.toHexString()}:${report.owner}`;
+    if (ctx.db.runReport.key.find(key)) {
+      continue;
+    }
+    const owner = Identity.fromString(report.owner);
+    ctx.db.runReport.insert({
+      key,
+      owner,
+      sessionName: session.name,
+      finishedAt: ctx.timestamp,
+      report: JSON.stringify(report),
+    });
+    const history = [...ctx.db.runReport.by_owner.filter(owner)].sort((a, b) =>
+      a.finishedAt.microsSinceUnixEpoch < b.finishedAt.microsSinceUnixEpoch
+        ? -1
+        : a.finishedAt.microsSinceUnixEpoch > b.finishedAt.microsSinceUnixEpoch
+          ? 1
+          : a.key.localeCompare(b.key),
+    );
+    for (const old of history.slice(0, Math.max(0, history.length - 50))) {
+      ctx.db.runReport.key.delete(old.key);
+    }
   }
 });

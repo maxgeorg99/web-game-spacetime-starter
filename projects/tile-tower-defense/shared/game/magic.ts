@@ -1,3 +1,4 @@
+import { credit, dealDamage, type DamageSource } from './statistics';
 import { damageMultiplier, type AttackType } from '../config/damage';
 import { unitDef } from '../config';
 import {
@@ -54,23 +55,32 @@ export function magicSpell(tower: Tower, damage: number): MagicPayload {
     visited: [],
   };
 }
-export function applyMagic(target: Fighter, spell: MagicPayload, attackType?: AttackType) {
+export function applyMagic(
+  target: Fighter,
+  spell: MagicPayload,
+  attackType?: AttackType,
+  source?: DamageSource,
+) {
   if (spell.chained) {
     return;
   }
   if (spell.slow) {
     target.chill = {
+      source: spell.slow >= (target.chill?.strength ?? 0) ? source : target.chill?.source,
       strength: Math.max(target.chill?.strength ?? 0, spell.slow),
       remaining: Math.max(target.chill?.remaining ?? 0, spell.slowSeconds),
     };
   }
   if (spell.freeze && !(target.freezeGuard && target.freezeGuard > 0)) {
     target.freeze = b.freezeSeconds;
+    target.freezeSource = source;
     target.freezeGuard = b.freezeSeconds + b.freezeImmunity;
   }
   if (spell.burnDps) {
     const previous = target.burn;
     target.burn = {
+      // Combined stacks belong to the latest applier, matching refresh semantics.
+      source,
       ...(attackType ? { attackType } : {}),
       dps: Math.max(previous?.dps ?? 0, spell.burnDps),
       remaining: Math.max(previous?.remaining ?? 0, spell.burnSeconds),
@@ -82,19 +92,36 @@ export function applyMagic(target: Fighter, spell: MagicPayload, attackType?: At
   }
 }
 /** Only the shared scheduled simulation advances statuses or applies damage. */
-export function tickMagic(fighter: Fighter, dt: number) {
+export function tickMagic(fighter: Fighter, dt: number, state?: State, ally = true) {
   if (fighter.health <= 0) {
     return;
   }
   if (fighter.burn) {
-    fighter.health -=
+    dealDamage(
+      state,
+      fighter,
       fighter.burn.dps *
-      fighter.burn.stacks *
-      Math.min(dt, fighter.burn.remaining) *
-      damageMultiplier(fighter.burn.attackType, unitDef(fighter.kind).defenseType);
+        fighter.burn.stacks *
+        Math.min(dt, fighter.burn.remaining) *
+        damageMultiplier(fighter.burn.attackType, unitDef(fighter.kind).defenseType),
+      ally,
+      fighter.burn.source,
+    );
     fighter.burn.remaining = Math.max(0, fighter.burn.remaining - dt);
     if (!fighter.burn.remaining) {
       delete fighter.burn;
+    }
+  }
+  if (state && ally && fighter.health > 0) {
+    const frozen = Math.min(dt, fighter.freeze ?? 0);
+    credit(state, fighter.freezeSource, 'controlSeconds', frozen);
+    if (fighter.chill) {
+      credit(
+        state,
+        fighter.chill.source,
+        'controlSeconds',
+        Math.max(0, Math.min(dt, fighter.chill.remaining) - frozen) * fighter.chill.strength,
+      );
     }
   }
   if (fighter.chill) {

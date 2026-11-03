@@ -88,6 +88,9 @@ test('server owns commands, isolates identities, rejects replays, and reconnects
       restored.conn.db.island.owner.find(restored.conn.identity!)!.state,
     );
     expect(snapshot.towers).toHaveLength(1);
+    expect(snapshot.statistics?.buildGold).toBe(50);
+    expect(snapshot.statistics?.meatSpent).toBe(5);
+    expect(snapshot.statistics?.partial).toBe(false);
     expect(snapshot.meat).toBe(11);
     expect(snapshot.phase).toBe('combat');
     await until(() => {

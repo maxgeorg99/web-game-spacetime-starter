@@ -1,3 +1,4 @@
+import { credit, dealDamage, statistics, towerSource } from './statistics';
 import { damageMultiplier } from '../config/damage';
 import { pathFor } from './paths';
 import { magicSpell, tickMagic, migrateMages } from './magic';
@@ -7,7 +8,15 @@ import type { Fighter, State } from './model';
 import { command, distance, effectiveStats, finishWave, position } from './rules';
 
 /** One fixed simulation step. Both workshop and server call this exact function. */
-export function step(s: State, defendBetweenWaves = false, automaticWaves = true) {
+export function step(
+  s: State,
+  defendBetweenWaves = false,
+  automaticWaves = true,
+  onLeak?: (enemy: Fighter, damage: number) => void,
+) {
+  if (s.phase === 'prepare' || s.phase === 'combat' || (defendBetweenWaves && s.phase !== 'lost')) {
+    statistics(s).seconds += balance.tickSeconds;
+  }
   if (automaticWaves && s.phase === 'prepare') {
     s.preparationRemaining = Math.max(
       0,
@@ -25,7 +34,7 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
   const road = pathFor(s);
   s.impacts = [];
   for (const fighter of [...s.enemies, ...s.recruits]) {
-    tickMagic(fighter, dt);
+    tickMagic(fighter, dt, s, s.enemies.includes(fighter));
   }
   advanceProjectiles(s, dt);
   s.spawnIn -= dt;
@@ -49,6 +58,7 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
       continue;
     }
     tower.casts = (tower.casts ?? 0) + 1;
+    credit(s, towerSource(tower), 'shots', 1);
     const spell = tower.kind === 'sentinel' ? magicSpell(tower, stats.damage) : undefined;
     const definition = spell
       ? { ...towerDef(tower.kind).projectile, art: `magic/${spell.school}-bolt` }
@@ -64,6 +74,7 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
       48,
       spell,
       towerDef(tower.kind).attackType,
+      towerSource(tower),
     );
     tower.cooldown = stats.cooldown;
   }
@@ -99,12 +110,18 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
             'attackType' in def ? def.attackType : undefined,
           );
         } else {
-          target.health -=
+          dealDamage(
+            s,
+            target,
             def.damage *
-            damageMultiplier(
-              'attackType' in def ? def.attackType : undefined,
-              'defenseType' in unitDef(target.kind) ? unitDef(target.kind).defenseType : undefined,
-            );
+              damageMultiplier(
+                'attackType' in def ? def.attackType : undefined,
+                'defenseType' in unitDef(target.kind)
+                  ? unitDef(target.kind).defenseType
+                  : undefined,
+              ),
+            direction === -1,
+          );
           s.impacts.push({ ...position(target.progress, s), splash: 0, ally: direction === -1 });
         }
         f.cooldown = def.cooldown;
@@ -126,8 +143,13 @@ export function step(s: State, defendBetweenWaves = false, automaticWaves = true
     if (enemy.health <= 0) {
       s.gold += enemy.reward ?? unitDef(enemy.kind).reward;
       s.kills++;
+      statistics(s).bounty += enemy.reward ?? unitDef(enemy.kind).reward;
     } else if (enemy.progress >= road.length - 1) {
-      s.lives = Math.max(0, s.lives - (enemy.leak ?? unitDef(enemy.kind).leak));
+      const damage = Math.min(s.lives, enemy.leak ?? unitDef(enemy.kind).leak);
+      statistics(s).leaks++;
+      statistics(s).keepDamage += damage;
+      onLeak?.(enemy, damage);
+      s.lives = Math.max(0, s.lives - damage);
     }
   }
   s.enemies = s.enemies.filter((e) => e.health > 0 && e.progress < road.length - 1);

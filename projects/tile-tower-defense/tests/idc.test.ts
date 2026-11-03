@@ -1,3 +1,5 @@
+import { freshStatistics } from '../shared/game/statistics';
+import { DbConnection as CoordinatorConnection } from '../src/coordinator_bindings';
 import { expect, test } from 'bun:test';
 import {
   configureWorldReporting,
@@ -20,7 +22,10 @@ integration(
     const worldB = `idc-world-b-${suffix}`;
     const adminResponse = await fetch(`${host}/v1/identity`, { method: 'POST' });
     expect(adminResponse.ok).toBe(true);
-    const { token } = (await adminResponse.json()) as { token: string };
+    const { token, identity: adminIdentity } = (await adminResponse.json()) as {
+      token: string;
+      identity: string;
+    };
     expect(token).toBeString();
     const authorization = `Bearer ${token}`;
     async function publish(database: string, path: string) {
@@ -109,6 +114,8 @@ integration(
           await query(coordinator, `SELECT claimed FROM slots WHERE session_id = ${idA}`)
         )[0]?.[0] === 1,
     );
+    await ok(worldA, 'world_act', [0, 'add-com', 'rook', 0, 0, 0, '', 0, 0]);
+    await ok(worldA, 'world_act', [1, 'begin', '', 0, 0, 0, '', 0, 0]);
     // A second world cannot update the first world's slot row or replace its trusted identity.
     const senderB = identityArgument(await databaseIdentity(host, worldB));
     expect((await call(coordinator, 'register_world_reporter', [idA, senderB])).ok).toBe(false);
@@ -130,7 +137,7 @@ integration(
     );
     expect(
       (await query(coordinator, `SELECT claimed FROM slots WHERE session_id = ${idA}`))[0]?.[0],
-    ).toBe(1);
+    ).toBe(2);
     await until(
       async () => (await query(worldB, 'SELECT last_error FROM reporting'))[0]?.[0] === '',
     );
@@ -148,6 +155,59 @@ integration(
       call(coordinator, 'receive_world_slots', [claimed, capacity], `Bearer ${stranger.token}`);
     expect((await call(coordinator, 'receive_world_slots', [0, 0])).ok).toBe(false);
     expect((await report(2, 4)).ok).toBe(true);
+    const savedReport = {
+      version: 1,
+      owner: adminIdentity,
+      name: 'Captain',
+      outcome: 'victory',
+      statistics: freshStatistics(),
+    };
+    const submit = (payload: unknown) =>
+      call(
+        coordinator,
+        'receive_run_reports',
+        [JSON.stringify(payload)],
+        `Bearer ${stranger.token}`,
+      );
+    expect(
+      (await call(coordinator, 'receive_run_reports', [JSON.stringify([savedReport])])).ok,
+    ).toBe(false);
+    expect((await submit([savedReport])).ok).toBe(true);
+    savedReport.statistics.damage = 999;
+    expect((await submit([savedReport])).ok).toBe(true);
+    const stored = await query(coordinator, 'SELECT report FROM run_report');
+    expect(stored).toHaveLength(1);
+    expect(JSON.parse(String(stored[0][0])).statistics.damage).toBe(0);
+    // View rows are identity-scoped, including after the source session is removed.
+    async function history(authToken: string) {
+      return new Promise<number>((resolve, reject) => {
+        const conn = CoordinatorConnection.builder()
+          .withUri(host!.replace('http:', 'ws:'))
+          .withDatabaseName(coordinator)
+          .withToken(authToken)
+          .onConnect((client) =>
+            client
+              .subscriptionBuilder()
+              .onApplied(() => {
+                const count = [...client.db.myRunReports.iter()].length;
+                client.disconnect();
+                resolve(count);
+              })
+              .onError((ctx) => {
+                client.disconnect();
+                reject(ctx.event);
+              })
+              .subscribe('SELECT * FROM my_run_reports'),
+          )
+          .onConnectError((_ctx, error) => {
+            conn.disconnect();
+            reject(error);
+          })
+          .build();
+      });
+    }
+    expect(await history(token)).toBe(1);
+    expect(await history(stranger.token)).toBe(0);
     expect((await report(0, 0)).ok).toBe(true);
     expect(
       (await query(coordinator, `SELECT status FROM session WHERE id = ${terminalId}`))[0][0],
@@ -171,6 +231,8 @@ integration(
     await ok(coordinator, 'set_name', ['Test captain']);
     expect((await call(coordinator, 'authorize_cleanup', [terminalId])).ok).toBe(false);
     expect((await call(coordinator, 'visit_session', [terminalId])).ok).toBe(false);
+    await ok(coordinator, 'remove_session', [terminalId]);
+    expect(await history(token)).toBe(1);
     // Heartbeats keep unchanged occupancy fresh without browser polling.
     const first = JSON.stringify(
       await query(coordinator, `SELECT updated_at FROM slots WHERE session_id = ${idA}`),
@@ -182,6 +244,21 @@ integration(
         ) !== first,
       40_000,
     );
+    // A real unprotected captain loses; the scheduled tick archives before retiring the world.
+    await until(
+      async () =>
+        (await query(coordinator, `SELECT status FROM session WHERE id = ${idA}`))[0]?.[0] ===
+        'finished',
+      180_000,
+    );
+    expect((await query(worldA, 'SELECT delivered FROM report_delivery'))[0]?.[0]).toBe(true);
+    expect(await history(token)).toBe(2);
+    const actual = (await query(coordinator, 'SELECT report FROM run_report'))
+      .map((row) => JSON.parse(String(row[0])))
+      .find((row) => row.name === 'Captain A');
+    expect(actual.statistics.keepDamage).toBeGreaterThan(0);
+    expect(actual.statistics.seconds).toBeGreaterThan(0);
+    expect(actual.outcome).toBe('defeat');
   },
-  100_000,
+  240_000,
 );
