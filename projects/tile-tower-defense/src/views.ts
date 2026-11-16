@@ -205,7 +205,9 @@ function catalogTower(tower: Localized<TowerDef>) {
         .map((branch, index) => {
           const nodes = tree.nodes.filter((node) => node.branch === index);
           const skills = nodes.map((node) => catalogSkill(tree, node)).join('');
-          if (tower.id !== 'sentinel') return `<h4>${escapeHtml(branch)}</h4>${skills}`;
+          if (tower.id !== 'sentinel') {
+            return `<h4>${escapeHtml(branch)}</h4>${skills}`;
+          }
           return `<details class="catalog-branch"><summary class="disclosure-summary">${nodes[0] ? `<img src="${assetUrl(`art/${nodes[0].icon}.png`)}" alt="" />` : ''}<span>${escapeHtml(branch)}</span></summary><div class="catalog-branch-skills">${skills}</div></details>`;
         })
         .join('')}

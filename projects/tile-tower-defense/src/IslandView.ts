@@ -49,7 +49,9 @@ export class IslandView {
     this.highlight = this.add.graphics().setDepth(999);
   }
   reset() {
-    for (const body of this.bodies) this.removeBody(body);
+    for (const body of this.bodies) {
+      this.removeBody(body);
+    }
     this.lastNextId = 0;
     for (const actor of this.actors.values()) {
       actor.sprite.destroy();
@@ -87,7 +89,9 @@ export class IslandView {
     }
     if (this.bodies.size >= deathPresentation.maxBodies) {
       const oldest = this.bodies.values().next().value;
-      if (oldest) this.removeBody(oldest);
+      if (oldest) {
+        this.removeBody(oldest);
+      }
     }
     const position = this.project(point);
     const width = sprite.displayWidth;
@@ -494,7 +498,9 @@ export class IslandView {
       return;
     }
     // Restarted runs reuse fighter IDs. Clear old actors before reconciling the new run.
-    if (this.state.nextId < this.lastNextId) this.reset();
+    if (this.state.nextId < this.lastNextId) {
+      this.reset();
+    }
     this.lastNextId = this.state.nextId;
     const s = this.state,
       key = JSON.stringify([
@@ -652,8 +658,11 @@ export class IslandView {
     for (const [id, actor] of this.actors) {
       if (!live.has(id)) {
         const death = s.deaths?.find((event) => event.id === id);
-        if (death) this.animateDeath(actor.sprite, death);
-        else actor.sprite.destroy();
+        if (death) {
+          this.animateDeath(actor.sprite, death);
+        } else {
+          actor.sprite.destroy();
+        }
         actor.bar.destroy();
         actor.burn?.badge.destroy();
         this.actors.delete(id);

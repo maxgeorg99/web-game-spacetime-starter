@@ -410,3 +410,5 @@ Mage Tower field-guide polish: collapsed the three skill branches behind icon-le
 Mage Tower follow-up: restored the always-visible how-it-works/hybrid explanation; only skill branches remain collapsible. Formatted only; no automated checks or browser verification run.
 
 Death animation local rollout: user authorized the module update. Successfully built and published the world module to local NEU (`tile-td-c200a493d5b5-18`, port 3106), preserving saved state. No breaking schema changes reported. Production untouched. Automated tests/type checks were not run; manual death-animation playtest is now ready. `bun run test:server` remains available with approval.
+
+Release status: push c6f886d triggered production workflow 43955941336, which failed at lint before deployment due to eight missing-brace errors in recent presentation changes. Corrected all reported locations manually and formatted files. No local lint/test rerun or push performed. Pipeline deploys coordinator, Vercel/new-world module and itch.io frontend; existing production worlds require a separate module update.

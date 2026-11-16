@@ -22,7 +22,9 @@ export class IslandAtmosphere {
     }
     for (let variant = 0; variant < 3; variant++) {
       const key = `island-cloud-${variant}`;
-      if (scene.textures.exists(key)) continue;
+      if (scene.textures.exists(key)) {
+        continue;
+      }
       // Small source silhouettes keep the stepped edges at the terrain's pixel scale.
       const texture = scene.textures.createCanvas(key, 128, 64)!;
       const context = texture.context;
@@ -83,7 +85,9 @@ export class IslandAtmosphere {
   }
 
   update(delta: number) {
-    if (!this.motion.matches && !document.hidden) this.drift += Math.min(delta, 100) / 1000;
+    if (!this.motion.matches && !document.hidden) {
+      this.drift += Math.min(delta, 100) / 1000;
+    }
     const camera = this.scene.cameras.main;
     const { width, height, zoom, scrollX, scrollY } = camera;
     const left = scrollX + width / 2 - width / (2 * zoom);
