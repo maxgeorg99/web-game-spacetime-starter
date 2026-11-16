@@ -58,7 +58,7 @@ export class StatisticsPanel {
     const body = document.getElementById('statistics-content')!;
     const render = () => {
       const open = new Set(
-        [...body.querySelectorAll<HTMLDetailsElement>('details[open]')].map(
+        Array.from(body.querySelectorAll<HTMLDetailsElement>('details[open]')).map(
           (detail) => detail.dataset.reportSection,
         ),
       );
@@ -66,7 +66,7 @@ export class StatisticsPanel {
         document.activeElement?.closest<HTMLDetailsElement>('details')?.dataset.reportSection;
       const scroll = dialog.scrollTop;
       body.innerHTML = statisticsMarkup(store.state.statistics);
-      for (const detail of body.querySelectorAll<HTMLDetailsElement>('details')) {
+      for (const detail of Array.from(body.querySelectorAll<HTMLDetailsElement>('details'))) {
         detail.open = open.has(detail.dataset.reportSection);
         if (focused && detail.dataset.reportSection === focused) {
           detail.querySelector('summary')?.focus({ preventScroll: true });
