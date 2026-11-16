@@ -67,4 +67,4 @@ jobs:
           unzip -q /tmp/butler.zip -d /tmp/butler
           chmod +x /tmp/butler/butler
       - name: Publish itch.io after backend deployment succeeds
-        run: /tmp/butler/butler push dist maxgeorg99/tiled-tower-defense:html5 --userversion "$GITHUB_SHA"
+        run: /tmp/butler/butler push dist ucfreakyy/tiled-tower-defense:html5 --userversion "$GITHUB_SHA"

@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+repo_root=$(git rev-parse --show-toplevel)
+if command -v bun >/dev/null 2>&1; then
+  bun_command=bun
+elif [ -x "$HOME/.bun/bin/bun" ]; then
+  bun_command="$HOME/.bun/bin/bun"
+else
+  echo 'Push blocked: Bun is required for Tile Tower Defense checks.' >&2
+  exit 1
+fi
+exec "$bun_command" "$repo_root/projects/tile-tower-defense/scripts/pre-push.ts" "$@"

@@ -50,6 +50,16 @@ bun run test:server  # legacy solo integration suite, not coordinator coverage
 
 Agents format files and ask before running automated verification. The IDC integration suite is available as `bun run test:idc` with an isolated `TEST_IDC_HOST`; browser playtesting is separate. Module generation/publishing bundles code but is not a substitute for type checking or gameplay verification.
 
+## Push gate
+
+Run `bun run hooks:install` once per clone. The native Git pre-push hook checks only changes to this project or its two CI workflows. It preserves existing hook configurations instead of overwriting them. No hook framework or global Git setting is required.
+
+Before Git uploads a relevant commit, the hook exports that exact commit into a temporary directory, installs its frozen dependencies, then runs formatting, lint, all TypeScript targets, unit tests and the itch release build (including upload-size limits). Multiple pushed refs are checked separately; ref deletions and unrelated-project changes are skipped. New refs and unknown remote commits are checked conservatively. Temporary files are removed on completion/failure; the working tree and running local game are untouched. Dependency installation may need network access.
+
+A failure blocks the push. Fix the reported problem **and commit the fix** before retrying: uncommitted edits cannot make a broken commit pass. `bun run check:push` runs the same checks against your current working tree when you want earlier feedback. These checks do not publish anything or run live-server/browser integration tests.
+
+Hooks are local guardrails, not remote enforcement: Git can bypass them, other clones need installation, and web edits do not run them. CI remains authoritative. Agents still request approval for ad hoc checks; checks triggered by your own push are the intended automatic gate.
+
 ## Current scope
 
 Four permanent island seats per world; further visitors spectate. Fixed road, independent economies and repeating neutral waves. Existing saved defenders remain supported, while the Recruit tab always sends purchases to another island. Monster special abilities and armor matrices are not implemented. Only units with source faction variants change sprite colors; others use their original art and captain-colored health bars. Portrait borders are removed.

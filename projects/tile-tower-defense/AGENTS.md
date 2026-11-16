@@ -7,5 +7,6 @@
 - The visual target is a full-screen game like Isle of Arrows: compact HUD, icon-led action cards and contextual panels. No landing-page sections or editorial copy around the battlefield.
 - Use existing avatar/resource/skill art from the Bevy/shared asset library. Measure spritesheets before loading them.
 - Format authored files after editing. Ask the user before running automated lint, type checks, tests, builds, or browser verification; the user currently prefers to playtest manually. Never claim unrun checks passed.
+- The user authorized the installed pre-push gate to run automatically on pushes. Keep it aligned with CI release blockers; do not bypass it or claim unchecked changes pass. Ad hoc checks still need approval.
 - Offer `bun run test:server` after server/transport changes, but run it only with user approval. Never publish to production without explicit authorization.
 - Regenerate `src/module_bindings`; do not edit or format generated files. Preserve unrelated projects and user changes.

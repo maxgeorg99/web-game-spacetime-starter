@@ -13,7 +13,7 @@ From this project directory:
 bun run secrets:github
 ```
 
-This uploads both values as repository Actions secrets to `maxgeorg99/web-game-spacetime-starter`, using your existing `gh` login. It validates both values first and sends them over stdin without printing them. It does not start a release. The release workflow uses these secrets to publish the coordinator and upload `dist/` to `maxgeorg99/tiled-tower-defense:html5`.
+This uploads both values as repository Actions secrets to `maxgeorg99/web-game-spacetime-starter`, using your existing `gh` login. It validates both values first and sends them over stdin without printing them. It does not start a release. The release workflow uses these secrets to publish the coordinator and upload `dist/` to `ucfreakyy/tiled-tower-defense:html5`.
 
 To run the Maincloud worker locally with the same file:
 

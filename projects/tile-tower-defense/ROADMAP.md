@@ -414,3 +414,13 @@ Death animation local rollout: user authorized the module update. Successfully b
 Release status: push c6f886d triggered production workflow 43955941336, which failed at lint before deployment due to eight missing-brace errors in recent presentation changes. Corrected all reported locations manually and formatted files. No local lint/test rerun or push performed. Pipeline deploys coordinator, Vercel/new-world module and itch.io frontend; existing production worlds require a separate module update.
 
 Release follow-up: push cc1fa2f reached the itch build after lint/tests, then failed TypeScript checking at statistics NodeList iteration (run 43956442747). Replaced spread/for-of on NodeLists with Array.from to match the configured DOM library. Formatted; local checks not run, fix not pushed. Deployment remains blocked pending verification and another push.
+
+### 2026-11-16 — pre-push release gate and itch account rename
+
+Installed a native repository-local pre-push hook, scoped to this project and its CI workflows. It exports each relevant pushed commit into an isolated temporary snapshot, installs frozen dependencies and runs format, lint, three TypeScript targets, unit tests and the itch artifact build/limits. It excludes deletions/unrelated changes, checks new refs conservatively, and never publishes. Added hooks:install and check:push commands; installer refuses to overwrite other active hooks. User authorized automatic push checks and a local verification run. Added disposable Git-repository regressions for new refs, dirty working-tree masking and skip behavior.
+
+The initial working-tree gate passed formatting, lint, all TypeScript targets, 80 tests and the itch build (361 files, 19.3 MiB; existing chunk-size warning). Follow-up hook regression verification recorded below. Git hook configuration is local to this clone; hook files must be committed and other clones run hooks:install.
+
+Latest remote push 3acc5f6 passed CI but release 43956758306 failed at the final Butler upload with invalid target (bad user). User confirmed the account rename and game URL https://ucfreakyy.itch.io/tiled-tower-defense. Changed the workflow target to ucfreakyy/tiled-tower-defense:html5 and updated credential docs. No push or production retry performed by this session.
+
+Final hook verification: full check:push passed formatting, lint, all three TypeScript targets, 83 tests (including three Git-hook regressions), and itch build/limits (361 files, 19.3 MiB). Only the existing bundle-size warning remains. Confirmed prior coordinator and Vercel deployment steps succeeded; itch upload alone failed on the old username. Target fix and hook changes remain for the user's commit/push; include unstaged updates and the new hook test file.
