@@ -267,5 +267,7 @@
   "stats.meatSpent": "Fleisch ausgegeben",
   "stats.noHistory": "Noch keine abgeschlossenen Partien.",
   "stats.builtCount": "{{count}} gebaut",
-  "stats.towerSummary": "{{damage}} Schaden · {{kills}} besiegt · {{shots}} Schüsse"
+  "stats.towerSummary": "{{damage}} Schaden · {{kills}} besiegt · {{shots}} Schüsse",
+  "catalog.waveHealth": "Gegner-LP",
+  "catalog.waveSpacing": "zwischen Gegnern"
 }

@@ -1,3 +1,4 @@
+import { recentDeathLimit } from '../shared/config/lifecycle';
 import { draftOffers } from '../shared/game/drafting';
 import { discoveries } from '../shared/config/drafting';
 import { placementEffect } from '../shared/game/rules';
@@ -384,5 +385,60 @@ describe('windmill discovery', () => {
     state.tiles.push({ x: -3, y: 0, kind: 'windmill' });
     expect(effectiveStats(tower, state).cooldown).toBeCloseTo(base.cooldown / 1.15);
     expect(effectiveStats(tower, state).damage).toBe(base.damage);
+  });
+});
+
+describe('confirmed death presentation records', () => {
+  test('records lethal melee once and preserves the final kill across wave completion', () => {
+    const s = command(fresh(), { type: 'start' });
+    s.queue = [];
+    s.enemies = [{ id: 100, kind: 'goblin', progress: 2, health: 1, maxHealth: 45, cooldown: 0 }];
+    s.recruits = [
+      { id: 101, kind: 'squire', progress: 2, health: 110, maxHealth: 110, cooldown: 0 },
+    ];
+    step(s);
+    expect(s.enemies).toHaveLength(0);
+    expect(s.deaths).toEqual([{ id: 100, ...position(2, s) }]);
+    expect(s.kills).toBe(1);
+    const restored = restoreState(JSON.stringify(s));
+    step(restored, true, false);
+    expect(restored.deaths).toEqual(s.deaths);
+    expect(restored.kills).toBe(1);
+  });
+
+  test('records killed defenders but excludes keep arrivals and retiring defenders', () => {
+    const s = command(fresh(), { type: 'start' });
+    s.queue = [];
+    s.enemies = [
+      {
+        id: 100,
+        kind: 'goblin',
+        progress: road.length - 1,
+        health: 45,
+        maxHealth: 45,
+        cooldown: 0,
+      },
+    ];
+    s.recruits = [
+      { id: 101, kind: 'squire', progress: 2, health: 0, maxHealth: 110, cooldown: 0 },
+      { id: 102, kind: 'squire', progress: 0, health: 110, maxHealth: 110, cooldown: 0 },
+    ];
+    step(s);
+    expect(s.deaths?.map((event) => event.id)).toEqual([101]);
+    expect(s.retired).toBe(1);
+    expect(s.enemies).toHaveLength(0);
+  });
+
+  test('bounds history and discards it on restart', () => {
+    const s = command(fresh(), { type: 'start' });
+    s.queue = [];
+    s.deaths = Array.from({ length: recentDeathLimit }, (_, id) => ({ id, x: 0, y: 0 }));
+    s.enemies = [{ id: 1000, kind: 'goblin', progress: 2, health: 0, maxHealth: 45, cooldown: 0 }];
+    step(s);
+    expect(s.deaths).toHaveLength(recentDeathLimit);
+    expect(s.deaths?.[0].id).toBe(1);
+    expect(s.deaths?.at(-1)?.id).toBe(1000);
+    s.phase = 'lost';
+    expect(command(s, { type: 'restart' }).deaths).toBeUndefined();
   });
 });

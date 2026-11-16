@@ -197,20 +197,17 @@ function catalogSkill(tree: LocalizedSkillTree, node: Localized<SkillNode>) {
 function catalogTower(tower: Localized<TowerDef>) {
   const tree = treeDef(tower.id);
   return `
-    <article>${portrait(tower.avatar)}<h3>${escapeHtml(tower.name)}</h3>
+    <article class="catalog-tower">${portrait(tower.avatar)}<h3>${escapeHtml(tower.name)}</h3>
       <p>${escapeHtml(tower.description)}</p><p>${combatTypes(tower)}</p>
       ${tree.pointLimit ? `<p>${th('mage.hybrids')}</p>` : ''}
       <p>${th('catalog.towerStats', { gold: tower.cost, damage: tower.damage, range: tower.range, seconds: tower.cooldown })}</p>
       ${tree.branches
-        .map(
-          (branch, index) => `
-        <h4>${escapeHtml(branch)}</h4>
-        ${tree.nodes
-          .filter((node) => node.branch === index)
-          .map((node) => catalogSkill(tree, node))
-          .join('')}
-      `,
-        )
+        .map((branch, index) => {
+          const nodes = tree.nodes.filter((node) => node.branch === index);
+          const skills = nodes.map((node) => catalogSkill(tree, node)).join('');
+          if (tower.id !== 'sentinel') return `<h4>${escapeHtml(branch)}</h4>${skills}`;
+          return `<details class="catalog-branch"><summary class="disclosure-summary">${nodes[0] ? `<img src="${assetUrl(`art/${nodes[0].icon}.png`)}" alt="" />` : ''}<span>${escapeHtml(branch)}</span></summary><div class="catalog-branch-skills">${skills}</div></details>`;
+        })
         .join('')}
     </article>
   `;
@@ -249,13 +246,34 @@ export function catalogContent() {
       .map(catalogUnit)
       .join('')}</div>
     <h3>${th('catalog.waves')}</h3>
-    ${waves
+    <div class="catalog-waves">${waves
       .map(
         (wave, index) => `
-      <p><b>${index + 1}. ${escapeHtml(wave.name)}</b> — ${wave.groups.map((group) => `${group.count} ${unitDef(group.unit).name}`).join(', ')}
-        · ${th('catalog.waveStats', { health: wave.healthMultiplier, seconds: wave.interval })}</p>
-    `,
+        <details class="catalog-wave">
+          <summary class="disclosure-summary">
+            <span class="catalog-wave-title"><span class="catalog-wave-number">${index + 1}</span><strong>${escapeHtml(wave.name)}</strong></span>
+            <span class="catalog-wave-roster">${wave.groups
+              .map((group) => {
+                const unit = unitDef(group.unit);
+                return `<span class="catalog-wave-token" role="img" aria-label="${escapeHtml(`${group.count} × ${unit.name}`)}" title="${escapeHtml(unit.name)}"><span aria-hidden="true">${avatar(unit)}<b>×${group.count}</b></span></span>`;
+              })
+              .join('')}</span>
+          </summary>
+          <div class="catalog-wave-content">
+            <p class="catalog-wave-description">${escapeHtml(wave.description)}</p>
+            <div class="catalog-wave-modifiers">
+              <span>${icon('health')}<b>×${wave.healthMultiplier}</b> ${th('catalog.waveHealth')}</span>
+              <span>${icon('cooldown')}<b>${wave.interval}s</b> ${th('catalog.waveSpacing')}</span>
+            </div>
+            <div class="catalog-wave-groups">${wave.groups
+              .map((group) => {
+                const unit = unitDef(group.unit);
+                return `<div class="catalog-wave-unit">${avatar(unit)}<div><strong>${group.count} × ${escapeHtml(unit.name)}</strong><div class="catalog-wave-unit-stats">${stat('health', Math.round(unit.health * wave.healthMultiplier))}${stat('leak', unit.leak)}${combatTypes({ defenseType: unit.defenseType })}</div></div></div>`;
+              })
+              .join('')}</div>
+          </div>
+        </details>`,
       )
-      .join('')}
+      .join('')}</div>
   `;
 }

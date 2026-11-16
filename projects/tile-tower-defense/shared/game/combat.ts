@@ -1,3 +1,4 @@
+import { recentDeathLimit } from '../config/lifecycle';
 import { credit, dealDamage, statistics, towerSource } from './statistics';
 import { damageMultiplier } from '../config/damage';
 import { pathFor } from './paths';
@@ -151,6 +152,13 @@ export function step(
       onLeak?.(enemy, damage);
       s.lives = Math.max(0, s.lives - damage);
     }
+  }
+  const killed = [...s.enemies, ...s.recruits].filter((fighter) => fighter.health <= 0);
+  if (killed.length) {
+    s.deaths = [
+      ...(s.deaths ?? []),
+      ...killed.map((fighter) => ({ id: fighter.id, ...position(fighter.progress, s) })),
+    ].slice(-recentDeathLimit);
   }
   s.enemies = s.enemies.filter((e) => e.health > 0 && e.progress < road.length - 1);
   s.retired += s.recruits.filter((r) => r.health > 0 && r.progress <= 0).length;

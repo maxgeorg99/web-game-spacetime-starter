@@ -267,5 +267,7 @@
   "stats.meatSpent": "Carne gastada",
   "stats.noHistory": "Aún no hay partidas terminadas.",
   "stats.builtCount": "{{count}} construidas",
-  "stats.towerSummary": "{{damage}} de daño · {{kills}} bajas · {{shots}} disparos"
+  "stats.towerSummary": "{{damage}} de daño · {{kills}} bajas · {{shots}} disparos",
+  "catalog.waveHealth": "salud enemiga",
+  "catalog.waveSpacing": "entre apariciones"
 }

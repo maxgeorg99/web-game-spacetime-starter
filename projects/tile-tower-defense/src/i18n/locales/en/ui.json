@@ -267,5 +267,7 @@
   "stats.meatSpent": "Meat spent",
   "stats.noHistory": "No completed matches yet.",
   "stats.builtCount": "{{count}} built",
-  "stats.towerSummary": "{{damage}} damage · {{kills}} kills · {{shots}} shots"
+  "stats.towerSummary": "{{damage}} damage · {{kills}} kills · {{shots}} shots",
+  "catalog.waveHealth": "enemy health",
+  "catalog.waveSpacing": "between spawns"
 }

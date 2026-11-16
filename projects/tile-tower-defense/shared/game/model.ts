@@ -84,6 +84,8 @@ export interface Impact extends Point {
   ally: boolean;
 }
 export interface State {
+  /** Confirmed kill positions, retained across ticks; IDs are unique within one run. */
+  deaths?: (Point & { id: number })[];
   statistics?: RunStatistics;
   version: 2;
   phase: 'prepare' | 'combat' | 'draft' | 'won' | 'lost';

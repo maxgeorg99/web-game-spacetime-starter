@@ -370,3 +370,43 @@ Statistics icon follow-up: replaced the HUD text glyph with a crisp chart icon a
 Statistics simplification: removed Control, Sale returns, troops landed, keep-reaching troop count and conversion percentage from the shared live/result/history report renderer. Offense now shows troops sent, enemy keep damage and meat spent. Removed the conversion/income explanation and shortened damage help to match the visible metrics in all three languages. Existing saved counters remain compatible. Formatted only; no automated checks or browser verification run for this presentation follow-up.
 
 Statistics heading refinement: removed icons from Tower contribution, Economy & investment and Offensive pressure headings across live reports, results and history; individual statistic icons remain. Formatted only; no automated checks or browser verification run.
+
+### 2026-11-16 — hosted world cleanup
+
+At the user's request, deleted Maincloud world databases `tile-td-c20096a1909c-5` (Chris&Max) and `tile-td-c20096a1909c-7` (Test). Removed registry sessions 4, 5 and 7; the user had already deleted session 4's database through the website. Confirmed the hosted coordinator's session table is empty. Preserved the coordinator `tiled-tower-defense`. No module deployment or gameplay changes. Handoff: website database deletion does not remove coordinator registry entries; use `remove_session` for those stale entries. No automated tests or browser verification run.
+
+### 2026-11-16 — Tiny Swords visual direction, statistics first pass
+
+Direction: a captain's field board using existing Tiny Swords portraits, parchment (#f3e8c9), timber edges (#9a855c), moss (#607b4d), gold (#d3aa57), dark ink (#374638), and readable Fira type. Reserve faction colors for ownership. Use illustrated comparisons and progressive disclosure instead of equally weighted metric grids. Start with statistics before extending the direction to HUD/action trays.
+
+Implemented four primary battle totals, illustrated tower contribution bars, expandable per-tower details, and collapsed economy, offense and keep-loss sections. Existing translations and configured tower portraits are reused across live/results/history reports. Live refresh preserves disclosure state, keyboard focus and scroll. No gameplay/server changes. Formatted authored files; automated checks and browser verification not run per user preference. Handoff: manually review readability, mobile layout and disclosures during a live match; HUD/action-tray overhaul remains future work after visual feedback.
+
+Statistics visual correction from manual feedback: replaced the brown/gold field-board treatment with the existing pale parchment and muted green HUD palette, softer borders and matching corner radius. Removed the arbitrary gold highlight on the top tower. All tower and section disclosures now have explicit right-aligned down/up chevrons and hover feedback; section rows have a 48px minimum target. This supersedes the earlier timber/gold palette proposal. Formatted CSS; no automated checks or browser verification run.
+
+Statistics separator correction: tower rows now draw separators only between adjacent towers. The following section owns the boundary line, removing the duplicate lines between the last tower and economy. Formatted CSS; no automated checks or browser verification run.
+
+Island navigation polish: replaced HP text with the existing health icon and number, consistently for own and opponent islands. Kept localized phase text and the health stat tooltip/accessibility label. Formatted authored files; no automated checks or browser verification run.
+
+Island navigation feedback: removed preparing/fighting/defeated phase copy from all occupied island buttons. Health now uses an 18px icon and bold 18px number with stronger contrast; unclaimed seats retain their label. Formatted only; no automated checks or browser verification run.
+
+Wave-preview polish: enlarged enemy portraits from 42px to 56px on desktop and 28px to 40px in the compact layout, preventing flex shrink. Removed the redundant desktop size override. Formatted CSS; no automated checks or browser verification run.
+
+### 2026-11-16 — living island sky
+
+Replaced the oversized near-flat backdrop and fixed oval island shadows with a viewport-filling blue-to-pale sky and 18 reusable cloud images in three depth layers. Shared cloud directories contained no usable art; cloud textures are small, procedurally drawn stepped silhouettes with lit tops and shaded undersides. Slow delta-based drift and restrained camera parallax remain beneath all islands/units; reduced-motion disables drift and parallax. Camera zoom compensation preserves atmospheric scale and sky coverage while navigating. Palette/density live in presentation config. No gameplay, database or production changes. Formatted authored files; no automated checks or browser verification run. Handoff: manually assess cloud density, camera pan/zoom and mobile framing in the running local game.
+
+Death-art inventory completed: 39/40 current unit families have source death sheets; Lizard is missing in both shared and original Bevy assets. All eight soldiers have all four player-color death variants. Recorded source filenames, PNG dimensions and legacy mappings in docs/DEATH-ANIMATIONS.md. Found legacy ranger.png matches an Archer Arrow image. Inventory only; animations remain unimplemented, no automated tests or browser verification run.
+
+### 2026-11-16 — death animation implementation
+
+Imported and visually inspected 72 death strips for every base unit and all soldier faction colors. Lizard uses its attack strip per user instruction. Added configured one-shot death playback, immediate health/status removal, brief corpse hold/fade, bounded body count and reset cleanup. Shared combat now records the last 128 killed fighter IDs/positions so animations reflect actual kills rather than arrivals, retirement or disappearance. Records persist across wave completion; new snapshots load without replaying historical deaths. Optional JSON field requires no generated bindings or schema migration.
+
+Authored regression cases for kill recording, exclusion of keep arrivals/retirement, bounded history, save round-trip and restart; not run. Formatted authored files. Local module publish/build, automated checks, `bun run test:server` and manual visual playtest remain pending approval. No production deployment. Next: approve focused checks and local world module update, then playtest timing/alignment across units. Full inventory and implementation notes: docs/DEATH-ANIMATIONS.md.
+
+Field-guide wave preview: replaced plain composition strings with expandable wave rows using numbered titles, enemy portraits and count badges. Expanded rows show wave descriptions, icon-led health/spacing modifiers and illustrated groups with scaled health, keep damage and defense. Shared the statistics down/up chevron styling via disclosure-summary. Added English/German/Spanish modifier labels and compact-screen wrapping. Formatted only; automated and browser checks not run. Death-animation checks and local world deployment from the prior task remain pending approval.
+
+Mage Tower field-guide polish: collapsed the three skill branches behind icon-led disclosures with shared down/up chevrons. Hybrid rules are available under Details; overview and base stats stay visible. Tower cards no longer stretch to the tallest neighbor. Formatted only; automated checks and browser verification not run.
+
+Mage Tower follow-up: restored the always-visible how-it-works/hybrid explanation; only skill branches remain collapsible. Formatted only; no automated checks or browser verification run.
+
+Death animation local rollout: user authorized the module update. Successfully built and published the world module to local NEU (`tile-td-c200a493d5b5-18`, port 3106), preserving saved state. No breaking schema changes reported. Production untouched. Automated tests/type checks were not run; manual death-animation playtest is now ready. `bun run test:server` remains available with approval.

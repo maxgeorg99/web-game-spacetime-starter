@@ -1,3 +1,4 @@
+import { deathArt, deathPresentation } from '../shared/config/death-art';
 import { pathFor, pathExtensions, extensionAt } from '../shared/game/paths';
 import { mageAspect, mageMastered } from '../shared/game/magic';
 import { magicColors } from '../shared/config/magic';
@@ -28,6 +29,8 @@ export class IslandView {
       burn?: { badge: Phaser.GameObjects.Container; count: Phaser.GameObjects.Text };
     }
   >();
+  private bodies = new Set<Phaser.GameObjects.Sprite>();
+  private lastNextId = 0;
   private landKey = '';
   private catapults = new Map<number, Phaser.GameObjects.Image>();
 
@@ -46,6 +49,8 @@ export class IslandView {
     this.highlight = this.add.graphics().setDepth(999);
   }
   reset() {
+    for (const body of this.bodies) this.removeBody(body);
+    this.lastNextId = 0;
     for (const actor of this.actors.values()) {
       actor.sprite.destroy();
       actor.bar.destroy();
@@ -67,6 +72,40 @@ export class IslandView {
     this.selected = undefined;
     this.hover = undefined;
     this.highlight.clear();
+  }
+  private removeBody(body: Phaser.GameObjects.Sprite) {
+    this.scene.tweens.killTweensOf(body);
+    body.removeAllListeners();
+    body.destroy();
+    this.bodies.delete(body);
+  }
+  private animateDeath(sprite: Phaser.GameObjects.Sprite, point: Point) {
+    const key = deathArt[sprite.texture.key];
+    if (!key || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      sprite.destroy();
+      return;
+    }
+    if (this.bodies.size >= deathPresentation.maxBodies) {
+      const oldest = this.bodies.values().next().value;
+      if (oldest) this.removeBody(oldest);
+    }
+    const position = this.project(point);
+    const width = sprite.displayWidth;
+    const height = sprite.displayHeight;
+    sprite.anims.stop();
+    sprite.clearTint().setTexture(key, 0).setDisplaySize(width, height);
+    sprite.setPosition(position.x, position.y - 9).setDepth(499 + position.y / 10);
+    this.bodies.add(sprite);
+    sprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.tweens.add({
+        targets: sprite,
+        alpha: 0,
+        delay: deathPresentation.holdMilliseconds,
+        duration: deathPresentation.fadeMilliseconds,
+        onComplete: () => this.removeBody(sprite),
+      });
+    });
+    sprite.play(key);
   }
   private get add() {
     return this.scene.add;
@@ -454,6 +493,9 @@ export class IslandView {
     if (!this.land) {
       return;
     }
+    // Restarted runs reuse fighter IDs. Clear old actors before reconciling the new run.
+    if (this.state.nextId < this.lastNextId) this.reset();
+    this.lastNextId = this.state.nextId;
     const s = this.state,
       key = JSON.stringify([
         s.tiles,
@@ -609,7 +651,9 @@ export class IslandView {
     }
     for (const [id, actor] of this.actors) {
       if (!live.has(id)) {
-        actor.sprite.destroy();
+        const death = s.deaths?.find((event) => event.id === id);
+        if (death) this.animateDeath(actor.sprite, death);
+        else actor.sprite.destroy();
         actor.bar.destroy();
         actor.burn?.badge.destroy();
         this.actors.delete(id);

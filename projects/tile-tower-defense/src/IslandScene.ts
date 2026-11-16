@@ -1,3 +1,4 @@
+import { deathSheets, deathPresentation } from '../shared/config/death-art';
 import { pathFor } from '../shared/game/paths';
 import { t } from './i18n';
 import { assetUrl } from './assets';
@@ -39,7 +40,7 @@ export class IslandScene extends Phaser.Scene {
     for (const key of images) {
       this.load.image(key, `${assetUrl(`art/${key}.png`)}`);
     }
-    for (const [key, sheet] of Object.entries(sheets)) {
+    for (const [key, sheet] of Object.entries({ ...sheets, ...deathSheets })) {
       this.load.spritesheet(key, `${assetUrl(`art/${key}.png`)}`, {
         frameWidth: sheet.size,
         frameHeight: sheet.size,
@@ -47,7 +48,7 @@ export class IslandScene extends Phaser.Scene {
     }
   }
   create() {
-    for (const key of [...images, ...Object.keys(sheets)]) {
+    for (const key of [...images, ...Object.keys(sheets), ...Object.keys(deathSheets)]) {
       this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
     for (const [key, sheet] of Object.entries(sheets)) {
@@ -56,6 +57,14 @@ export class IslandScene extends Phaser.Scene {
         frames: this.anims.generateFrameNumbers(key, { start: 0, end: sheet.frames - 1 }),
         frameRate: 7,
         repeat: -1,
+      });
+    }
+    for (const [key, sheet] of Object.entries(deathSheets)) {
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(key, { start: 0, end: sheet.frames - 1 }),
+        frameRate: deathPresentation.framesPerSecond,
+        repeat: 0,
       });
     }
     this.atmosphere = new IslandAtmosphere(this);
