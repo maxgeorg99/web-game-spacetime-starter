@@ -1,4 +1,5 @@
 import { icon } from './views';
+import { portrait } from './art';
 import { statisticsIcons } from '../shared/config/presentation';
 import type { RunStatistics } from '../shared/game/statistics';
 import { towerDef } from './i18n/content';
@@ -25,25 +26,30 @@ export function statisticsMarkup(stats?: RunStatistics): string {
     .map(([kind, row]) => {
       const value = row!;
       const share = stats.damage ? Math.round((value.damage / stats.damage) * 100) : 0;
-      return `<tr><th scope="row">${escapeHtml(towerDef(kind as TowerId).name)}<small>${th('stats.builtCount', { count: value.built })}</small></th><td>${format(value.damage)}<small>${share}%</small></td><td>${format(value.kills)}</td><td>${format(value.goldSpent)}</td><td>${value.goldSpent ? (value.damage / value.goldSpent).toFixed(1) : '—'}</td></tr>`;
+      const definition = towerDef(kind as TowerId);
+      return `<details class="statistics-tower" data-report-section="tower-${escapeHtml(kind)}">
+        <summary>${portrait(definition.avatar)}<span class="statistics-tower-body"><span class="statistics-tower-heading"><strong>${escapeHtml(definition.name)}</strong><span>${format(value.damage)} <small>${share}%</small></span></span><span class="statistics-bar" aria-hidden="true"><span style="width:${Math.min(100, Math.max(0, share))}%"></span></span></span></summary>
+        <p class="statistics-note">${th('stats.builtCount', { count: value.built })}</p>
+        <dl class="statistics-grid">${metric('stats.kills', value.kills)}${metric('stats.invested', value.goldSpent)}${metric('stats.efficiency', value.goldSpent ? (value.damage / value.goldSpent).toFixed(1) : '—')}</dl>
+      </details>`;
     })
     .join('');
-  return `${stats.partial ? `<p class="statistics-note">${th('stats.partial')}</p>` : ''}
+  return `<section class="statistics-board">${stats.partial ? `<p class="statistics-note">${th('stats.partial')}</p>` : ''}
     <dl class="statistics-grid">
       ${metric('stats.waves', stats.waves)}${metric('stats.duration', `${Math.floor(stats.seconds / 60)}:${String(Math.floor(stats.seconds % 60)).padStart(2, '0')}`)}
-      ${metric('stats.damage', stats.damage)}${metric('stats.kills', stats.kills)}${metric('stats.leaks', stats.leaks)}${metric('stats.keepLost', stats.keepDamage)}
+      ${metric('stats.damage', stats.damage)}${metric('stats.kills', stats.kills)}
     </dl>
-    <h3>${th('stats.contribution')}</h3>
-    ${rows ? `<div class="statistics-table"><table><thead><tr><th>${label('stats.tower')}</th><th>${label('stats.damage')}</th><th>${label('stats.kills')}</th><th>${label('stats.invested')}</th><th>${label('stats.efficiency')}</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p>${th('stats.noTowers')}</p>`}
-    <p class="statistics-note">${th('stats.method')}</p>
-    <h3>${th('stats.economy')}</h3>
+    <div class="statistics-section-heading"><h3>${th('stats.contribution')}</h3><span>${label('stats.damage')}</span></div>
+    ${rows ? `<div class="statistics-towers">${rows}</div>` : `<p class="statistics-note">${th('stats.noTowers')}</p>`}
+    <details class="statistics-fold" data-report-section="economy"><summary>${icon('gold')}${th('stats.economy')}</summary>
     <dl class="statistics-grid">
       ${metric('stats.buildGold', stats.buildGold)}${metric('stats.upgradeGold', stats.upgradeGold)}${metric('stats.goldEarned', stats.goldIncome + stats.bounty)}${metric('stats.meatEarned', stats.meatIncome)}${metric('stats.upgradeShare', totalGold ? `${Math.round((stats.upgradeGold / totalGold) * 100)}%` : '—')}
     </dl>
-    <h3>${th('stats.raids')}</h3>
+    </details><details class="statistics-fold" data-report-section="raids"><summary>${icon('pierce')}${th('stats.raids')}</summary>
     <dl class="statistics-grid">
       ${metric('stats.sent', stats.sent)}${metric('stats.raidDamage', stats.raidDamage)}${metric('stats.meatSpent', stats.meatSpent)}
-    </dl>`;
+    </dl></details>
+    <details class="statistics-fold" data-report-section="defense"><summary>${icon('keep-damage')}${th('stats.keepLost')} · ${format(stats.keepDamage)}</summary><dl class="statistics-grid">${metric('stats.leaks', stats.leaks)}${metric('stats.keepLost', stats.keepDamage)}</dl></details></section>`;
 }
 
 export class StatisticsPanel {
@@ -51,7 +57,22 @@ export class StatisticsPanel {
     const dialog = document.getElementById('statistics') as HTMLDialogElement;
     const body = document.getElementById('statistics-content')!;
     const render = () => {
+      const open = new Set(
+        [...body.querySelectorAll<HTMLDetailsElement>('details[open]')].map(
+          (detail) => detail.dataset.reportSection,
+        ),
+      );
+      const focused =
+        document.activeElement?.closest<HTMLDetailsElement>('details')?.dataset.reportSection;
+      const scroll = dialog.scrollTop;
       body.innerHTML = statisticsMarkup(store.state.statistics);
+      for (const detail of body.querySelectorAll<HTMLDetailsElement>('details')) {
+        detail.open = open.has(detail.dataset.reportSection);
+        if (focused && detail.dataset.reportSection === focused) {
+          detail.querySelector('summary')?.focus({ preventScroll: true });
+        }
+      }
+      dialog.scrollTop = scroll;
     };
     document.getElementById('statistics-open')!.onclick = () => {
       render();

@@ -161,7 +161,7 @@ export class WorldUI {
       <button aria-label="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" title="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" data-island="${seat.slot}" class="${seat.slot === this.store.ownSlot ? 'own-island' : ''}">
         <img class="captain-avatar" src="${assetUrl(`art/${seat.com ? comCaptain(seat.com.captain, seat.slot).portrait : factions[worldIslands[seat.slot].faction].avatar}.png`)}" alt="${th('world.captainColor', { color: factions[worldIslands[seat.slot].faction].name })}" style="border-color:#${worldIslands[seat.slot].color.toString(16)}">
         <span><b>${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}${seat.slot === this.store.ownSlot ? t('world.you') : ''}</b>
-          <small>${seat.owner ? th('world.healthStatus', { health: seat.state.lives, status: seat.state.phase === 'combat' ? t('world.fighting') : seat.state.phase === 'lost' ? t('world.defeated') : t('world.preparing') }) : t('world.unclaimed')}</small>
+          <small>${seat.owner ? stat('health', seat.state.lives) : t('world.unclaimed')}</small>
         </span>
       </button>
     `,

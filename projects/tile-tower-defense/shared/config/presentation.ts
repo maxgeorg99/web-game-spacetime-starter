@@ -54,3 +54,13 @@ export const statisticsIcons = {
   raidDamage: 'keep-damage',
   meatSpent: 'meat',
 } as const satisfies Record<string, keyof typeof uiIcons>;
+
+/** Quiet sky colors and cloud density, independent of authoritative gameplay. */
+export const atmosphere = {
+  skyTop: '#86b7c5',
+  skyMiddle: '#b5d4d8',
+  skyBottom: '#e0e8dc',
+  cloudLight: '#f5f6e9',
+  cloudShade: '#c5dadd',
+  cloudCount: 18,
+} as const;

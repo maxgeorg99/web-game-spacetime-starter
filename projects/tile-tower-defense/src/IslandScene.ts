@@ -11,6 +11,7 @@ import { worldIslands } from './i18n/content';
 import type { GameStore } from './store';
 import { images, sheets } from './art';
 import { IslandView } from './IslandView';
+import { IslandAtmosphere } from './IslandAtmosphere';
 
 /** One camera and one scene, with four independent snapshot renderers. */
 export class IslandScene extends Phaser.Scene {
@@ -18,7 +19,7 @@ export class IslandScene extends Phaser.Scene {
   onInspect: (slot: number) => void = () => {};
   private views: IslandView[] = [];
   private labels: Phaser.GameObjects.Text[] = [];
-  private shadows: Phaser.GameObjects.Ellipse[] = [];
+  private atmosphere?: IslandAtmosphere;
   private airships = new Map<number, Phaser.GameObjects.Container>();
   private flightSnapshots = new Map<number, { elapsed: number; receivedAt: number }>();
   private unsubscribe?: () => void;
@@ -57,15 +58,11 @@ export class IslandScene extends Phaser.Scene {
         repeat: -1,
       });
     }
-    this.add
-      .graphics()
-      .fillGradientStyle(0xdce1df, 0xdce1df, 0xaac3c9, 0xaac3c9)
-      .fillRect(-5000, -5000, 10000, 10000);
+    this.atmosphere = new IslandAtmosphere(this);
     const islands = this.store.online
       ? worldIslands
       : [{ slot: 0, name: t('island.yours'), x: 0, y: 0, color: 0x6e9cbe }];
     for (const island of islands) {
-      this.shadows.push(this.add.ellipse(island.x + 500, island.y + 465, 390, 62, 0x647f80, 0.12));
       const view = new IslandView(
         this,
         fresh(),
@@ -344,7 +341,6 @@ export class IslandScene extends Phaser.Scene {
       const seat = this.store.world?.seats[slot];
       const visible = !this.store.world?.round || !!seat?.owner;
       this.labels[slot].setVisible(visible);
-      this.shadows[slot].setVisible(visible);
       if (!visible) {
         this.views[slot].reset();
         continue;
@@ -463,6 +459,7 @@ export class IslandScene extends Phaser.Scene {
     }
   }
   update(time: number, delta: number) {
+    this.atmosphere?.update(delta);
     this.updateFlights(time, delta);
     if (
       !this.store.ready ||
