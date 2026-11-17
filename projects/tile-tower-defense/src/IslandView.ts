@@ -2,7 +2,7 @@ import { deathArt, deathPresentation } from '../shared/config/death-art';
 import { pathFor, pathExtensions, extensionAt } from '../shared/game/paths';
 import { mageAspect, mageMastered } from '../shared/game/magic';
 import { magicColors } from '../shared/config/magic';
-import { landmarkArt, watchtowerGroundY } from '../shared/config/presentation';
+import { landmarkArt, watchtowerGroundY, uiIcons } from '../shared/config/presentation';
 import { discoveries, rarityColors, terrainBonuses } from '../shared/config/drafting';
 import type { TileId } from '../shared/config';
 import { placementEffect } from '../shared/game/rules';
@@ -36,7 +36,8 @@ export class IslandView {
 
   private hover?: Point;
   private draftKind?: TileId;
-  private previewLabel?: Phaser.GameObjects.Text;
+  private previewLabel?: Phaser.GameObjects.Container;
+  private previewSignature = '';
   private knownTiles = new Set<string>();
   private lastImpacts: unknown;
   constructor(
@@ -111,6 +112,47 @@ export class IslandView {
     });
     sprite.play(key);
   }
+  private showDraftPreview(
+    rows: { text: string; icon?: keyof typeof uiIcons; muted?: boolean }[],
+    point: Point,
+  ) {
+    this.previewLabel ??= this.add.container(0, 0).setDepth(1100);
+    const signature = JSON.stringify(rows);
+    if (signature !== this.previewSignature) {
+      this.previewSignature = signature;
+      this.previewLabel.removeAll(true);
+      const background = this.add.graphics();
+      this.previewLabel.add(background);
+      let y = 10;
+      let width = 0;
+      for (const row of rows) {
+        const text = this.add.text(row.icon ? 38 : 12, y, row.text, {
+          fontFamily: 'Fira',
+          fontSize: row.muted ? '12px' : '13px',
+          color: row.muted ? '#c3cfc3' : '#fff7db',
+          wordWrap: { width: 220, useAdvancedWrap: true },
+        });
+        const height = Math.max(22, text.height);
+        if (row.icon) {
+          const icon = this.add.image(23, y + height / 2, uiIcons[row.icon]);
+          const scale = 20 / Math.max(icon.width, icon.height);
+          icon.setScale(scale);
+          this.previewLabel.add(icon);
+        }
+        text.y += (height - text.height) / 2;
+        this.previewLabel.add(text);
+        width = Math.max(width, text.x + text.width + 12);
+        y += height + 4;
+      }
+      const height = y + 6;
+      background.fillStyle(0x243e39, 0.97).fillRoundedRect(0, 0, width, height, 8);
+      this.previewLabel.setSize(width, height);
+    }
+    this.previewLabel
+      .setPosition(point.x - this.previewLabel.width / 2, point.y - 38 - this.previewLabel.height)
+      .setVisible(true);
+  }
+
   private get add() {
     return this.scene.add;
   }
@@ -387,7 +429,9 @@ export class IslandView {
         color,
         0.65,
       );
-      let lines = [t('draft.invalid')];
+      let rows: { text: string; icon?: keyof typeof uiIcons; muted?: boolean }[] = [
+        { text: t('draft.invalid') },
+      ];
       if (valid) {
         const extension = extensionAt(this.state, cell);
         if (extension) {
@@ -408,30 +452,44 @@ export class IslandView {
           }
         }
         const effect = placementEffect(this.state, this.draftKind, cell);
-        lines = [
-          ...(extension
-            ? [
-                t('draft.pathPreview', {
-                  count: extension.path.length,
-                  land: extension.land.length,
-                }),
-              ]
-            : []),
-          t('draft.preview', effect),
-        ];
-        if (effect.towers) {
-          lines.push(t('draft.blessing', { count: effect.towers }));
+        rows = [];
+        if (effect.gold > 0) {
+          rows.push({ icon: 'gold', text: t('draft.incomeGain', { amount: effect.gold }) });
         }
-        if (effect.hastened) {
-          lines.push(t('draft.haste', { count: effect.hastened }));
+        if (effect.meat > 0) {
+          rows.push({ icon: 'meat', text: t('draft.incomeGain', { amount: effect.meat }) });
         }
-        if (effect.range) {
-          lines.push(t('draft.perch'));
+        if (effect.towers > 0) {
+          rows.push({ icon: 'damage', text: t('draft.blessing', { count: effect.towers }) });
         }
-        if (effect.healing) {
-          lines.push(t('draft.healing', { count: effect.healing }));
+        if (effect.hastened > 0) {
+          rows.push({ icon: 'speed', text: t('draft.haste', { count: effect.hastened }) });
         }
-        lines.push(t('draft.confirm'));
+        if (effect.range > 0) {
+          rows.push({ icon: 'range', text: t('draft.perch') });
+        }
+        if (effect.healing > 0) {
+          rows.push({ icon: 'health', text: t('draft.healing', { count: effect.healing }) });
+        }
+        if (this.draftKind === 'meadow') {
+          rows.push({ icon: 'defense', text: t('tower.buildable') });
+        }
+        if (
+          (this.draftKind === 'shrine' && !effect.towers) ||
+          (this.draftKind === 'windmill' && !effect.hastened)
+        ) {
+          rows.push({ text: t('draft.noTowerBonus'), muted: true });
+        }
+        if (extension) {
+          rows.push({
+            text: t('draft.pathPreview', {
+              count: extension.path.length,
+              land: extension.land.length,
+            }),
+            muted: true,
+          });
+        }
+        rows.push({ text: t('draft.confirm'), muted: true });
         for (const other of this.state.tiles) {
           const range =
             this.draftKind === 'shrine'
@@ -447,21 +505,7 @@ export class IslandView {
           }
         }
       }
-      this.previewLabel ??= this.add
-        .text(0, 0, '', {
-          fontFamily: 'Fira',
-          fontSize: '13px',
-          color: '#fff7db',
-          backgroundColor: '#243e39',
-          padding: { x: 10, y: 8 },
-          align: 'center',
-        })
-        .setOrigin(0.5, 1)
-        .setDepth(1100);
-      this.previewLabel
-        .setText(lines.join('\n'))
-        .setPosition(p.x, p.y - 38)
-        .setVisible(true);
+      this.showDraftPreview(rows, p);
     }
     for (const [cell, color] of [
       [this.hover, 0xffffff],

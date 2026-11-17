@@ -1,4 +1,4 @@
-import { landmarkArt } from '../shared/config/presentation';
+import { landmarkArt, uiIcons } from '../shared/config/presentation';
 import { assetUrl } from './assets';
 import { unitSheets } from '../shared/config/unit-art';
 import {
@@ -38,6 +38,13 @@ export const images = [
   'magic/fire-icon',
   'magic/lightning-bolt',
   ...Object.keys(landmarkArt),
+  uiIcons.gold,
+  uiIcons.meat,
+  uiIcons.health,
+  uiIcons.damage,
+  uiIcons.range,
+  uiIcons.speed,
+  uiIcons.defense,
 ];
 for (const faction of Object.keys(factions) as (keyof typeof factions)[]) {
   for (const [unit, sheet] of Object.entries({ ...factionUnits, ...factionTowerSheets })) {

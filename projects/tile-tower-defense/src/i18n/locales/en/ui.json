@@ -269,5 +269,7 @@
   "stats.builtCount": "{{count}} built",
   "stats.towerSummary": "{{damage}} damage · {{kills}} kills · {{shots}} shots",
   "catalog.waveHealth": "enemy health",
-  "catalog.waveSpacing": "between spawns"
+  "catalog.waveSpacing": "between spawns",
+  "draft.incomeGain": "+{{amount}} / wave",
+  "draft.noTowerBonus": "No towers gain a bonus here"
 }

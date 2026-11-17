@@ -269,5 +269,7 @@
   "stats.builtCount": "{{count}} gebaut",
   "stats.towerSummary": "{{damage}} Schaden · {{kills}} besiegt · {{shots}} Schüsse",
   "catalog.waveHealth": "Gegner-LP",
-  "catalog.waveSpacing": "zwischen Gegnern"
+  "catalog.waveSpacing": "zwischen Gegnern",
+  "draft.incomeGain": "+{{amount}} / Welle",
+  "draft.noTowerBonus": "Hier erhält kein Turm einen Bonus"
 }

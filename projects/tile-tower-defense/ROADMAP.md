@@ -430,3 +430,9 @@ Final hook verification: full check:push passed formatting, lint, all three Type
 Generated dedicated dragon, dwarf, knight and mage avatars using the existing gryphon's mustard-yellow notched ticket and each unit's animation strip as references. Added transparent 256×256 PNGs under public/art/avatars and switched the four avatar references away from sprite-sheet fallbacks. Original unit movement art and the other portraits are preserved. Prompts and provenance: docs/AVATAR-ART.md.
 
 Handoff: inspected all four final image files and formatted authored text/config. No automated checks, browser verification or publishing run. Reload the field guide and relevant wave previews to playtest the portraits; no server module change is needed for these client display references.
+
+### 2026-11-17 — meaningful tile-placement previews
+
+Replaced the draft placement tooltip's unconditional gold/meat sentence with compact rows using the existing resource and stat artwork. Zero gains are omitted; healing appears only when it restores health. Buildable meadow displays its build purpose, and shrine/windmill placements that improve no towers show a short neutral hint. Road growth and confirmation remain secondary text. Tooltip content is cached and reused while hovering, with wrapped text for localized labels. English/German/Spanish updated; authoritative placement calculations are unchanged.
+
+Handoff: formatted authored files; no automated tests, lint, typechecks, builds or browser verification run. Manual playtest: preview grove/pasture (one resource), orchard (both), meadow (no resource zeros), spring at full/damaged health, and support tiles near/far from towers. No server publish required.

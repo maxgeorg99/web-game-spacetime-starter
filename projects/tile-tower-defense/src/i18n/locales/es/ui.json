@@ -269,5 +269,7 @@
   "stats.builtCount": "{{count}} construidas",
   "stats.towerSummary": "{{damage}} de daño · {{kills}} bajas · {{shots}} disparos",
   "catalog.waveHealth": "salud enemiga",
-  "catalog.waveSpacing": "entre apariciones"
+  "catalog.waveSpacing": "entre apariciones",
+  "draft.incomeGain": "+{{amount}} / oleada",
+  "draft.noTowerBonus": "Aquí ninguna torre recibe una mejora"
 }
