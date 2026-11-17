@@ -1,4 +1,5 @@
-import { balance, towers, tileDef, treeDef, waves } from '../config';
+import { campaignWaves } from '../config/campaigns';
+import { balance, towers, tileDef, treeDef } from '../config';
 import { recruitableUnits } from '../config/bevy-units';
 import { comBalance, comCaptain } from '../config/com';
 import { worldBalance } from '../config/world';
@@ -130,7 +131,9 @@ export function chooseComAction(world: WorldState, seat: WorldSeat): WorldAction
     const desired = Math.min(
       comBalance.maxTowers,
       profile.initialTowers +
-        Math.floor((s.wave + seat.cycles * waves.length) / profile.wavesPerTower) +
+        Math.floor(
+          (s.wave + seat.cycles * campaignWaves(s.campaign).length) / profile.wavesPerTower,
+        ) +
         (threatened ? 1 : 0),
     );
     if (s.towers.length < desired) {

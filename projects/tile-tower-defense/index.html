@@ -78,6 +78,7 @@
         </div>
         <div class="wave-hud">
           <div class="wave-number"><span id="wave-number"></span></div>
+          <button id="biome-open" class="biome-open" hidden></button>
           <button id="add-com" class="captain-picker-open" data-i18n="match.addCom" hidden>
             Add COM
           </button>
@@ -227,6 +228,16 @@
         </div>
       </section>
     </main>
+    <dialog id="biome-picker" aria-labelledby="biome-title">
+      <div class="catalog-head">
+        <h2 id="biome-title" data-i18n="biome.choose">Biome</h2>
+        <button id="biome-close" data-i18n-aria-label="biome.close" aria-label="Close biome picker">
+          ×
+        </button>
+      </div>
+      <div id="biome-choices"></div>
+      <p id="biome-status" role="status"></p>
+    </dialog>
     <dialog id="captain-picker" aria-labelledby="captain-picker-title">
       <div class="catalog-head">
         <h2 id="captain-picker-title" data-i18n="captain.choose">Choose your rival</h2>

@@ -271,5 +271,14 @@
   "catalog.waveHealth": "Gegner-LP",
   "catalog.waveSpacing": "zwischen Gegnern",
   "draft.incomeGain": "+{{amount}} / Welle",
-  "draft.noTowerBonus": "Hier erhält kein Turm einen Bonus"
+  "draft.noTowerBonus": "Hier erhält kein Turm einen Bonus",
+  "biome.sky": "Himmelsinseln",
+  "biome.volcano": "Vulkan",
+  "biome.choose": "Biom",
+  "biome.close": "Biomauswahl schließen",
+  "biome.waves": "20 Wellen",
+  "biome.selected": "Ausgewählt",
+  "biome.hostOnly": "Der Host wählt das Biom.",
+  "biome.ocean": "Tiefsee",
+  "biome.highlands": "Hochland"
 }

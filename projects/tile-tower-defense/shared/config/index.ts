@@ -1,3 +1,4 @@
+import { campaigns } from './campaigns';
 import type { UnitDef } from './types';
 import type { UnitId } from './units';
 export * from './types';
@@ -10,7 +11,6 @@ export * from './presentation';
 import { towers } from './towers';
 import { units } from './units';
 import { skillTrees } from './skills';
-import { waves } from './waves';
 import { tiles } from './island';
 export function towerDef(id: string) {
   const def = towers.find((v) => v.id === id);
@@ -46,7 +46,7 @@ export function validateCatalog() {
       throw Error('Duplicate config ID.');
     }
   };
-  [towers, units, waves, tiles].forEach((list) => unique(list.map((v) => v.id)));
+  [towers, units, tiles].forEach((list) => unique(list.map((v) => v.id)));
   unique(skillTrees.map((v) => v.tower));
   for (const t of towers) {
     treeDef(t.id);
@@ -70,8 +70,20 @@ export function validateCatalog() {
       throw Error('Invalid unit stats.');
     }
   }
-  for (const w of waves) {
-    if (w.interval <= 0 || w.healthMultiplier <= 0 || !w.groups.length) {
+  for (const campaign of Object.values(campaigns)) {
+    if (campaign.length !== 20) {
+      throw Error('Campaign must contain 20 waves.');
+    }
+    unique(campaign.map((wave) => wave.id));
+  }
+  for (const w of Object.values(campaigns).flat()) {
+    if (
+      !Number.isFinite(w.interval) ||
+      !Number.isFinite(w.healthMultiplier) ||
+      w.interval <= 0 ||
+      w.healthMultiplier <= 0 ||
+      !w.groups.length
+    ) {
       throw Error('Invalid wave.');
     }
     for (const g of w.groups) {

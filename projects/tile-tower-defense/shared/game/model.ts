@@ -1,3 +1,4 @@
+import type { CampaignId } from '../config/campaigns';
 import type { Contribution, DamageSource, RunStatistics } from './statistics';
 import type { AttackType } from '../config/damage';
 import type { MageAspect, School } from '../config/magic';
@@ -84,6 +85,8 @@ export interface Impact extends Point {
   ally: boolean;
 }
 export interface State {
+  /** Missing on original saves; resolves to Sky Islands. */
+  campaign?: CampaignId;
   /** Confirmed kill positions, retained across ticks; IDs are unique within one run. */
   deaths?: (Point & { id: number })[];
   statistics?: RunStatistics;

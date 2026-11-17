@@ -1,3 +1,4 @@
+import { biomeDef, type BiomeId } from '../config/biomes';
 import { statistics } from './statistics';
 import { comCaptains, comCaptain, type ComCaptainId } from '../config/com';
 import { migrateMages } from './magic';
@@ -30,6 +31,7 @@ export interface Flight {
   nextSpawn: number;
 }
 export interface WorldState {
+  biome?: BiomeId;
   version: 1;
   seed?: number;
   comSerial?: number;
@@ -41,6 +43,7 @@ export interface WorldState {
 }
 export type WorldAction =
   | { type: 'begin' }
+  | { type: 'set-biome'; kind: string }
   | { type: 'add-com'; kind?: string }
   | { type: 'remove-com'; target: number }
   | Command
@@ -88,7 +91,9 @@ export function joinWorld(
   if (name) {
     seat.name = name;
   }
-  seat.state = world.round ? fresh(true) : (previous ?? fresh());
+  seat.state = world.round
+    ? fresh(true, world.biome ? biomeDef(world.biome).campaign : undefined)
+    : (previous ?? fresh());
   continueCampaign(seat);
   return next;
 }
@@ -105,6 +110,21 @@ export function worldCommand(
   }
   if (seat.sequence !== sequence) {
     throw Error('Your island changed. Try the order again.');
+  }
+  if (action.type === 'set-biome') {
+    if (next.round?.phase !== 'lobby') {
+      throw Error('Biomes can only change in the lobby.');
+    }
+    if (next.seats.find((s) => s.owner && !s.com)?.owner !== owner) {
+      throw Error('Only the host can choose the biome.');
+    }
+    const biome = biomeDef(action.kind);
+    next.biome = action.kind as BiomeId;
+    for (const island of next.seats) {
+      island.state.campaign = biome.campaign;
+    }
+    seat.sequence++;
+    return next;
   }
   if (action.type === 'add-com' || action.type === 'remove-com') {
     if (!next.round || next.round.phase !== 'lobby') {
@@ -136,13 +156,17 @@ export function worldCommand(
         decisionIn: 0.5 + empty.slot * 0.4,
         raidIn: captain.raidSeconds / 2,
       };
-      empty.state = fresh(true);
+      empty.state = fresh(true, next.biome ? biomeDef(next.biome).campaign : undefined);
     } else {
       const target = next.seats.find((s) => s.slot === action.target);
       if (!target?.com) {
         throw Error('Choose a COM player to remove.');
       }
       next.seats[target.slot] = freshWorld().seats[target.slot];
+      next.seats[target.slot].state = fresh(
+        true,
+        next.biome ? biomeDef(next.biome).campaign : undefined,
+      );
     }
     seat.sequence++;
     return next;

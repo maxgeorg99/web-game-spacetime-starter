@@ -251,6 +251,7 @@ export const tick = db.reducer({ onSchedule: clock }, { timer: clock.rowType }, 
           name: seat.name ?? '',
           outcome: matchOutcome(worldState, seat.slot)!,
           statistics: statistics(seat.state),
+          campaign: seat.state.campaign ?? 'sky-v1',
         }));
       ctx.db.reportOutbox.insert({
         msgId: 0n,

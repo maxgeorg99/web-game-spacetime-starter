@@ -1,3 +1,4 @@
+import { campaignWaves, type CampaignId } from '../../shared/config/campaigns';
 import { t, type TranslationKey } from './index';
 import * as config from '../../shared/config';
 import { bevyUnits as sourceUnits } from '../../shared/config/bevy-units';
@@ -23,7 +24,15 @@ function named<T extends { id: string }>(group: string, value: T): Localized<T> 
 export const towers = config.towers.map((value) => named('towers', value));
 export const units = config.units.map((value) => named('units', value));
 export const tiles = config.tiles.map((value) => named('tiles', value));
-export const waves = config.waves.map((value) => named('waves', value));
+export function wavesFor(campaign?: CampaignId) {
+  return campaignWaves(campaign).map((value) => ({
+    ...value,
+    name: text(`content.waves.${value.id}.name`),
+    description:
+      !campaign || campaign === 'sky-v1' ? text(`content.waves.${value.id}.description`) : '',
+  }));
+}
+export const waves = wavesFor();
 export const bevyUnits = sourceUnits.map((value) => named('units', value));
 export const recruitableUnits = bevyUnits.filter((value) => value.recruitable);
 export const worldIslands = sourceIslands.map((value) => ({

@@ -436,3 +436,43 @@ Handoff: inspected all four final image files and formatted authored text/config
 Replaced the draft placement tooltip's unconditional gold/meat sentence with compact rows using the existing resource and stat artwork. Zero gains are omitted; healing appears only when it restores health. Buildable meadow displays its build purpose, and shrine/windmill placements that improve no towers show a short neutral hint. Road growth and confirmation remain secondary text. Tooltip content is cached and reused while hovering, with wrapped text for localized labels. English/German/Spanish updated; authoritative placement calculations are unchanged.
 
 Handoff: formatted authored files; no automated tests, lint, typechecks, builds or browser verification run. Manual playtest: preview grove/pasture (one resource), orchard (both), meadow (no resource zeros), spring at full/damaged health, and support tiles near/far from towers. No server publish required.
+
+### 2026-11-17 — biome campaigns planned
+
+Created docs/BIOMES-PLAN.md for a host-selected pre-match biome alongside COM controls: original campaign plus Volcano, Deep Ocean and Highlands, each with 20 waves and coordinated terrain/background themes. Plan covers authoritative lobby selection, shared campaign resolution, saved-state compatibility, preview/theme cache updates, 60 new waves, report metadata and opt-in verification. Proposed first slice preserves current campaign cycling and gameplay mechanics. Planning only; no runtime code changed or checks run. Implementation awaits user direction.
+
+### 2026-11-17 — Sky Islands and Volcano biome slice
+
+User approved renaming the original environment Sky Islands, retaining shared 20-wave looping, and implementing Volcano first. Added a host-only replicated lobby selector beside COM controls, two local illustrated thumbnails, stable saved biome/campaign IDs, original-save fallback and twenty explicitly authored Volcano waves. New lobby joins/COMs inherit the choice; starting locks selection. Shared campaign lookup drives spawning, completion/cycling, COM progression, wave previews and the field guide. Unknown IDs are rejected. Archived reports carry optional campaign metadata with coordinator validation and a history label.
+
+Volcano presentation includes basalt ground/cliffs, warm roads, themed expansion/draft/guide colors, smoke, a distant crater and a bounded ember pool. Theme-specific texture caches and atmosphere cleanup handle lobby/world switching. Sky keeps the original waves and colors. Existing resource/landmark/tower art and gameplay effects are preserved. English/German/Spanish labels added; Deep Ocean/Highlands remain planned.
+
+Handoff: domain/world regression cases added for selection permissions, invalid/stale orders, COM/join/reconnect inheritance, lock-on-start, campaign spawn/preview parity, old saves, restart and wave-20 looping. Formatting only so far; ad hoc lint/typechecks/unit tests requested from the user and not yet run. Browser checks, live-server integration, local publication and production deployment have not run. Offer bun run test:server with approval. Balance of the twenty new waves remains provisional. See docs/CONTENT.md and docs/BIOMES-PLAN.md.
+
+Volcano verification follow-up: user approved lint, TypeScript checks and unit tests. Fixed the catalog validator's stale global-wave reference and corrected the new spawn-interval assertion to include the first simulation tick. ESLint, all three TypeScript targets and all 86 tests now pass. Authored files formatted (SVG thumbnails with the HTML parser). Production build, browser verification, live-server integration and publication remain unrun; local server module update is required before the lobby's biome command works. Full twenty-wave balance playtesting remains pending.
+
+Volcano local playtest startup: user authorized starting local services. Started the disk-backed SpacetimeDB server on 3106, successfully published the coordinator with --delete-data=never, started the local provisioner and Vite on 5175. The local session directory is empty; create a new world to have the worker publish the current Volcano-capable game module automatically. Confirmed both ports are listening. No browser gameplay verification or live-server tests run; production untouched.
+
+### 2026-11-17 — Volcano lava jumps
+
+Replaced Volcano's cloud pool and drifting ember rectangles with six staggered decorative fireball arcs using the existing measured 32×32 fire-bolt art. Each jump rises and falls with a short fading trail and a quiet pause between launches; everything renders behind the battlefield. Sky Islands retains its clouds. Timing, count, art and size live in shared/config/presentation.ts. Reduced-motion mode hides the jumping effects, background tabs pause time, and biome switching destroys the complete effect pool. Formatted only; no new automated checks or browser verification run. Frontend-only: reload the running local game to playtest; no server publish required.
+
+### 2026-11-17 — Volcano scenery depth and camera response
+
+Replaced the flat crater silhouette with three native pixel-scale backdrop textures: distant ridges, a faceted cone with a glowing open crater and branching lava channel, and dark foreground rock shelves. Art generation is isolated in src/volcano-art.ts; palette and layer layout/parallax parameters live in shared/config/presentation.ts. Layers move at different camera-relative rates and subtly change scale on zoom; fireball origins share the foreground camera movement. This is 2D parallax, not actual 3D rotation. Reduced-motion mode suppresses decorative parallax/zoom and fireball jumps. Sky's cloud behavior remains intact.
+
+Handoff: authored files formatted. No new lint, typechecks, tests or browser verification run for these visual follow-ups; the earlier 86-test result predates them. Frontend-only changes are available through the running local Vite server after reload. No server update or publishing required. Manually review pan, wheel/pinch zoom, world overview and switching between Sky/Volcano.
+
+### 2026-11-17 — Deep Ocean and Highlands complete the biome set
+
+Added `ocean-v1` and `highlands-v1`, each with twenty explicit waves and English/German/Spanish wave names. All four biomes are selectable in the host lobby, with themed terrain, draft swatches and local landscape thumbnails. Existing Sky behavior, lobby authority, COM inheritance, reconnects and repeating shared-world campaigns remain intact.
+
+Deep Ocean uses blue-green reef platforms, pale paths, three coral/kelp depth planes, light shafts and sixteen subtle rising bubbles. Highlands uses moss/ochre platforms, slate cliffs, three faceted mountain planes with snowy caps and pine foothills, plus sparse drifting mist. Both react to camera pan/zoom and respect reduced motion; decorative drift pauses in hidden tabs. Existing unit abilities and movement are unchanged. The four-option picker is two-by-two on desktop and compact rows on narrow screens.
+
+Validation: approved lint, client/world/coordinator TypeScript checks and all 92 unit tests passed. Extended spawn/preview parity, campaign persistence, host/guest permissions, COM/join inheritance and wave-twenty loop cases to all three new campaigns. No browser verification or live-server integration suite run. Local coordinator published with no reset; Vite and provisioner remain running. Create a new world at http://127.0.0.1:5175/ to obtain the current game module. Existing worlds were not republished or reset. No production publish.
+
+Handoff: manually review both new environments while panning/zooming, narrow-screen biome selection, road/placement readability and complete campaigns with COMs. Balance is provisional. Optional `bun run test:server` still requires approval. All four biome slices are implemented; full campaign balancing and visual playtest feedback remain open.
+
+### 2026-11-17 — biome selection indicator
+
+Replaced the small selected-label text with a high-contrast SVG checkmark badge in the selected card’s top-right corner. Retained `aria-pressed` for accessible selection state and the existing selected border. Narrow cards reserve room for the badge. Formatted source; no new automated or browser checks for this presentation-only follow-up.

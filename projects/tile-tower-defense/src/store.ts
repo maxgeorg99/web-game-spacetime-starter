@@ -1,3 +1,4 @@
+import { biomeDef } from '../shared/config/biomes';
 import { t } from './i18n';
 import { worldIslands } from '../shared/config/world';
 import type { WorldState, WorldAction } from '../shared/game/world';
@@ -85,10 +86,13 @@ export class GameStore {
             if (world.version !== 1) {
               throw Error(t('connection.unsupportedSave'));
             }
+            biomeDef(world.biome);
             this.world = world;
             const seat = world.seats.find((seat) => seat.owner === identity.toHexString());
             this.ownSlot = seat?.slot ?? null;
-            this.state = seat ? restoreState(JSON.stringify(seat.state), false) : fresh();
+            this.state = seat
+              ? restoreState(JSON.stringify(seat.state), false)
+              : fresh(false, biomeDef(world.biome).campaign);
             this.sequence = seat?.sequence ?? 0;
             this.ready = true;
             this.error = '';

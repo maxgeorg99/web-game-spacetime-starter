@@ -1,3 +1,4 @@
+import { biomeDef, biomeIds } from '../shared/config/biomes';
 import { comCaptains, comCaptain } from '../shared/config/com';
 import { t, th, escapeHtml } from './i18n';
 import { assetUrl } from './assets';
@@ -17,6 +18,16 @@ export class WorldUI {
     private scene: IslandScene,
     private openSend: () => void,
   ) {
+    const biomePicker = document.getElementById('biome-picker') as HTMLDialogElement;
+    document.getElementById('biome-open')!.onclick = () => biomePicker.showModal();
+    document.getElementById('biome-close')!.onclick = () => biomePicker.close();
+    document.getElementById('biome-choices')!.onclick = (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-biome]');
+      if (!button || button.disabled || !button.dataset.biome) {
+        return;
+      }
+      void store.send({ type: 'set-biome', kind: button.dataset.biome });
+    };
     const navigation = document.getElementById('world-navigation')!;
     navigation.hidden = !store.online;
     document.getElementById('world-controls')!.hidden = !store.online;
@@ -118,6 +129,7 @@ export class WorldUI {
       this.store.error,
       this.store.ready,
       this.store.world?.round?.phase,
+      this.store.world?.biome,
       this.target,
       this.count,
       this.store.ownSlot,
@@ -128,6 +140,27 @@ export class WorldUI {
     this.signature = signature;
     const host = world.seats.find((seat) => seat.owner && !seat.com)?.slot === this.store.ownSlot;
     const canManage = host && this.store.world?.round?.phase === 'lobby';
+    const selectedBiome = this.store.world?.biome ?? 'sky';
+    const biomeButton = document.getElementById('biome-open') as HTMLButtonElement;
+    biomeButton.hidden = this.store.world?.round?.phase !== 'lobby';
+    biomeButton.innerHTML = `<img src="${assetUrl(`art/${biomeDef(selectedBiome).thumbnail}`)}" alt=""><span>${th(`biome.${selectedBiome}`)}</span>`;
+    biomeButton.setAttribute('aria-label', `${t('biome.choose')}: ${t(`biome.${selectedBiome}`)}`);
+    const biomePicker = document.getElementById('biome-picker') as HTMLDialogElement;
+    if (this.store.world?.round?.phase !== 'lobby' && biomePicker.open) {
+      biomePicker.close();
+    }
+    document.getElementById('biome-choices')!.innerHTML = biomeIds
+      .map(
+        (id) =>
+          `<button class="biome-choice" data-biome="${id}" aria-pressed="${id === selectedBiome}" ${!canManage || !this.store.ready || this.store.pending ? 'disabled' : ''}>
+        <img src="${assetUrl(`art/${biomeDef(id).thumbnail}`)}" alt="">
+        <strong>${th(`biome.${id}`)}</strong><small>${th('biome.waves')}</small>
+        ${id === selectedBiome ? `<span class="biome-selected" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="m4 10 4 4 8-8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` : ''}
+      </button>`,
+      )
+      .join('');
+    document.getElementById('biome-status')!.textContent =
+      this.store.error || (canManage ? '' : t('biome.hostOnly'));
     const addCom = document.getElementById('add-com') as HTMLButtonElement;
     addCom.hidden = !canManage;
     addCom.disabled = !this.store.ready || this.store.pending;

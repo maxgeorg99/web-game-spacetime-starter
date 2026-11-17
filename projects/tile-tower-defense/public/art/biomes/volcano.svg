@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1">
+      <stop stop-color="#302c3c" />
+      <stop offset="1" stop-color="#c07955" />
+    </linearGradient>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h320v180H0z" />
+  <path fill="#49333b" d="m150 104 70-79 18 10 15-8 67 90v63H150z" />
+  <path
+    fill="none"
+    stroke="#e0a074"
+    stroke-width="3"
+    d="m220 28 18 10 15-8M238 38l-8 22 15 12-9 23"
+  />
+  <g fill="#b7a4a2" opacity=".4">
+    <path d="M202 18h15V8h34v8h25v9h-74zM18 49h18V38h29v9h30v12H18z" />
+  </g>
+  <path fill="#51413f" d="m45 100 94 42 94-42-22 53-72 23-72-23z" />
+  <path fill="#352f36" d="m139 142 94-42-22 53-72 23z" />
+  <path fill="#655952" d="m45 100 94-42 94 42-94 42z" />
+  <path fill="none" stroke="#ba9978" stroke-width="12" d="m70 90 44 20 44-20 42 20" />
+  <path fill="#f4e4bd" d="M132 62h30v30h-30zM128 55h10v10h-10zM145 55h8v10h-8zM160 55h8v10h-8z" />
+  <path fill="#74644e" d="M143 79h9v13h-9z" />
+  <path fill="none" stroke="#e8a067" stroke-width="2" d="m76 128 8 14-4 9m98-16-9 11 3 12" />
+</svg>

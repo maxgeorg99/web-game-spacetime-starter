@@ -1,3 +1,4 @@
+import type { CampaignId } from '../config/campaigns';
 import type { TowerId } from '../config';
 import type { Fighter, State, Tower } from './model';
 import type { MatchOutcome } from './outcome';
@@ -39,6 +40,7 @@ export interface DamageSource {
   kind: TowerId;
 }
 export interface RunReport {
+  campaign?: CampaignId;
   version: 1;
   owner: string;
   name: string;

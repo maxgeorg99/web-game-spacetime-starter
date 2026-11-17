@@ -464,3 +464,59 @@ test('the last human defeat stops multiple surviving COMs and freezes the result
   expect(stepComs(world)).toBe(false);
   expect(JSON.stringify(world)).toBe(result);
 });
+
+// Biome permissions and persistence: these run through the same world command path as transport.
+test.each(['volcano', 'ocean', 'highlands'] as const)(
+  '%s: host selection is inherited by humans and COMs',
+  (biome) => {
+    let world = joinWorld(joinWorld(freshWorld(), 'alice'), 'bob');
+    expect(() => worldCommand(world, 'bob', 0, { type: 'set-biome', kind: biome })).toThrow('host');
+    expect(() => worldCommand(world, 'spectator', 0, { type: 'set-biome', kind: biome })).toThrow();
+    expect(() =>
+      worldCommand(world, 'alice', 0, { type: 'set-biome', kind: 'unknown-biome' }),
+    ).toThrow('Unsupported');
+    const original = JSON.stringify(world);
+    world = worldCommand(world, 'alice', 0, { type: 'set-biome', kind: biome });
+    expect(JSON.parse(original).biome).toBeUndefined();
+    expect(world.biome).toBe(biome);
+    expect(world.seats.every((s) => s.state.campaign === `${biome}-v1`)).toBe(true);
+    expect(() => worldCommand(world, 'alice', 0, { type: 'set-biome', kind: 'sky' })).toThrow(
+      'changed',
+    );
+    world = worldCommand(world, 'alice', 1, { type: 'add-com' });
+    expect(world.seats[2].state.campaign).toBe(`${biome}-v1`);
+    world = worldCommand(world, 'alice', 2, { type: 'remove-com', target: 2 });
+    world = joinWorld(world, 'charlie');
+    expect(world.seats[2].state.campaign).toBe(`${biome}-v1`);
+    const reconnected = joinWorld(JSON.parse(JSON.stringify(world)), 'alice');
+    expect(reconnected).toEqual(world);
+    world = worldCommand(world, 'alice', 3, { type: 'begin' });
+    expect(() => worldCommand(world, 'alice', 4, { type: 'set-biome', kind: 'sky' })).toThrow(
+      'lobby',
+    );
+    expect(world.seats.every((s) => s.state.campaign === `${biome}-v1`)).toBe(true);
+  },
+);
+
+test.each(['volcano', 'ocean', 'highlands'] as const)(
+  '%s retains its campaign when wave twenty loops',
+  (biome) => {
+    let world = joinWorld(joinWorld(freshWorld(), 'alice'), 'bob');
+    world = worldCommand(world, 'alice', 0, { type: 'set-biome', kind: biome });
+    world = worldCommand(world, 'alice', 1, { type: 'begin' });
+    world.round = { phase: 'combat', remaining: 0 };
+    for (const seat of world.seats.filter((s) => s.owner)) {
+      seat.state.phase = 'combat';
+      seat.state.wave = 19;
+      seat.state.queue = [];
+      seat.state.enemies = [];
+    }
+    stepWorld(world);
+    for (const seat of world.seats.filter((s) => s.owner)) {
+      expect(seat.cycles).toBe(1);
+      expect(seat.state.wave).toBe(0);
+      expect(seat.state.campaign).toBe(`${biome}-v1`);
+    }
+    expect(world.round?.phase).toBe('draft');
+  },
+);

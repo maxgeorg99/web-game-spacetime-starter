@@ -1,3 +1,4 @@
+import { campaignBiome } from '../shared/config/biomes';
 import { statisticsMarkup } from './statistics';
 import type { RunReport } from '../shared/game/statistics';
 import { escapeHtml, language, th } from './i18n';
@@ -146,7 +147,7 @@ export class SessionMenu {
                   const date = new Date(
                     Number(row.finishedAt.microsSinceUnixEpoch / 1000n),
                   ).toLocaleString(language);
-                  return `<details data-key="${escapeHtml(row.key)}" ${opened.has(row.key) ? 'open' : ''}><summary><b>${th(`result.${report.outcome}`)}</b> · ${escapeHtml(row.sessionName)}<small>${escapeHtml(date)}</small></summary>${statisticsMarkup(report.statistics)}</details>`;
+                  return `<details data-key="${escapeHtml(row.key)}" ${opened.has(row.key) ? 'open' : ''}><summary><b>${th(`result.${report.outcome}`)}</b> · ${escapeHtml(row.sessionName)} · ${th(`biome.${campaignBiome(report.campaign)}`)}<small>${escapeHtml(date)}</small></summary>${statisticsMarkup(report.statistics)}</details>`;
                 })
                 .join('')
             : `<p>${th('stats.noHistory')}</p>`;

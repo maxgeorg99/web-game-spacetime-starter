@@ -271,5 +271,14 @@
   "catalog.waveHealth": "enemy health",
   "catalog.waveSpacing": "between spawns",
   "draft.incomeGain": "+{{amount}} / wave",
-  "draft.noTowerBonus": "No towers gain a bonus here"
+  "draft.noTowerBonus": "No towers gain a bonus here",
+  "biome.sky": "Sky Islands",
+  "biome.volcano": "Volcano",
+  "biome.choose": "Biome",
+  "biome.close": "Close biome picker",
+  "biome.waves": "20 waves",
+  "biome.selected": "Selected",
+  "biome.hostOnly": "The host chooses the biome.",
+  "biome.ocean": "Deep Ocean",
+  "biome.highlands": "Highlands"
 }

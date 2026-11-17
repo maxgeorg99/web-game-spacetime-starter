@@ -1,3 +1,6 @@
+import { campaignWaves } from '../shared/config/campaigns';
+import { biomeDef, campaignBiome } from '../shared/config/biomes';
+import { wavesFor } from '../src/i18n/content';
 import { recentDeathLimit } from '../shared/config/lifecycle';
 import { draftOffers } from '../shared/game/drafting';
 import { discoveries } from '../shared/config/drafting';
@@ -14,6 +17,7 @@ import {
   uiIcons,
   waves,
   validateCatalog,
+  unitDef,
   road,
 } from '../shared/config';
 import {
@@ -442,3 +446,38 @@ describe('confirmed death presentation records', () => {
     expect(command(s, { type: 'restart' }).deaths).toBeUndefined();
   });
 });
+
+test.each(['volcano-v1', 'ocean-v1', 'highlands-v1'] as const)(
+  '%s previews agree with every authored spawn and preserve saves',
+  (campaignId) => {
+    expect(campaignWaves()).toEqual(waves);
+    expect(campaignBiome(undefined)).toBe('sky');
+    expect(biomeDef().campaign).toBe('sky-v1');
+    expect(restoreState(JSON.stringify(fresh())).campaign).toBeUndefined();
+    expect(() => restoreState(JSON.stringify({ ...fresh(), campaign: 'missing' }))).toThrow(
+      'Unsupported',
+    );
+    const campaign = campaignWaves(campaignId);
+    expect(campaign).toHaveLength(20);
+    expect(new Set(campaign.map((w) => w.id)).size).toBe(20);
+    const preview = wavesFor(campaignId);
+    for (let index = 0; index < campaign.length; index++) {
+      const wave = campaign[index];
+      expect(preview[index].groups).toEqual(wave.groups);
+      const state = command({ ...fresh(false, campaignId), wave: index }, { type: 'start' });
+      expect(state.queue).toEqual(
+        wave.groups.flatMap((g) => Array.from({ length: g.count }, () => unitDef(g.unit).id)),
+      );
+      step(state);
+      const first = state.enemies[0];
+      expect(first.kind).toBe(unitDef(wave.groups[0].unit).id);
+      expect(first.maxHealth).toBe(
+        units.find((u) => u.id === first.kind)!.health * wave.healthMultiplier,
+      );
+      expect(state.spawnIn).toBeCloseTo(wave.interval - balance.tickSeconds);
+    }
+    const restarted = command({ ...fresh(false, campaignId), phase: 'lost' }, { type: 'restart' });
+    expect(restarted.campaign).toBe(campaignId);
+    expect(restarted.wave).toBe(0);
+  },
+);

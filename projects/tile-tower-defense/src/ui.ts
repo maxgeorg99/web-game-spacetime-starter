@@ -1,5 +1,5 @@
 import { t, th, escapeHtml } from './i18n';
-import { waves, unitDef } from './i18n/content';
+import { wavesFor, unitDef } from './i18n/content';
 import { WorldUI } from './world-ui';
 import { balance } from '../shared/config';
 import { income, sameCell } from '../shared/game/rules';
@@ -105,7 +105,10 @@ export class UI {
       }
     });
     const dialog = element('catalog') as HTMLDialogElement;
-    button('catalog-open').onclick = () => dialog.showModal();
+    button('catalog-open').onclick = () => {
+      element('catalog-content').innerHTML = catalogContent(store.state.campaign);
+      dialog.showModal();
+    };
     button('catalog-close').onclick = () => dialog.close();
     const outsideDialog = (event: MouseEvent) => {
       const bounds = dialog.getBoundingClientRect();
@@ -198,6 +201,7 @@ export class UI {
 
     // Combat positions change at 10 Hz, but controls only redraw when their inputs change.
     const signature = JSON.stringify([
+      state.campaign,
       state.phase,
       state.wave,
       state.gold,
@@ -225,6 +229,7 @@ export class UI {
     const locked =
       !this.store.ready || this.store.pending || (this.store.online && this.store.ownSlot === null);
     const ended = state.phase === 'won' || state.phase === 'lost';
+    const waves = wavesFor(state.campaign);
     const wave = waves[Math.min(state.wave, waves.length - 1)];
     element('wave-number').textContent = t('wave.number', {
       number: Math.min(state.wave + 1, waves.length),

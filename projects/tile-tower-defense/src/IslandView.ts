@@ -1,3 +1,4 @@
+import { biomeDef, campaignBiome } from '../shared/config/biomes';
 import { deathArt, deathPresentation } from '../shared/config/death-art';
 import { pathFor, pathExtensions, extensionAt } from '../shared/game/paths';
 import { mageAspect, mageMastered } from '../shared/game/magic';
@@ -213,6 +214,8 @@ export class IslandView {
     this.catapults.clear();
     this.land.removeAll(true);
     const s = this.state;
+    const biome = campaignBiome(s.campaign);
+    const theme = biomeDef(biome);
     const list = [...s.tiles].sort((a, b) => a.x + a.y - (b.x + b.y) || a.x - b.x);
     for (const tile of list) {
       const { x, y } = this.project(tile),
@@ -226,7 +229,7 @@ export class IslandView {
           [x, y + 59],
           [x - 45, y + 34],
         ],
-        0x82765a,
+        theme.cliffLeft,
       );
       this.polygon(
         g,
@@ -236,7 +239,7 @@ export class IslandView {
           [x + 45, y + 34],
           [x, y + 59],
         ],
-        0x5e6652,
+        theme.cliffRight,
       );
       this.polygon(
         g,
@@ -246,9 +249,9 @@ export class IslandView {
           [x + 45, y],
           [x, y + 23],
         ],
-        path ? 0xc8b991 : tileDef(tile.kind).color,
+        path ? theme.road : theme.terrain[tile.kind],
       );
-      g.lineStyle(1, 0xc9d59a, 0.7).strokePoints(
+      g.lineStyle(1, theme.edge, 0.7).strokePoints(
         [
           { x: x - 45, y },
           { x, y: y - 23 },
@@ -279,11 +282,11 @@ export class IslandView {
               [x + dx + 6, y + dy],
               [x + dx, y + dy + 3],
             ],
-            0xb2a17c,
+            theme.paving,
           );
         }
       } else if (tile.kind === 'meadow') {
-        g.lineStyle(2, 0x809858);
+        g.lineStyle(2, biome === 'volcano' ? 0xe8a067 : biome === 'ocean' ? 0x83b9a6 : 0x809858);
         for (const dx of [-22, 20]) {
           g.lineBetween(x + dx, y + 3, x + dx - 3, y - 2);
         }
@@ -446,7 +449,11 @@ export class IslandView {
                 [p.x + 43, p.y],
                 [p.x, p.y + 21],
               ],
-              road ? 0xc8b991 : sameCell(land, extension.discovery) ? color : 0xa6bb79,
+              road
+                ? biomeDef(campaignBiome(this.state.campaign)).road
+                : sameCell(land, extension.discovery)
+                  ? color
+                  : biomeDef(campaignBiome(this.state.campaign)).terrain.meadow,
               0.55,
             );
           }
@@ -548,6 +555,7 @@ export class IslandView {
     this.lastNextId = this.state.nextId;
     const s = this.state,
       key = JSON.stringify([
+        s.campaign,
         s.tiles,
         s.path,
         s.towers.map((t) => [t.id, t.x, t.y, t.kind, t.school, t.ranks]),

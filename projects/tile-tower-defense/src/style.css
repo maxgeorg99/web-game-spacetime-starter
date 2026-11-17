@@ -1876,3 +1876,103 @@ details[open] > .disclosure-summary::after {
 .catalog-branch-skills {
   padding-top: 8px;
 }
+
+.biome-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.biome-open img {
+  width: 38px;
+  height: 25px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+#biome-picker {
+  width: min(760px, calc(100vw - 32px));
+}
+#biome-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.biome-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 8px 12px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  text-align: left;
+}
+.biome-choice img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  image-rendering: pixelated;
+}
+.biome-choice[aria-pressed='true'] {
+  border-color: #426b54;
+  background: #e5ebdb;
+}
+.biome-choice:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.biome-selected {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #f4f3e5;
+  border-radius: 50%;
+  background: #34563e;
+  color: #fffdf0;
+  box-shadow: 0 2px 5px #172d2633;
+  pointer-events: none;
+}
+.biome-selected svg {
+  width: 20px;
+  height: 20px;
+}
+#biome-status:empty {
+  display: none;
+}
+@media (max-width: 760px) {
+  .wave-hud {
+    flex-wrap: wrap;
+  }
+  .biome-open img {
+    width: 26px;
+    height: 20px;
+  }
+  #biome-choices {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 540px) {
+  #biome-choices {
+    grid-template-columns: 1fr;
+  }
+  .biome-choice {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    padding-right: 48px;
+    column-gap: 12px;
+    align-items: center;
+  }
+  .biome-choice img {
+    grid-column: 1;
+    grid-row: 1 / 4;
+  }
+  .biome-choice strong,
+  .biome-choice small {
+    grid-column: 2;
+  }
+}

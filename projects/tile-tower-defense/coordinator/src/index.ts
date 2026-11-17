@@ -1,3 +1,4 @@
+import { campaigns } from '../../shared/config/campaigns';
 import { Identity } from 'spacetimedb';
 import type { RunReport } from '../../shared/game/statistics';
 import { resultRetentionSeconds } from '../../shared/config/lifecycle';
@@ -367,7 +368,8 @@ export const receive_run_reports = db.reducer({ reports: t.string() }, (ctx, { r
         row.version !== 1 ||
         !/^[a-f0-9]{64}$/i.test(row.owner) ||
         !['victory', 'defeat', 'draw'].includes(row.outcome) ||
-        row.statistics?.version !== 1,
+        row.statistics?.version !== 1 ||
+        (row.campaign !== undefined && !Object.hasOwn(campaigns, row.campaign)),
     )
   ) {
     throw new SenderError('Invalid run report.');

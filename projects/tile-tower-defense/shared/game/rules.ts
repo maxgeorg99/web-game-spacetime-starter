@@ -1,15 +1,16 @@
+import { campaignWaves, type CampaignId } from '../config/campaigns';
 import { freshStatistics, statistics, towerStatistics } from './statistics';
 import { pathFor, pathExtensions, extensionAt, extensionLand, applyExtension } from './paths';
 import { magePoints, branchPoints, mageAspect, migrateMages } from './magic';
 import { magicBalance, schools } from '../config/magic';
 import { terrainBonuses } from '../config/drafting';
 import { draftOffers } from './drafting';
-import { balance, road, towerDef, treeDef, unitDef, tileDef, waves, type TileId } from '../config';
+import { balance, road, towerDef, treeDef, unitDef, tileDef, type TileId } from '../config';
 import type { Command, Point, State, Tower } from './model';
 export const sameCell = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 export const onRoad = (p: Point, state?: State) => pathFor(state).some((v) => sameCell(p, v));
-export function fresh(expanding = false): State {
+export function fresh(expanding = false, campaign?: CampaignId): State {
   const land: State['tiles'] = [];
   for (let y = -2; y <= 2; y++) {
     for (let x = -2; x <= 2; x++) {
@@ -18,6 +19,7 @@ export function fresh(expanding = false): State {
   }
   return {
     version: 2,
+    ...(campaign ? { campaign } : {}),
     statistics: freshStatistics(),
     ...(expanding ? { path: road.map((p) => ({ ...p })), expansions: 0 } : {}),
     phase: 'prepare',
@@ -221,7 +223,7 @@ export function command(current: State, action: Command): State {
     if (current.phase !== 'won' && current.phase !== 'lost') {
       throw Error('Finish the run before restarting.');
     }
-    return fresh(!!current.path);
+    return fresh(!!current.path, current.campaign);
   }
   if (current.phase === 'won' || current.phase === 'lost') {
     throw Error('This run has ended.');
@@ -330,7 +332,7 @@ export function command(current: State, action: Command): State {
       if (s.phase !== 'prepare') {
         throw Error('Prepare the island first.');
       }
-      const wave = waves[s.wave];
+      const wave = campaignWaves(s.campaign)[s.wave];
       if (!wave) {
         throw Error('No wave remaining.');
       }
@@ -384,7 +386,7 @@ export function finishWave(s: State) {
   statistics(s).goldIncome += earned.gold;
   statistics(s).meatIncome += earned.meat;
   s.wave++;
-  if (s.wave >= waves.length) {
+  if (s.wave >= campaignWaves(s.campaign).length) {
     s.phase = 'won';
   } else if (expansionCells(s).length) {
     s.phase = 'draft';

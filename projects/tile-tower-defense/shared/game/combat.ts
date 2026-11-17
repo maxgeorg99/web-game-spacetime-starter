@@ -1,10 +1,11 @@
+import { campaignWaves } from '../config/campaigns';
 import { recentDeathLimit } from '../config/lifecycle';
 import { credit, dealDamage, statistics, towerSource } from './statistics';
 import { damageMultiplier } from '../config/damage';
 import { pathFor } from './paths';
 import { magicSpell, tickMagic, migrateMages } from './magic';
 import { launch, advanceProjectiles } from './projectiles';
-import { balance, towerDef, unitDef, waves } from '../config';
+import { balance, towerDef, unitDef } from '../config';
 import type { Fighter, State } from './model';
 import { command, distance, effectiveStats, finishWave, position } from './rules';
 
@@ -42,9 +43,9 @@ export function step(
   if (s.phase === 'combat' && s.queue.length && s.spawnIn <= 0) {
     const kind = s.queue.shift()!,
       def = unitDef(kind),
-      health = def.health * waves[s.wave].healthMultiplier;
+      health = def.health * campaignWaves(s.campaign)[s.wave].healthMultiplier;
     s.enemies.push({ id: s.nextId++, kind, progress: 0, health, maxHealth: health, cooldown: 0 });
-    s.spawnIn += waves[s.wave].interval;
+    s.spawnIn += campaignWaves(s.campaign)[s.wave].interval;
   }
   for (const tower of s.towers) {
     tower.cooldown = Math.max(0, tower.cooldown - dt);

@@ -1,3 +1,4 @@
+import { campaignBiome } from '../shared/config/biomes';
 import { deathSheets, deathPresentation } from '../shared/config/death-art';
 import { pathFor } from '../shared/game/paths';
 import { t } from './i18n';
@@ -327,6 +328,11 @@ export class IslandScene extends Phaser.Scene {
     });
   }
   private render() {
+    const biome = this.store.world?.biome ?? campaignBiome(this.store.state.campaign);
+    if (this.atmosphere && this.atmosphere.biome !== biome) {
+      this.atmosphere.destroy();
+      this.atmosphere = new IslandAtmosphere(this, biome);
+    }
     if (!this.views.length) {
       return;
     }

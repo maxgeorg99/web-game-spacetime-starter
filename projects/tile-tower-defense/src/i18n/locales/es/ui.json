@@ -271,5 +271,14 @@
   "catalog.waveHealth": "salud enemiga",
   "catalog.waveSpacing": "entre apariciones",
   "draft.incomeGain": "+{{amount}} / oleada",
-  "draft.noTowerBonus": "Aquí ninguna torre recibe una mejora"
+  "draft.noTowerBonus": "Aquí ninguna torre recibe una mejora",
+  "biome.sky": "Islas del cielo",
+  "biome.volcano": "Volcán",
+  "biome.choose": "Bioma",
+  "biome.close": "Cerrar selección de bioma",
+  "biome.waves": "20 oleadas",
+  "biome.selected": "Seleccionado",
+  "biome.hostOnly": "El anfitrión elige el bioma.",
+  "biome.ocean": "Océano profundo",
+  "biome.highlands": "Tierras Altas"
 }

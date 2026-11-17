@@ -1,3 +1,5 @@
+import { biomeDef, campaignBiome } from '../shared/config/biomes';
+import type { CampaignId } from '../shared/config/campaigns';
 import { damageMatrix, type AttackType, type DefenseType } from '../shared/config/damage';
 import { unitHighlights, unitTraitIcons } from '../shared/config/unit-presentation';
 import { mageAspect, mageMastered, magePoints, branchPoints } from '../shared/game/magic';
@@ -8,7 +10,7 @@ import { t, th, escapeHtml } from './i18n';
 import {
   bevyUnits,
   towers,
-  waves,
+  wavesFor,
   tiles,
   treeDef,
   towerDef,
@@ -107,7 +109,7 @@ export function draftCards(state: State, selected: string | undefined, locked: b
       return `
       <button style="--rarity:#${rarityColors[rarity].toString(16)}" aria-pressed="${id === selected}" class="action-card draft-card ${id === selected ? 'chosen' : ''}" data-tile="${id}" ${disabled(locked)} title="${escapeHtml(tile.description)}">
         <span class="rarity-label">${th(`draft.${rarity}`)}</span>
-        <span class="tile-preview" style="--tile-color:#${tile.color.toString(16)}">${'art' in tile ? portrait(tile.art) : ''}</span>
+        <span class="tile-preview" style="--tile-color:#${biomeDef(campaignBiome(state.campaign)).terrain[id].toString(16)}">${'art' in tile ? portrait(tile.art) : ''}</span>
         <span class="card-name">${escapeHtml(tile.name)}</span>
         <span class="draft-description">${escapeHtml(tile.description)}</span>
         <span class="discovery-label">${th(state.tiles.some((land) => land.kind === id) ? 'draft.owned' : 'draft.new')}</span>
@@ -225,7 +227,9 @@ function catalogUnit(unit: Localized<UnitDef>) {
     </article>
   `;
 }
-export function catalogContent() {
+export function catalogContent(campaign?: CampaignId) {
+  const waves = wavesFor(campaign);
+  const theme = biomeDef(campaignBiome(campaign));
   return `
     <h3>${th('catalog.towers')}</h3><div class="catalog-grid">${towers.map(catalogTower).join('')}</div>
     <h3>${th('catalog.land')}</h3><div class="catalog-grid catalog-tiles">${tiles
@@ -233,7 +237,7 @@ export function catalogContent() {
         const rarity = discoveries[tile.id].rarity;
         return `<article class="catalog-tile" style="--rarity:#${rarityColors[rarity].toString(16)}">
         <span class="rarity-label">${th(`draft.${rarity}`)}</span>
-        <span class="tile-preview" style="--tile-color:#${tile.color.toString(16)}">${'art' in tile ? portrait(tile.art) : ''}</span>
+        <span class="tile-preview" style="--tile-color:#${theme.terrain[tile.id].toString(16)}">${'art' in tile ? portrait(tile.art) : ''}</span>
         <h4>${escapeHtml(tile.name)}</h4><p>${escapeHtml(tile.description)}</p>
         <small>${th('catalog.tileUnlock', { depth: discoveries[tile.id].unlock })}</small>
       </article>`;
@@ -262,7 +266,7 @@ export function catalogContent() {
               .join('')}</span>
           </summary>
           <div class="catalog-wave-content">
-            <p class="catalog-wave-description">${escapeHtml(wave.description)}</p>
+            ${wave.description ? `<p class="catalog-wave-description">${escapeHtml(wave.description)}</p>` : ''}
             <div class="catalog-wave-modifiers">
               <span>${icon('health')}<b>×${wave.healthMultiplier}</b> ${th('catalog.waveHealth')}</span>
               <span>${icon('cooldown')}<b>${wave.interval}s</b> ${th('catalog.waveSpacing')}</span>

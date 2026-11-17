@@ -1,3 +1,4 @@
+import { campaignWaves } from '../config/campaigns';
 import { migrateMages } from './magic';
 import type { State } from './model';
 
@@ -14,6 +15,7 @@ export function restoreState(serialized: string, migrateGameplay = true): State 
     state.impacts = [];
     delete state.shots;
   }
+  campaignWaves(state.campaign);
   if (migrateGameplay) {
     migrateMages(state);
   }
