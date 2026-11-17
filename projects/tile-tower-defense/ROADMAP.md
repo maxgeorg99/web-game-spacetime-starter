@@ -424,3 +424,9 @@ The initial working-tree gate passed formatting, lint, all TypeScript targets, 8
 Latest remote push 3acc5f6 passed CI but release 43956758306 failed at the final Butler upload with invalid target (bad user). User confirmed the account rename and game URL https://ucfreakyy.itch.io/tiled-tower-defense. Changed the workflow target to ucfreakyy/tiled-tower-defense:html5 and updated credential docs. No push or production retry performed by this session.
 
 Final hook verification: full check:push passed formatting, lint, all three TypeScript targets, 83 tests (including three Git-hook regressions), and itch build/limits (361 files, 19.3 MiB). Only the existing bundle-size warning remains. Confirmed prior coordinator and Vercel deployment steps succeeded; itch upload alone failed on the old username. Target fix and hook changes remain for the user's commit/push; include unstaged updates and the new hook test file.
+
+### 2026-11-17 — four missing enemy portraits
+
+Generated dedicated dragon, dwarf, knight and mage avatars using the existing gryphon's mustard-yellow notched ticket and each unit's animation strip as references. Added transparent 256×256 PNGs under public/art/avatars and switched the four avatar references away from sprite-sheet fallbacks. Original unit movement art and the other portraits are preserved. Prompts and provenance: docs/AVATAR-ART.md.
+
+Handoff: inspected all four final image files and formatted authored text/config. No automated checks, browser verification or publishing run. Reload the field guide and relevant wave previews to playtest the portraits; no server module change is needed for these client display references.
