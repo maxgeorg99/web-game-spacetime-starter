@@ -296,5 +296,13 @@
   "harbor.emptyHint": "Create a world and bring your crew.",
   "harbor.invalidName": "Enter a name with 2–24 letters, numbers or punctuation.",
   "account.signIn": "Sign in",
-  "account.comingSoon": "Coming soon"
+  "account.comingSoon": "Coming soon",
+  "account.signOut": "Sign out",
+  "account.signedIn": "Account",
+  "account.guest": "Guest",
+  "account.connecting": "Signing in…",
+  "account.popupBlocked": "Allow popups to sign in, then try again.",
+  "account.failed": "Sign-in failed. Please try again.",
+  "account.cancelled": "Sign-in was closed or timed out. Please try again.",
+  "account.expired": "Your sign-in expired. Sign in again to use your account."
 }

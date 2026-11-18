@@ -481,3 +481,30 @@ test.each(['volcano-v1', 'ocean-v1', 'highlands-v1'] as const)(
     expect(restarted.wave).toBe(0);
   },
 );
+
+test('account profiles only accept the game audience and supported secure avatar URLs', async () => {
+  const { accountAuth, profilePicture, verifiedAccountProfile } =
+    await import('../shared/config/auth');
+  expect(verifiedAccountProfile('guest-host', [], {})).toBeUndefined();
+  expect(() => verifiedAccountProfile(accountAuth.issuer, ['another-game'], {})).toThrow(
+    'audience',
+  );
+  expect(
+    verifiedAccountProfile(accountAuth.issuer, [accountAuth.clientId], {
+      name: 'Captain <Sky>',
+      picture: 'https://lh3.googleusercontent.com/avatar',
+    }),
+  ).toEqual({ displayName: 'Captain Sky', picture: 'https://lh3.googleusercontent.com/avatar' });
+  expect(profilePicture('https://cdn.discordapp.com/avatars/123/test.png')).toContain(
+    'cdn.discordapp.com',
+  );
+  for (const value of [
+    'javascript:alert(1)',
+    'http://cdn.discordapp.com/a',
+    'https://cdn.discordapp.com.evil.test/a',
+    'https://user:pass@cdn.discordapp.com/a',
+    null,
+  ]) {
+    expect(profilePicture(value)).toBe('');
+  }
+});

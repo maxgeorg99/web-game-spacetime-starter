@@ -52,6 +52,7 @@ import VisitSessionReducer from "./visit_session_reducer";
 // Import all procedure arg schemas
 
 // Import all table schema definitions
+import AccountProfileRow from "./account_profile_table";
 import CaptainRow from "./captain_table";
 import MembershipRow from "./membership_table";
 import MyRunReportsRow from "./my_run_reports_table";
@@ -62,6 +63,17 @@ import SlotsRow from "./slots_table";
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  accountProfile: __table({
+    name: 'account_profile',
+    indexes: [
+      { accessor: 'owner', name: 'account_profile_owner_idx_btree', algorithm: 'btree', columns: [
+        'owner',
+      ] },
+    ],
+    constraints: [
+      { name: 'account_profile_owner_key', constraint: 'unique', columns: ['owner'] },
+    ],
+  }, AccountProfileRow),
   captain: __table({
     name: 'captain',
     indexes: [

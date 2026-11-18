@@ -2331,3 +2331,9 @@ details[open] > .disclosure-summary::after {
     height: 48px;
   }
 }
+
+.pass-portrait.account-photo {
+  image-rendering: auto;
+  object-fit: cover;
+  border: 2px solid #b9a16b;
+}

@@ -53,7 +53,7 @@ export class GameStore {
     this.status = t('session.chooseSession');
     this.notify();
   }
-  enter(destination: WorldDestination, name: string, coordinatorToken: string) {
+  enter(destination: WorldDestination, name: string, coordinatorToken: string, account = false) {
     this.leave();
     this.destination = destination;
     const generation = this.generation;
@@ -66,13 +66,15 @@ export class GameStore {
     this.connection = DbConnection.builder()
       .withUri(destination.uri)
       .withDatabaseName(destination.database)
-      .withToken(localStorage.getItem(tokenKey) ?? coordinatorToken)
+      .withToken(account ? coordinatorToken : (localStorage.getItem(tokenKey) ?? coordinatorToken))
       .onConnect((conn, identity, token) => {
         if (!current()) {
           conn.disconnect();
           return;
         }
-        localStorage.setItem(tokenKey, token);
+        if (!account) {
+          localStorage.setItem(tokenKey, token);
+        }
         const sync = () => {
           if (!current()) {
             return;

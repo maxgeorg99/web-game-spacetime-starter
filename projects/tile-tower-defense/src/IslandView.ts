@@ -753,11 +753,19 @@ export class IslandView {
       }
       this.tweens.killTweensOf(sprite);
       this.tweens.add({ targets: sprite, x, y, duration: 100, ease: 'Linear' });
-      sprite.setRotation(
-        projectile.art === 'rock'
-          ? projectile.age * 10
-          : Math.atan2(target.y - 12 - y, target.x - x),
-      );
+      // Arrows follow their projected travel heading. Launch elevation should not
+      // pitch them sharply downward as the remaining target distance gets small.
+      if (projectile.art === 'arrow') {
+        if (Math.hypot(target.x - point.x, target.y - point.y) > 1) {
+          sprite.setRotation(Math.atan2(target.y - point.y, target.x - point.x));
+        }
+      } else {
+        sprite.setRotation(
+          projectile.art === 'rock'
+            ? projectile.age * 10
+            : Math.atan2(target.y - 12 - y, target.x - x),
+        );
+      }
     }
     for (const [id, sprite] of this.projectiles) {
       if (!flying.has(id)) {

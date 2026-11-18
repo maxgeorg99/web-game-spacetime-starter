@@ -296,5 +296,13 @@
   "harbor.emptyHint": "Erstelle eine Welt und versammle deine Crew.",
   "harbor.invalidName": "Gib einen Namen mit 2–24 Buchstaben, Zahlen oder Satzzeichen ein.",
   "account.signIn": "Anmelden",
-  "account.comingSoon": "Demnächst"
+  "account.comingSoon": "Demnächst",
+  "account.signOut": "Abmelden",
+  "account.signedIn": "Konto",
+  "account.guest": "Gast",
+  "account.connecting": "Anmeldung…",
+  "account.popupBlocked": "Erlaube Pop-ups und versuche es erneut.",
+  "account.failed": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
+  "account.cancelled": "Anmeldung geschlossen oder abgelaufen. Bitte erneut versuchen.",
+  "account.expired": "Deine Anmeldung ist abgelaufen. Melde dich erneut an."
 }

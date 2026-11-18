@@ -296,5 +296,13 @@
   "harbor.emptyHint": "Crea un mundo y reúne a tu tripulación.",
   "harbor.invalidName": "Introduce un nombre de entre 2 y 24 letras, números o signos de puntuación.",
   "account.signIn": "Iniciar sesión",
-  "account.comingSoon": "Próximamente"
+  "account.comingSoon": "Próximamente",
+  "account.signOut": "Cerrar sesión",
+  "account.signedIn": "Cuenta",
+  "account.guest": "Invitado",
+  "account.connecting": "Iniciando sesión…",
+  "account.popupBlocked": "Permite ventanas emergentes y vuelve a intentarlo.",
+  "account.failed": "No se pudo iniciar sesión. Inténtalo de nuevo.",
+  "account.cancelled": "Se cerró la ventana o se agotó el tiempo. Inténtalo de nuevo.",
+  "account.expired": "Tu sesión ha caducado. Vuelve a iniciar sesión."
 }

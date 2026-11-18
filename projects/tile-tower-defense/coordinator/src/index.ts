@@ -1,3 +1,4 @@
+import { verifiedAccountProfile } from '../../shared/config/auth';
 import { campaigns } from '../../shared/config/campaigns';
 import { Identity } from 'spacetimedb';
 import type { RunReport } from '../../shared/game/statistics';
@@ -15,6 +16,10 @@ const captain = table(
     owner: t.identity().primaryKey(),
     name: t.string(),
   },
+);
+const accountProfile = table(
+  { name: 'account_profile', public: true },
+  { owner: t.identity().primaryKey(), displayName: t.string(), picture: t.string() },
 );
 const session = table(
   { name: 'session', public: true },
@@ -74,6 +79,7 @@ const runReport = table(
   },
 );
 const db = schema({
+  accountProfile,
   runReport,
   administrator,
   captain,
@@ -86,6 +92,22 @@ const db = schema({
 export default db;
 export const init = db.init((ctx) => {
   ctx.db.administrator.insert({ id: 1, owner: ctx.sender });
+});
+export const account_connected = db.clientConnected((ctx) => {
+  const jwt = ctx.senderAuth.jwt;
+  if (!jwt) {
+    return;
+  }
+  const profile = verifiedAccountProfile(jwt.issuer, jwt.audience, jwt.fullPayload);
+  if (!profile) {
+    return;
+  }
+  const row = { owner: ctx.sender, ...profile };
+  if (ctx.db.accountProfile.owner.find(ctx.sender)) {
+    ctx.db.accountProfile.owner.update(row);
+  } else {
+    ctx.db.accountProfile.insert(row);
+  }
 });
 export const set_name = db.reducer({ name: t.string() }, (ctx, args) => {
   let name: string;

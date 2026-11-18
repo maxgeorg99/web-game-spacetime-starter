@@ -10,6 +10,13 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const AccountProfile = __t.object("AccountProfile", {
+  owner: __t.identity(),
+  displayName: __t.string(),
+  picture: __t.string(),
+});
+export type AccountProfile = __Infer<typeof AccountProfile>;
+
 export const Administrator = __t.object("Administrator", {
   id: __t.u32(),
   owner: __t.identity(),

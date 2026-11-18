@@ -510,3 +510,19 @@ Next phase proposed by user: authenticated profiles, followed by possible betwee
 ### 2026-11-18 — account action placeholder
 
 Added a disabled Sign in / Coming soon button above Run history, aligned in one equal-width vertical action group on the boarding pass. Mobile places the group below and aligned with the name input. Localized EN/DE/ES. This is only the requested visual placeholder for future Spacetime Auth; no authentication behavior is wired. Source formatted.
+
+### 2026-11-18 — straighter arrow presentation
+
+Arrow sprites now use their projected travel heading without the tower launch-height offset that caused steep late-flight pitch. Preserve heading within one projected pixel of the target. Flight positions, combat timing and other projectile art are unchanged. Formatted source; no automated/browser checks run for this visual follow-up. Reviewed current official SpacetimeAuth setup documentation for the next account phase; no auth implementation yet.
+
+### 2026-11-18 — SpacetimeAuth client supplied; account integration in progress
+
+User supplied public client ID and selected Google/Discord. Added stable-origin OIDC popup/callback pages to the same Vite build, oidc-client-ts dependency, checked postMessage handoff, account-vs-guest token separation, expiry/signout handling, and coordinator-verified public name/avatar profile table with regenerated client bindings. Auth preserves guest credentials but does not merge histories. Dashboard provider configuration and check approval are pending; no lint/type/unit/browser checks run for this auth slice. See docs/AUTH.md for exact settings, remaining verification and known limitations. Production remains unchanged.
+
+### 2026-11-18 — provider setup reported complete
+
+User confirmed Google and Discord setup. Local coordinator account-profile table was published additively without a reset. Auth code is wired locally, but automated and browser verification still await explicit approval for this slice; provider callback behavior and real profile pictures are not yet verified.
+
+### 2026-11-18 — sign-in prompt compatibility fix
+
+User callback reported `invalid_request: unsupported prompt value requested`. Removed the explicit `select_account` prompt so SpacetimeAuth uses its default flow; corrected the generic failure message to avoid blaming callback configuration. Prior approved auth checks passed lint, all three TypeScript targets and 96 unit tests. Actual provider login/avatar handoff still requires verification after this fix. No production deployment.

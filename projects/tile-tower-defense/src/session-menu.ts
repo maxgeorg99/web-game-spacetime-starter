@@ -1,3 +1,5 @@
+import { AccountAuth } from './account-auth';
+import { assetUrl } from './assets';
 import { campaignBiome } from '../shared/config/biomes';
 import { statisticsMarkup } from './statistics';
 import type { RunReport } from '../shared/game/statistics';
@@ -12,6 +14,8 @@ import type { GameStore } from './store';
 /** The coordinator remains connected while the game connects to one independent world. */
 export class SessionMenu {
   private connection?: DbConnection;
+  private account = new AccountAuth();
+  private accountPicture = '';
   private generation = 0;
   private token = '';
   private identity = '';
@@ -29,6 +33,26 @@ export class SessionMenu {
   private name = document.getElementById('captain-name') as HTMLInputElement;
   private sessionName = document.getElementById('session-name') as HTMLInputElement;
   constructor(private game: GameStore) {
+    this.account.onChange = () => {
+      this.game.leave();
+      this.name.value = '';
+      this.connect();
+    };
+    document.getElementById('captain-sign-in')!.onclick = () => {
+      if (this.account.token) {
+        this.account.signOut();
+        this.account.onChange();
+        return;
+      }
+      const pending = this.account.signIn();
+      this.render();
+      void pending
+        .then(() => this.account.onChange())
+        .catch((error) => {
+          this.error = error instanceof Error ? error.message : t('account.failed');
+          this.render();
+        });
+    };
     const historyDialog = document.getElementById('run-history') as HTMLDialogElement;
     document.getElementById('run-history-open')!.onclick = () => historyDialog.showModal();
     document.getElementById('run-history-close')!.onclick = () => historyDialog.close();
@@ -100,7 +124,8 @@ export class SessionMenu {
     this.connected = false;
     this.sessions = [];
     this.slots.clear();
-    this.error = '';
+    this.error = this.account.error;
+    this.accountPicture = '';
     this.status = t('session.connecting');
     this.render();
     const uri = import.meta.env.VITE_SPACETIME_URI ?? 'ws://127.0.0.1:3106';
@@ -111,7 +136,7 @@ export class SessionMenu {
     this.connection = DbConnection.builder()
       .withUri(uri)
       .withDatabaseName(database)
-      .withToken(localStorage.getItem(tokenKey) ?? undefined)
+      .withToken(this.account.token ?? localStorage.getItem(tokenKey) ?? undefined)
       .onConnect((conn, identity, token) => {
         if (!current()) {
           conn.disconnect();
@@ -119,11 +144,15 @@ export class SessionMenu {
         }
         this.token = token;
         this.identity = identity.toHexString();
-        localStorage.setItem(tokenKey, token);
+        if (!this.account.token) {
+          localStorage.setItem(tokenKey, token);
+        }
         const sync = () => {
           if (!current()) {
             return;
           }
+          const profile = conn.db.accountProfile.owner.find(identity);
+          this.accountPicture = profile?.picture ?? '';
           this.slots = new Map([...conn.db.slots.iter()].map((row) => [row.sessionId, row]));
           this.sessions = [...conn.db.session.iter()].sort((a, b) => b.id - a.id);
           this.visited = new Set(
@@ -171,6 +200,8 @@ export class SessionMenu {
         };
         conn.db.myRunReports.onInsert(history);
         conn.db.myRunReports.onDelete(history);
+        conn.db.accountProfile.onInsert(sync);
+        conn.db.accountProfile.onUpdate(sync);
         conn.db.slots.onInsert(sync);
         conn.db.slots.onUpdate(sync);
         conn.db.slots.onDelete(sync);
@@ -188,7 +219,10 @@ export class SessionMenu {
             history();
             this.connected = true;
             this.status = t('harbor.joinHint');
-            this.name.value = conn.db.captain.owner.find(identity)?.name ?? this.name.value;
+            this.name.value =
+              conn.db.captain.owner.find(identity)?.name ??
+              conn.db.accountProfile.owner.find(identity)?.displayName ??
+              this.name.value;
             sync();
           })
           .onError((ctx) => {
@@ -198,6 +232,7 @@ export class SessionMenu {
           })
           .subscribe([
             'SELECT * FROM my_run_reports',
+            `SELECT * FROM account_profile WHERE owner = 0x${identity.toHexString()}`,
             'SELECT * FROM session',
             'SELECT * FROM slots',
             `SELECT * FROM captain WHERE owner = 0x${identity.toHexString()}`,
@@ -311,7 +346,12 @@ export class SessionMenu {
       }
       await this.saveName();
       await this.connection!.reducers.visitSession({ id });
-      this.game.enter(session, this.name.value, this.token);
+      this.game.enter(
+        session,
+        this.name.value,
+        this.account.token ?? this.token,
+        !!this.account.token,
+      );
     });
   }
   private render() {
@@ -325,6 +365,31 @@ export class SessionMenu {
       }
       return;
     }
+    const signIn = document.getElementById('captain-sign-in') as HTMLButtonElement;
+    signIn.disabled = this.account.pending || this.busy;
+    signIn.querySelector('span')!.textContent = t(
+      this.account.token ? 'account.signOut' : 'account.signIn',
+    );
+    document.getElementById('captain-auth-status')!.textContent = t(
+      this.account.pending
+        ? 'account.connecting'
+        : this.account.token
+          ? 'account.signedIn'
+          : 'account.guest',
+    );
+    const portrait = document.querySelector<HTMLImageElement>('.pass-portrait')!;
+    const fallback = assetUrl('art/factions/blue/captain.png');
+    const source = this.accountPicture || fallback;
+    if (portrait.dataset.profileSource !== source) {
+      portrait.dataset.profileSource = source;
+      portrait.src = source;
+    }
+    portrait.classList.toggle('account-photo', !!this.accountPicture);
+    portrait.onerror = () => {
+      portrait.onerror = null;
+      portrait.src = fallback;
+      portrait.classList.remove('account-photo');
+    };
     document.getElementById('menu-status')!.textContent = this.status;
     document.getElementById('menu-error')!.textContent = this.error;
     document.getElementById('world-status')!.textContent = this.game.destination
