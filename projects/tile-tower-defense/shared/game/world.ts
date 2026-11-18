@@ -4,7 +4,13 @@ import { comCaptains, comCaptain, type ComCaptainId } from '../config/com';
 import { migrateMages } from './magic';
 import { recruitableUnits } from '../config/bevy-units';
 import { balance, unitDef } from '../config';
-import { expeditions, worldBalance, worldIslands } from '../config/world';
+import {
+  expeditions,
+  worldBalance,
+  worldIslands,
+  lobbyCapacities,
+  type LobbyCapacity,
+} from '../config/world';
 import { draftOffers } from './drafting';
 import { fresh, command, expansionCells } from './rules';
 import { step } from './combat';
@@ -44,15 +50,16 @@ export interface WorldState {
 export type WorldAction =
   | { type: 'begin' }
   | { type: 'set-biome'; kind: string }
+  | { type: 'set-capacity'; count: number }
   | { type: 'add-com'; kind?: string }
   | { type: 'remove-com'; target: number }
   | Command
   | { type: 'send'; target: number; kind: string; count: number };
-export function freshWorld(seed = 1): WorldState {
+export function freshWorld(seed = 1, capacity: LobbyCapacity = 4): WorldState {
   return {
     version: 1,
     seed: seed >>> 0,
-    seats: worldIslands.map((island) => ({
+    seats: worldIslands.slice(0, capacity).map((island) => ({
       slot: island.slot,
       owner: null,
       sequence: 0,
@@ -111,6 +118,29 @@ export function worldCommand(
   if (seat.sequence !== sequence) {
     throw Error('Your island changed. Try the order again.');
   }
+  if (action.type === 'set-capacity') {
+    if (next.round?.phase !== 'lobby') {
+      throw Error('Player capacity can only change in the lobby.');
+    }
+    if (next.seats.find((s) => s.owner && !s.com)?.owner !== owner) {
+      throw Error('Only the host can choose player capacity.');
+    }
+    if (!lobbyCapacities.some((capacity) => capacity === action.count)) {
+      throw Error('Choose 4, 8 or 16 players.');
+    }
+    if (next.seats.slice(action.count).some((s) => s.owner)) {
+      throw Error('Higher-numbered seats must be empty before reducing capacity.');
+    }
+    const added = freshWorld(next.seed, action.count as LobbyCapacity).seats.slice(
+      next.seats.length,
+    );
+    for (const island of added) {
+      island.state = fresh(true, next.biome ? biomeDef(next.biome).campaign : undefined);
+    }
+    next.seats = [...next.seats.slice(0, action.count), ...added];
+    seat.sequence++;
+    return next;
+  }
   if (action.type === 'set-biome') {
     if (next.round?.phase !== 'lobby') {
       throw Error('Biomes can only change in the lobby.');
@@ -136,20 +166,21 @@ export function worldCommand(
     if (action.type === 'add-com') {
       const empty = next.seats.find((s) => !s.owner);
       if (!empty) {
-        throw Error('All four seats are occupied.');
+        throw Error('All seats are occupied.');
       }
       const used = new Set(
         next.seats.filter((s) => s.com).map((s) => comCaptain(s.com?.captain, s.slot).id),
       );
       const captain = action.kind
         ? comCaptains.find((captain) => captain.id === action.kind)
-        : comCaptains.find((captain) => !used.has(captain.id));
-      if (!captain || used.has(captain.id)) {
+        : (comCaptains.find((captain) => !used.has(captain.id)) ??
+          (next.seats.length > 4 ? comCaptains[empty.slot % comCaptains.length] : undefined));
+      if (!captain || (next.seats.length <= 4 && used.has(captain.id))) {
         throw Error('Choose an available COM captain.');
       }
       next.comSerial = (next.comSerial ?? 0) + 1;
       empty.owner = `com:${empty.slot}`;
-      empty.name = captain.name;
+      empty.name = next.seats.length > 4 ? `${captain.name} · ${empty.slot + 1}` : captain.name;
       empty.com = {
         captain: captain.id,
         seed: ((next.seed ?? 1) ^ Math.imul(next.comSerial, 2654435761) ^ empty.slot) >>> 0,
@@ -162,7 +193,9 @@ export function worldCommand(
       if (!target?.com) {
         throw Error('Choose a COM player to remove.');
       }
-      next.seats[target.slot] = freshWorld().seats[target.slot];
+      next.seats[target.slot] = freshWorld(next.seed, next.seats.length as LobbyCapacity).seats[
+        target.slot
+      ];
       next.seats[target.slot].state = fresh(
         true,
         next.biome ? biomeDef(next.biome).campaign : undefined,

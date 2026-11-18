@@ -271,7 +271,7 @@ export class UI {
       const host = seats[0]?.slot === this.store.ownSlot;
       const label =
         round.phase === 'lobby'
-          ? t('match.lobby', { count: seats.length })
+          ? t('match.lobby', { count: seats.length, capacity: this.store.world!.seats.length })
           : round.phase === 'finished'
             ? t('match.finished')
             : round.phase === 'combat'

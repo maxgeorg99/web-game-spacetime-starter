@@ -175,7 +175,7 @@
   "mage.aspect.frost": "Escarcha",
   "mage.aspect.fire": "Fuego",
   "mage.aspect.lightning": "Rayo",
-  "match.lobby": "Sala · {{count}}/4 jugadores",
+  "match.lobby": "Sala · {{count}}/{{capacity}} jugadores",
   "match.begin": "Iniciar partida",
   "match.draft": "Elegir terreno · {{seconds}}s",
   "match.prepare": "Construir · {{seconds}}s",
@@ -280,5 +280,10 @@
   "biome.selected": "Seleccionado",
   "biome.hostOnly": "El anfitrión elige el bioma.",
   "biome.ocean": "Océano profundo",
-  "biome.highlands": "Tierras Altas"
+  "biome.highlands": "Tierras Altas",
+  "match.capacity": "Jugadores",
+  "capacity.close": "Cerrar selector de jugadores",
+  "capacity.occupied": "Plazas superiores ocupadas",
+  "capacity.upTo": "Hasta",
+  "capacity.limit": "Hasta {{count}} jugadores"
 }

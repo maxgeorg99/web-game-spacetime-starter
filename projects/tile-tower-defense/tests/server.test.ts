@@ -129,12 +129,25 @@ test('COM lobby authorization and autonomous actions replicate to humans and rec
     await until(() => !!snapshot().seats[2].com);
     expect(snapshot().seats[2].name).toBe('Rook Emberwake');
     expect(snapshot().seats[2].com?.captain).toBe('rook');
-    await host.conn.reducers.worldAct({ ...order, sequence: 1, action: 'begin' });
+    expect(
+      (
+        await Promise.allSettled([
+          guest.conn.reducers.worldAct({ ...order, action: 'set-capacity', count: 16 }),
+        ])
+      )[0].status,
+    ).toBe('rejected');
+    await host.conn.reducers.worldAct({ ...order, sequence: 1, action: 'set-capacity', count: 16 });
+    await until(() => snapshot().seats.length === 16);
+    for (let slot = 3; slot < 16; slot++) {
+      await host.conn.reducers.worldAct({ ...order, sequence: slot - 1 });
+    }
+    await until(() => snapshot().seats.every((seat) => seat.owner));
+    await host.conn.reducers.worldAct({ ...order, sequence: 15, action: 'begin' });
     await until(() => snapshot().seats[2].state.expansions === 1);
     expect(
       (
         await Promise.allSettled([
-          host.conn.reducers.worldAct({ ...order, sequence: 2, action: 'remove-com', target: 2 }),
+          host.conn.reducers.worldAct({ ...order, sequence: 16, action: 'remove-com', target: 2 }),
         ])
       )[0].status,
     ).toBe('rejected');
@@ -148,6 +161,8 @@ test('COM lobby authorization and autonomous actions replicate to humans and rec
       );
     }, 25000);
     const world = JSON.parse(reconnected.conn.db.world.id.find(1)!.state) as WorldState;
+    expect(world.seats).toHaveLength(16);
+    expect(world.seats[15].state.towers.length).toBeGreaterThan(0);
     expect(world.seats[2].com).toBeDefined();
     expect(world.seats[2].state.gold).toBeLessThan(180);
     expect(world.seats[2].state.meat).toBeLessThan(16);

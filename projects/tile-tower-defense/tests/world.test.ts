@@ -520,3 +520,51 @@ test.each(['volcano', 'ocean', 'highlands'] as const)(
     expect(world.round?.phase).toBe('draft');
   },
 );
+
+test.each([8, 16])(
+  '%s-seat lobbies preserve campaigns, ownership and saved capacity',
+  (capacity) => {
+    let world = joinWorld(freshWorld(), 'host');
+    world = worldCommand(world, 'host', 0, { type: 'set-biome', kind: 'highlands' });
+    world = worldCommand(world, 'host', 1, { type: 'set-capacity', count: capacity });
+    expect(world.seats).toHaveLength(capacity);
+    expect(world.seats.every((seat) => seat.state.campaign === 'highlands-v1')).toBe(true);
+    for (let i = 1; i < capacity; i++) {
+      world = joinWorld(world, `player-${i}`);
+    }
+    expect(joinWorld(world, 'spectator')).toEqual(world);
+    expect(joinWorld(JSON.parse(JSON.stringify(world)), `player-${capacity - 1}`)).toEqual(world);
+    expect(() => worldCommand(world, 'player-1', 0, { type: 'set-capacity', count: 4 })).toThrow(
+      'host',
+    );
+    expect(() => worldCommand(world, 'host', 2, { type: 'set-capacity', count: 4 })).toThrow(
+      'empty',
+    );
+    world = worldCommand(world, 'host', 2, { type: 'begin' });
+    expect(() => worldCommand(world, 'host', 3, { type: 'set-capacity', count: 16 })).toThrow(
+      'lobby',
+    );
+    expect(world.seats.every((seat) => seat.state.phase === 'draft')).toBe(true);
+  },
+);
+
+test('capacity changes are atomic and larger lobbies can fill and remove the final COM seat', () => {
+  let world = joinWorld(freshWorld(), 'host');
+  const before = JSON.stringify(world);
+  for (const count of [0, 5, 17, 8.5]) {
+    expect(() => worldCommand(world, 'host', 0, { type: 'set-capacity', count })).toThrow();
+    expect(JSON.stringify(world)).toBe(before);
+  }
+  world = worldCommand(world, 'host', 0, { type: 'set-capacity', count: 16 });
+  world = worldCommand(world, 'host', 1, { type: 'set-capacity', count: 8 });
+  expect(world.seats).toHaveLength(8);
+  world = worldCommand(world, 'host', 2, { type: 'set-capacity', count: 16 });
+  for (let i = 0; i < 15; i++) {
+    world = worldCommand(world, 'host', i + 3, { type: 'add-com' });
+  }
+  expect(world.seats.filter((seat) => seat.com)).toHaveLength(15);
+  expect(new Set(world.seats.map((seat) => seat.owner)).size).toBe(16);
+  world = worldCommand(world, 'host', 18, { type: 'remove-com', target: 15 });
+  expect(world.seats[15].owner).toBeNull();
+  expect(freshWorld().seats).toHaveLength(4);
+});

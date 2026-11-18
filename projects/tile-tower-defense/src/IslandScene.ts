@@ -15,7 +15,7 @@ import { images, sheets } from './art';
 import { IslandView } from './IslandView';
 import { IslandAtmosphere } from './IslandAtmosphere';
 
-/** One camera and one scene, with four independent snapshot renderers. */
+/** One camera and one scene, with up to sixteen independent snapshot renderers. */
 export class IslandScene extends Phaser.Scene {
   onSelect: (point: Point) => void = () => {};
   onInspect: (slot: number) => void = () => {};
@@ -131,7 +131,7 @@ export class IslandScene extends Phaser.Scene {
         camera.setZoom(
           Phaser.Math.Clamp(
             (this.pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y)) / this.pinch.distance,
-            0.18,
+            (this.store.world?.seats.length ?? 4) > 4 ? 0.02 : 0.18,
             2.2,
           ),
         );
@@ -200,7 +200,11 @@ export class IslandScene extends Phaser.Scene {
       'wheel',
       (_pointer: Phaser.Input.Pointer, _objects: unknown, _dx: number, dy: number) => {
         this.cameras.main.setZoom(
-          Phaser.Math.Clamp(this.cameras.main.zoom * Math.exp(-dy * 0.001), 0.18, 2.2),
+          Phaser.Math.Clamp(
+            this.cameras.main.zoom * Math.exp(-dy * 0.001),
+            (this.store.world?.seats.length ?? 4) > 4 ? 0.02 : 0.18,
+            2.2,
+          ),
         );
       },
     );
@@ -262,7 +266,11 @@ export class IslandScene extends Phaser.Scene {
     }
     this.focusSlot = null;
     const bounds = this.views
-      .filter((_view, slot) => !this.store.world?.round || this.store.world.seats[slot]?.owner)
+      .filter(
+        (_view, slot) =>
+          !!this.store.world?.seats[slot] &&
+          (!this.store.world.round || this.store.world.seats[slot].owner),
+      )
       .map((view) => view.bounds());
     if (!bounds.length) {
       this.focusIsland(0);
@@ -303,7 +311,10 @@ export class IslandScene extends Phaser.Scene {
     }
     const availableWidth = Math.max(120, right - left);
     const availableHeight = Math.max(120, bottom - top);
-    const zoom = Math.max(0.1, Math.min(maxZoom, availableWidth / width, availableHeight / height));
+    const zoom = Math.max(
+      (this.store.world?.seats.length ?? 4) > 4 ? 0.02 : 0.1,
+      Math.min(maxZoom, availableWidth / width, availableHeight / height),
+    );
     this.cameras.main
       .setZoom(zoom)
       .centerOn(
@@ -354,7 +365,7 @@ export class IslandScene extends Phaser.Scene {
     }
     for (let slot = 0; slot < this.views.length; slot++) {
       const seat = this.store.world?.seats[slot];
-      const visible = !this.store.world?.round || !!seat?.owner;
+      const visible = !this.store.online || (!!seat && (!this.store.world?.round || !!seat.owner));
       this.labels[slot].setVisible(visible);
       if (!visible) {
         this.views[slot].reset();

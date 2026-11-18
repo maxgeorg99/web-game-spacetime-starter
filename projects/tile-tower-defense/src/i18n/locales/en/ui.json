@@ -175,7 +175,7 @@
   "mage.aspect.frost": "Frost",
   "mage.aspect.fire": "Fire",
   "mage.aspect.lightning": "Lightning",
-  "match.lobby": "Lobby · {{count}}/4 players",
+  "match.lobby": "Lobby · {{count}}/{{capacity}} players",
   "match.begin": "Start match",
   "match.draft": "Draft · {{seconds}}s",
   "match.prepare": "Build · {{seconds}}s",
@@ -280,5 +280,10 @@
   "biome.selected": "Selected",
   "biome.hostOnly": "The host chooses the biome.",
   "biome.ocean": "Deep Ocean",
-  "biome.highlands": "Highlands"
+  "biome.highlands": "Highlands",
+  "match.capacity": "Players",
+  "capacity.close": "Close player picker",
+  "capacity.occupied": "Higher seats occupied",
+  "capacity.upTo": "Up to",
+  "capacity.limit": "Up to {{count}} players"
 }

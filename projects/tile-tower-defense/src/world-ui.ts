@@ -1,4 +1,5 @@
 import { biomeDef, biomeIds } from '../shared/config/biomes';
+import { lobbyCapacities } from '../shared/config/world';
 import { comCaptains, comCaptain } from '../shared/config/com';
 import { t, th, escapeHtml } from './i18n';
 import { assetUrl } from './assets';
@@ -18,6 +19,17 @@ export class WorldUI {
     private scene: IslandScene,
     private openSend: () => void,
   ) {
+    const capacityPicker = document.getElementById('capacity-picker') as HTMLDialogElement;
+    document.getElementById('capacity-open')!.onclick = () => capacityPicker.showModal();
+    document.getElementById('capacity-close')!.onclick = () => capacityPicker.close();
+    document.getElementById('capacity-choices')!.onclick = (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        'button[data-capacity]',
+      );
+      if (button && !button.disabled) {
+        void store.send({ type: 'set-capacity', count: Number(button.dataset.capacity) });
+      }
+    };
     const biomePicker = document.getElementById('biome-picker') as HTMLDialogElement;
     document.getElementById('biome-open')!.onclick = () => biomePicker.showModal();
     document.getElementById('biome-close')!.onclick = () => biomePicker.close();
@@ -61,6 +73,13 @@ export class WorldUI {
     };
     document.getElementById('captain-picker-close')!.onclick = () => picker.close();
     document.getElementById('captain-choices')!.onclick = (event) => {
+      const remove = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        'button[data-remove-com]',
+      );
+      if (remove && !remove.disabled) {
+        void store.send({ type: 'remove-com', target: Number(remove.dataset.removeCom) });
+        return;
+      }
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
         'button[data-captain]',
       );
@@ -75,7 +94,7 @@ export class WorldUI {
         (seat) => seat.com && comCaptain(seat.com.captain, seat.slot).id === captain.id,
       );
       void store.send(
-        existing
+        existing && (store.world?.seats.length ?? 4) <= 4
           ? { type: 'remove-com', target: existing.slot }
           : { type: 'add-com', kind: captain.id },
       );
@@ -140,6 +159,29 @@ export class WorldUI {
     this.signature = signature;
     const host = world.seats.find((seat) => seat.owner && !seat.com)?.slot === this.store.ownSlot;
     const canManage = host && this.store.world?.round?.phase === 'lobby';
+    const capacity = world.seats.length || 4;
+    const capacityButton = document.getElementById('capacity-open')!;
+    capacityButton.hidden = this.store.world?.round?.phase !== 'lobby';
+    capacityButton.innerHTML = `${capacityArt(capacity)}<span>${th('capacity.limit', { count: capacity })}</span>`;
+    const capacityPicker = document.getElementById('capacity-picker') as HTMLDialogElement;
+    if (this.store.world?.round?.phase !== 'lobby' && capacityPicker.open) {
+      capacityPicker.close();
+    }
+    document.getElementById('capacity-choices')!.innerHTML = lobbyCapacities
+      .map((count) => {
+        const selected = capacity === count;
+        const occupied = world.seats.slice(count).some((seat) => seat.owner);
+        const disabled = !canManage || !this.store.ready || this.store.pending || occupied;
+        return `<button class="capacity-choice" data-capacity="${count}" aria-pressed="${selected}" ${disabled ? 'disabled' : ''}>
+        ${capacityArt(count)}
+        <small>${th('capacity.upTo')}</small><strong>${count}</strong><small>${th('match.capacity')}</small>
+        ${selected ? '<span class="biome-selected" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="m4 10 4 4 8-8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' : ''}
+        ${occupied ? `<span class="capacity-locked">${th('capacity.occupied')}</span>` : ''}
+      </button>`;
+      })
+      .join('');
+    document.getElementById('capacity-status')!.textContent =
+      this.store.error || (canManage ? '' : t('biome.hostOnly'));
     const selectedBiome = this.store.world?.biome ?? 'sky';
     const biomeButton = document.getElementById('biome-open') as HTMLButtonElement;
     biomeButton.hidden = this.store.world?.round?.phase !== 'lobby';
@@ -171,9 +213,11 @@ export class WorldUI {
     const full = world.seats.every((seat) => seat.owner);
     document.getElementById('captain-choices')!.innerHTML = comCaptains
       .map((captain) => {
-        const selected = world.seats.some(
-          (seat) => seat.com && comCaptain(seat.com.captain, seat.slot).id === captain.id,
-        );
+        const selected =
+          world.seats.length <= 4 &&
+          world.seats.some(
+            (seat) => seat.com && comCaptain(seat.com.captain, seat.slot).id === captain.id,
+          );
         const disabled =
           !canManage || !this.store.ready || this.store.pending || (!selected && full);
         return `<article class="captain-choice ${selected ? 'selected' : ''}" data-personality="${captain.id}">
@@ -182,6 +226,19 @@ export class WorldUI {
         <strong class="captain-playstyle">${th(`captain.${captain.id}.style`)}</strong>
         <p>${th(`captain.${captain.id}.description`)}</p>
         <button data-captain="${captain.id}" ${disabled ? 'disabled' : ''} aria-label="${th(selected ? 'match.removeNamedCom' : 'captain.addNamed', { name: captain.name })}">${th(selected ? 'captain.remove' : full ? 'captain.full' : 'captain.add')}</button>
+        ${
+          world.seats.length > 4
+            ? world.seats
+                .filter(
+                  (seat) => seat.com && comCaptain(seat.com.captain, seat.slot).id === captain.id,
+                )
+                .map(
+                  (seat) =>
+                    `<button data-remove-com="${seat.slot}" ${!canManage || this.store.pending ? 'disabled' : ''}>${th('captain.remove')} · ${seat.slot + 1}</button>`,
+                )
+                .join('')
+            : ''
+        }
         <small>${selected ? th('captain.inSession') : th(`captain.${captain.id}.signature`)}</small>
       </article>`;
       })
@@ -193,7 +250,7 @@ export class WorldUI {
         (seat) => `
       <button aria-label="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" title="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" data-island="${seat.slot}" class="${seat.slot === this.store.ownSlot ? 'own-island' : ''}">
         <img class="captain-avatar" src="${assetUrl(`art/${seat.com ? comCaptain(seat.com.captain, seat.slot).portrait : factions[worldIslands[seat.slot].faction].avatar}.png`)}" alt="${th('world.captainColor', { color: factions[worldIslands[seat.slot].faction].name })}" style="border-color:#${worldIslands[seat.slot].color.toString(16)}">
-        <span><b>${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}${seat.slot === this.store.ownSlot ? t('world.you') : ''}</b>
+        <span><b>${seat.slot + 1} · ${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}${seat.slot === this.store.ownSlot ? t('world.you') : ''}</b>
           <small>${seat.owner ? stat('health', seat.state.lives) : t('world.unclaimed')}</small>
         </span>
       </button>
@@ -205,7 +262,7 @@ export class WorldUI {
       ? opponents
           .map(
             (seat) =>
-              `<option value="${seat.slot}" ${seat.slot === this.target ? 'selected' : ''}>${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}</option>`,
+              `<option value="${seat.slot}" ${seat.slot === this.target ? 'selected' : ''}>${seat.slot + 1} · ${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}</option>`,
           )
           .join('')
       : `<option>${th('world.noOpponent')}</option>`;
@@ -232,4 +289,17 @@ export class WorldUI {
       )
       .join('');
   }
+}
+
+/** Small archipelago diagrams make the three lobby sizes recognizable without extra copy. */
+function capacityArt(count: number): string {
+  const columns = count === 4 ? 2 : 4;
+  const rows = count / columns;
+  const colors = ['#779a82', '#c3af70', '#b78370', '#9789ad'];
+  const islands = Array.from({ length: count }, (_, i) => {
+    const x = 90 + ((i % columns) - (columns - 1) / 2) * 35;
+    const y = 58 + (Math.floor(i / columns) - (rows - 1) / 2) * 23;
+    return `<g transform="translate(${x} ${y})"><path d="m-13 0 13 7 13-7-4 10-9 4-9-4z" fill="#6e7568"/><path d="m-13 0 13-7 13 7-13 7z" fill="${colors[i % 4]}"/><path d="m-6 0 6-3 6 3" fill="none" stroke="#ebe1bc" stroke-width="2"/></g>`;
+  }).join('');
+  return `<svg class="capacity-art" viewBox="0 0 180 120" aria-hidden="true"><rect x="2" y="2" width="176" height="116" rx="10" fill="#e4e9dd"/><path d="M15 30h25m105 60h20M25 95h20" stroke="#f7f6eb" stroke-width="4" stroke-linecap="round"/>${islands}</svg>`;
 }

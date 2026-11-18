@@ -175,7 +175,7 @@
   "mage.aspect.frost": "Frost",
   "mage.aspect.fire": "Feuer",
   "mage.aspect.lightning": "Blitz",
-  "match.lobby": "Lobby · {{count}}/4 Spieler",
+  "match.lobby": "Lobby · {{count}}/{{capacity}} Spieler",
   "match.begin": "Spiel starten",
   "match.draft": "Land wählen · {{seconds}}s",
   "match.prepare": "Bauen · {{seconds}}s",
@@ -280,5 +280,10 @@
   "biome.selected": "Ausgewählt",
   "biome.hostOnly": "Der Host wählt das Biom.",
   "biome.ocean": "Tiefsee",
-  "biome.highlands": "Hochland"
+  "biome.highlands": "Hochland",
+  "match.capacity": "Spieler",
+  "capacity.close": "Spielerauswahl schließen",
+  "capacity.occupied": "Höhere Plätze belegt",
+  "capacity.upTo": "Bis zu",
+  "capacity.limit": "Bis zu {{count}} Spieler"
 }

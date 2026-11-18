@@ -476,3 +476,23 @@ Handoff: manually review both new environments while panning/zooming, narrow-scr
 ### 2026-11-17 — biome selection indicator
 
 Replaced the small selected-label text with a high-contrast SVG checkmark badge in the selected card’s top-right corner. Retained `aria-pressed` for accessible selection state and the existing selected border. Narrow cards reserve room for the badge. Formatted source; no new automated or browser checks for this presentation-only follow-up.
+
+### 2026-11-18 — consistent biome previews
+
+Removed the castle shapes from the Sky Islands and Volcano picker thumbnails. All four previews now focus on their landscape, island terrain and path. SVG source formatted; no automated checks or browser verification run for this artwork-only change.
+
+### 2026-11-18 — configurable 4/8/16-player lobbies, local playtest ready
+
+Implemented host-only lobby capacity selection via existing world action transport. Defaults and old snapshots remain four seats; authoritative saved seat count controls joins, COMs and capacity reporting. Capacity locks at start, rejects occupied-slot removal and preserves campaign/ownership. Extended the fixed island layout to sixteen with unchanged original origins, repeated faction art and numbered roster/target labels. Larger lobbies allow repeated COM personalities and per-slot removal. Added roster scrolling and expanded overview/pinch/wheel zoom range. Coordinator accepts sixteen-player occupancy/results with a correspondingly larger bounded result payload.
+
+Verification: lint and all three TypeScript targets passed; 95 unit tests passed including 8/16 human-slot ownership, reconnect, overflow, campaign inheritance, resizing and fifteen-COM fill/removal. All three live-server tests passed against disposable local database `tile-td-capacity-test-20261118`; the multiplayer case used two human connections and fourteen COMs, verified host-only resizing, full capacity, start, simulation and reconnect. Sandbox WebSocket access required an escalated rerun. No browser verification or sixteen-human load benchmark run.
+
+Local SpacetimeDB restarted at 127.0.0.1:3106, coordinator updated without reset, Vite serving http://127.0.0.1:5175/ and local provisioner running. Create a new world, select 8 or 16 Players, add COMs and start. Existing user worlds retained their saved data and published modules. No production deployment. Handoff: manually review large-world navigation and combat pacing; replication/rendering optimization remains deliberately deferred. Directory capacity-only updates use the existing thirty-second refresh cadence.
+
+### 2026-11-18 — visual player-capacity picker
+
+Replaced the 4/8/16 dropdown with a biome-style dialog: compact archipelago diagrams, large capacity numbers and the same top-right checkmark badge. Guests can inspect the authoritative selection; only the host can change it. Occupied higher slots disable downsizing with a short explanation. No gameplay/transport changes. Source formatted; automated and browser checks not rerun for this presentation follow-up.
+
+### 2026-11-18 — clarify lobby capacity copy
+
+Player-capacity cards now say “Up to” above their numbers; the lobby button reads “Up to N players,” localized in English, German and Spanish. This clarifies that the setting is a maximum rather than a required player count. Formatted source; no checks run for this copy-only change.

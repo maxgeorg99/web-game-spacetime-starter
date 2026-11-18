@@ -1,12 +1,43 @@
 import { bevyUnits } from './bevy-units';
 import { factions } from './factions';
 /** Screen-space offsets for island renderers, separate from each island's logical tile coordinates. */
-export const worldIslands = [
+export const lobbyCapacities = [4, 8, 16] as const;
+export type LobbyCapacity = (typeof lobbyCapacities)[number];
+const originalIslands = [
   { slot: 0, x: -1500, y: -1100, faction: 'blue', color: factions.blue.color },
   { slot: 1, x: 1500, y: -1100, faction: 'yellow', color: factions.yellow.color },
   { slot: 2, x: -1500, y: 1100, faction: 'red', color: factions.red.color },
   { slot: 3, x: 1500, y: 1100, faction: 'purple', color: factions.purple.color },
 ] as const;
+/** Keep the original four origins stable; grow outward without overlapping expanded islands. */
+export const worldIslands = [
+  ...originalIslands,
+  ...Array.from({ length: 12 }, (_, index) => {
+    const slot = index + 4;
+    const positions = [
+      [-4500, -1100],
+      [4500, -1100],
+      [-4500, 1100],
+      [4500, 1100],
+      [-4500, -3300],
+      [-1500, -3300],
+      [1500, -3300],
+      [4500, -3300],
+      [-4500, 3300],
+      [-1500, 3300],
+      [1500, 3300],
+      [4500, 3300],
+    ];
+    const faction = originalIslands[slot % 4].faction;
+    return {
+      slot,
+      x: positions[index][0],
+      y: positions[index][1],
+      faction,
+      color: factions[faction].color,
+    };
+  }),
+];
 export const worldBalance = {
   draftSeconds: 10,
   preparationSeconds: 20,

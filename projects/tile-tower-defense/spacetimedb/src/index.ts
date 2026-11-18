@@ -282,7 +282,7 @@ export const tick = db.reducer({ onSchedule: clock }, { timer: clock.rowType }, 
         ? 0
         : worldState?.round && worldState.round.phase !== 'lobby'
           ? claimed
-          : 4,
+          : (worldState?.seats.length ?? 4),
     });
     ctx.db.reporting.id.update({ ...config, pending: true });
   }

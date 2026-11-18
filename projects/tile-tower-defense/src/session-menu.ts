@@ -349,7 +349,7 @@ export class SessionMenu {
           ? t('common.preparing')
           : this.visited.has(session.id)
             ? t('session.resume')
-            : slots?.claimed === 4
+            : slots && slots.claimed >= slots.capacity
               ? t('session.spectate')
               : t('session.join');
       button.disabled = !this.connected || this.busy || (session.status !== 'ready' && !retry);

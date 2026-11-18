@@ -238,7 +238,7 @@ export const receive_world_slots = db.reducer(
     if (session.status === 'finished') {
       return;
     }
-    if (args.capacity < 2 || args.capacity > 4 || args.claimed > args.capacity) {
+    if (args.capacity < 2 || args.capacity > 16 || args.claimed > args.capacity) {
       throw new SenderError('Invalid world capacity.');
     }
     const row = { ...args, sessionId: reporter.sessionId, updatedAt: ctx.timestamp };
@@ -356,13 +356,13 @@ export const receive_run_reports = db.reducer({ reports: t.string() }, (ctx, { r
   if (!session) {
     throw new SenderError('Registered world only.');
   }
-  if (reports.length > 100_000) {
+  if (reports.length > 400_000) {
     throw new SenderError('Report too large.');
   }
   const rows = JSON.parse(reports) as RunReport[];
   if (
     !Array.isArray(rows) ||
-    rows.length > 4 ||
+    rows.length > 16 ||
     rows.some(
       (row) =>
         row.version !== 1 ||

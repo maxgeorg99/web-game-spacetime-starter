@@ -280,5 +280,17 @@
   "content.waves.highlands-storm-ridge.name": "Sturmgrat",
   "content.waves.highlands-living-mountain.name": "Lebender Berg",
   "content.waves.highlands-last-ascent.name": "Letzter Aufstieg",
-  "content.waves.highlands-crown-of-stone.name": "Krone aus Stein"
+  "content.waves.highlands-crown-of-stone.name": "Krone aus Stein",
+  "content.islands.4.name": "Insel 5",
+  "content.islands.5.name": "Insel 6",
+  "content.islands.6.name": "Insel 7",
+  "content.islands.7.name": "Insel 8",
+  "content.islands.8.name": "Insel 9",
+  "content.islands.9.name": "Insel 10",
+  "content.islands.10.name": "Insel 11",
+  "content.islands.11.name": "Insel 12",
+  "content.islands.12.name": "Insel 13",
+  "content.islands.13.name": "Insel 14",
+  "content.islands.14.name": "Insel 15",
+  "content.islands.15.name": "Insel 16"
 }
