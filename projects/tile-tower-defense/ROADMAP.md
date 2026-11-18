@@ -530,3 +530,7 @@ User callback reported `invalid_request: unsupported prompt value requested`. Re
 ### 2026-11-18 — auth release authorized
 
 User confirmed Discord and Google sign-in work locally after provider configuration corrections and authorized shipping. Release includes account sign-in/profile handling and straighter arrow presentation. Use the installed isolated pre-push gate and main-branch release workflow (save-preserving coordinator publish, Vercel, itch.io). Production/embedded sign-in and profile pictures still need post-deployment playtesting; guest history remains separate and token renewal is not implemented.
+
+### 2026-11-18 — itch.io sign-in bridge
+
+Production auth release 739c196 passed both CI and deployment workflows, but user reported callback window.opener loss when signing in from itch.io. Added a stable top-level bridge that keeps the game opener while a separately opened provider window returns its validated result over a nonce-specific BroadcastChannel. Results are checked, retried until acknowledged and time-limited. One Continue to sign in click is required. No tokens in handoff URLs or persistent bridge storage. Lint, all three TypeScript targets and 99 unit tests passed; Chromium verified synthetic credential delivery into a sandboxed cross-origin iframe from a callback with no opener. Real hosted Google/Discord login from itch.io and Safari/iOS remain manual verification.

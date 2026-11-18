@@ -13,7 +13,7 @@ Google's existing Web application OAuth client needs `https://auth.spacetimedb.c
 
 ## Current implementation
 
-The game opens `/auth/index.html` on its local development origin or the stable Vercel production origin. The popup owns the complete authorization-code/PKCE transaction using oidc-client-ts; its callback checks the OIDC transaction then returns the ID token through an exact-origin postMessage handoff. The game checks popup source, origin and a separate random transaction nonce. It never sends tokens in URLs. Popup cancellation, timeout and blocked-popup errors are recoverable. Callback pages ship with the same Vite build, without a separate hosting project.
+The game opens `/auth/index.html` on its local development origin or the stable Vercel production origin. This bridge stays connected to the game and never navigates to a provider. The player clicks Continue to sign in to open an independent provider window. That window owns the complete authorization-code/PKCE transaction using oidc-client-ts. Its callback validates the OIDC transaction and sends the ID token through a nonce-specific BroadcastChannel to the same-origin, top-level bridge. The bridge validates the result and forwards it through an exact-origin postMessage handoff; the game checks the bridge window source, origin and transaction nonce. This tolerates a provider severing window.opener and avoids third-party storage dependencies for the channel. Tokens are not placed in URLs or persisted by the bridge. Callback delivery waits for an acknowledgement with a bounded retry/timeout. Callback pages ship with the same Vite build, without a separate hosting project.
 
 The coordinator adds an additive `account_profile` table populated only from SpacetimeDB-verified connection claims. It checks the SpacetimeAuth issuer and the game's client audience. Only display name and supported HTTPS Google/Discord picture URLs are public. The client uses the stored verified profile for its boarding-pass picture and initial name. No email is requested or stored. Generated coordinator bindings were regenerated.
 
@@ -22,9 +22,9 @@ Account tokens use session storage with an in-memory fallback. Account expiry re
 ## Required before release
 
 - User confirmed successful local Google and Discord sign-in after correcting the Google provider configuration.
-- Approved lint, all three TypeScript targets and 96 unit tests passed before the prompt fix. Real provider sign-in remains to be verified.
+- Bridge fix: lint, all three TypeScript targets and 99 unit tests passed. Chromium verified delivery from an opener-less callback to a sandboxed cross-origin iframe using synthetic credentials; real hosted provider login still needs retesting.
 - Verify production Google and Discord callbacks and pictures, cancellation, expiration and sign-out/reentry. Local provider sign-in is user-confirmed.
-- Test the actual itch.io embed across Chrome and Safari/iOS, including third-party storage restrictions and loss of window.opener. Current fallback explains the problem and links to the standalone game; a server-backed handoff may be needed if the opener is severed.
+- Test the actual itch.io embed across Chrome and Safari/iOS, including third-party storage restrictions and loss of window.opener. The stable bridge handles provider opener loss. Verify that the embed allows its initial popup and that the browser permits BroadcastChannel between the two top-level auth pages.
 - Test private run-history access under guest and account identities; design explicit linking before migrating existing records.
 - Production deployment authorized on 2026-11-18. The main-branch release workflow publishes the coordinator without resetting saves, then Vercel and itch.io. Confirm that workflow succeeds before considering production updated.
 
