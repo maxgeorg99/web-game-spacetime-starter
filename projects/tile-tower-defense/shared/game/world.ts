@@ -20,6 +20,8 @@ export interface WorldSeat {
   /** Synthetic owner IDs never authenticate as a SpacetimeDB identity. */
   com?: { captain?: ComCaptainId; seed?: number; decisionIn: number; raidIn: number };
   name?: string;
+  /** Provider image from verified account claims; absent on older saves and guest seats. */
+  picture?: string;
   slot: number;
   owner: string | null;
   sequence: number;
@@ -76,14 +78,23 @@ export function joinWorld(
   owner: string,
   previous?: State,
   name?: string,
+  picture?: string,
 ): WorldState {
   const existing = world.seats.find((seat) => seat.owner === owner);
   if (existing) {
-    if (!name || existing.name === name) {
+    if (
+      (!name || existing.name === name) &&
+      (picture === undefined || existing.picture === picture)
+    ) {
       return world;
     }
     const renamed: WorldState = JSON.parse(JSON.stringify(world));
-    renamed.seats[existing.slot].name = name;
+    if (name) {
+      renamed.seats[existing.slot].name = name;
+    }
+    if (picture !== undefined) {
+      renamed.seats[existing.slot].picture = picture;
+    }
     return renamed;
   }
   if (world.round && world.round.phase !== 'lobby') {
@@ -95,6 +106,9 @@ export function joinWorld(
     return world;
   } // A fifth identity can spectate without taking ownership.
   seat.owner = owner;
+  if (picture !== undefined) {
+    seat.picture = picture;
+  }
   if (name) {
     seat.name = name;
   }

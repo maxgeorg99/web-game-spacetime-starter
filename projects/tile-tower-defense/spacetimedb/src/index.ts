@@ -1,4 +1,5 @@
 import { statistics, type RunReport } from '../../shared/game/statistics';
+import { verifiedAccountProfile } from '../../shared/config/auth';
 import { matchOutcome } from '../../shared/game/outcome';
 import { cleanName } from '../../shared/game/names';
 import { stepComs } from '../../shared/game/com';
@@ -368,6 +369,10 @@ export const world_act = db.reducer(
 );
 
 export const world_enter = db.reducer({ name: t.string() }, (ctx, args) => {
+  const jwt = ctx.senderAuth.jwt;
+  const profile = jwt
+    ? verifiedAccountProfile(jwt.issuer, jwt.audience, jwt.fullPayload)
+    : undefined;
   let name: string;
   try {
     name = cleanName(args.name);
@@ -384,6 +389,7 @@ export const world_enter = db.reducer({ name: t.string() }, (ctx, args) => {
     ctx.sender.toHexString(),
     previous ? restoreState(previous.state) : undefined,
     name,
+    profile?.picture ?? '',
   );
   if (row && next === current) {
     return;

@@ -29,3 +29,19 @@ Account tokens use session storage with an in-memory fallback. Account expiry re
 - Production deployment authorized on 2026-11-18. The main-branch release workflow publishes the coordinator without resetting saves, then Vercel and itch.io. Confirm that workflow succeeds before considering production updated.
 
 Sources: [SpacetimeAuth configuration](https://spacetimedb.com/docs/core-concepts/authentication/spacetimeauth/configuring-a-project/), [verified claims](https://spacetimedb.com/docs/core-concepts/authentication/usage/), [oidc-client-ts](https://github.com/authts/oidc-client-ts).
+
+## itch.io opener isolation investigation (2026-11-18)
+
+User subsequently confirmed the itch.io sign-in issue is fixed.
+
+Reproduced the immediate generic error in Chrome on the live itch.io page with release `7d77bbe` deployed successfully. The initial Vercel bridge has `window.opener === null`, before the provider flow starts. Both the itch.io project page and its `html.itch.zone` game response send `Cross-Origin-Opener-Policy: same-origin`; the project also sends `Cross-Origin-Embedder-Policy: credentialless` and the game sends `require-corp`. The actual iframe has no sandbox attribute. The earlier synthetic sandbox test did not reproduce these hosting headers.
+
+itch.io's [SharedArrayBuffer support setting](https://itch.io/t/2025776/experimental-sharedarraybuffer-support) adds these headers. [COOP isolation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cross-Origin-Opener-Policy) severs the initial cross-origin popup connection, so keeping the bridge on Vercel cannot preserve its game opener. Changing only Vercel headers cannot remove the opener's isolation policy.
+
+Recommended hosting fix: disable **SharedArrayBuffer support** under **Edit game → Embed options → Frame options**. No SharedArrayBuffer, Atomics or cross-origin isolation dependency was found in the authored game code. Changing this setting can change the game CDN origin; existing guest identities in browser storage may consequently be unavailable on the new origin. After saving, verify the new CDN origin passes the bridge's origin allowlist and retest actual account login and return to the iframe.
+
+Approved verification: intercepted responses only in a dedicated Chrome test session to remove COOP/COEP from the project and game pages. The unchanged deployed bridge then retained its opener, displayed Continue to sign in, and navigated the provider tab to SpacetimeAuth. No provider credentials were submitted and no complete account handoff was verified in this investigation. All three `tests/auth.test.ts` tests passed. Live itch.io settings and production code were not changed.
+
+## In-game captain profile images
+
+`world_enter` copies the provider picture from verified account claims into the seat's optional `picture` field, refreshing it on rejoin. World navigation shows that photo to all players, preserving the faction border; guests, COMs, older saves and unavailable images use the existing captain art. Provider URLs use the same allowlist as menu portraits. No reducer/table signatures changed. Deployment requires the frontend and world module; existing worlds need a save-preserving module update and player re-entry to populate photos. All three TypeScript targets and 34 targeted auth/world tests passed. Browser avatar rendering and server integration were not exercised.

@@ -14,6 +14,21 @@ function soloWithCom() {
   return worldCommand(joinWorld(freshWorld(), 'alice'), 'alice', 0, { type: 'add-com' });
 }
 
+test('account pictures follow their seat and refresh on rejoin without changing gameplay', () => {
+  const picture = 'https://cdn.discordapp.com/avatars/123/avatar.png';
+  const world = joinWorld(freshWorld(), 'alice', undefined, 'Alice', picture);
+  expect(world.seats[0].picture).toBe(picture);
+  const playing = worldCommand(joinWorld(world, 'bob'), 'alice', 0, { type: 'begin' });
+  const updated = joinWorld(playing, 'alice', undefined, 'Alice', '');
+  expect(updated.seats[0].picture).toBe('');
+  expect(updated.seats[0].state).toEqual(playing.seats[0].state);
+  expect(playing.seats[0].picture).toBe(picture);
+  expect(joinWorld(world, 'alice', undefined, 'Alice', picture)).toBe(world);
+  expect(joinWorld(world, 'alice', undefined, 'Renamed').seats[0].picture).toBe(picture);
+  expect(joinWorld(playing, 'spectator', undefined, 'Spectator', picture)).toBe(playing);
+  expect(joinWorld(freshWorld(), 'guest').seats[0].picture).toBeUndefined();
+});
+
 test('only the host manages COM seats in the lobby and removal frees a human seat', () => {
   let world = joinWorld(soloWithCom(), 'bob');
   expect(world.seats[1].com).toBeDefined();

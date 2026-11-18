@@ -1,4 +1,5 @@
 import { biomeDef, biomeIds } from '../shared/config/biomes';
+import { profilePicture } from '../shared/config/auth';
 import { lobbyCapacities } from '../shared/config/world';
 import { comCaptains, comCaptain } from '../shared/config/com';
 import { t, th, escapeHtml } from './i18n';
@@ -14,6 +15,7 @@ export class WorldUI {
   target: number | null = null;
   count = 1;
   private signature = '';
+  private failedPictures = new Set<string>();
   constructor(
     private store: GameStore,
     private scene: IslandScene,
@@ -137,6 +139,7 @@ export class WorldUI {
       world.seats.map((seat) => [
         seat.owner,
         seat.name,
+        seat.picture,
         seat.com?.captain,
         !!seat.com,
         seat.state.lives,
@@ -246,17 +249,32 @@ export class WorldUI {
     document.getElementById('captain-picker-status')!.textContent = this.store.error;
     document.getElementById('world-navigation')!.innerHTML = world.seats
       .filter((seat) => !this.store.world?.round || seat.owner)
-      .map(
-        (seat) => `
+      .map((seat) => {
+        const fallback = assetUrl(
+          `art/${seat.com ? comCaptain(seat.com.captain, seat.slot).portrait : factions[worldIslands[seat.slot].faction].avatar}.png`,
+        );
+        const picture = seat.owner && !seat.com ? profilePicture(seat.picture) : '';
+        const photo = picture && !this.failedPictures.has(picture) ? picture : '';
+        return `
       <button aria-label="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" title="${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}" data-island="${seat.slot}" class="${seat.slot === this.store.ownSlot ? 'own-island' : ''}">
-        <img class="captain-avatar" src="${assetUrl(`art/${seat.com ? comCaptain(seat.com.captain, seat.slot).portrait : factions[worldIslands[seat.slot].faction].avatar}.png`)}" alt="${th('world.captainColor', { color: factions[worldIslands[seat.slot].faction].name })}" style="border-color:#${worldIslands[seat.slot].color.toString(16)}">
+        <img class="captain-avatar${photo ? ' account-photo' : ''}" src="${escapeHtml(photo || fallback)}" data-fallback="${escapeHtml(fallback)}" alt="${th('world.captainColor', { color: factions[worldIslands[seat.slot].faction].name })}" style="border-color:#${worldIslands[seat.slot].color.toString(16)}">
         <span><b>${seat.slot + 1} · ${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}${seat.slot === this.store.ownSlot ? t('world.you') : ''}</b>
           <small>${seat.owner ? stat('health', seat.state.lives) : t('world.unclaimed')}</small>
         </span>
       </button>
-    `,
-      )
+    `;
+      })
       .join('');
+    document
+      .querySelectorAll<HTMLImageElement>('.captain-avatar.account-photo')
+      .forEach((portrait) => {
+        portrait.onerror = () => {
+          this.failedPictures.add(portrait.src);
+          portrait.onerror = null;
+          portrait.src = portrait.dataset.fallback!;
+          portrait.classList.remove('account-photo');
+        };
+      });
     const select = document.getElementById('opponent') as HTMLSelectElement;
     select.innerHTML = opponents.length
       ? opponents

@@ -2332,6 +2332,11 @@ details[open] > .disclosure-summary::after {
   }
 }
 
+.captain-avatar.account-photo {
+  image-rendering: auto;
+  object-fit: cover;
+}
+
 .pass-portrait.account-photo {
   image-rendering: auto;
   object-fit: cover;

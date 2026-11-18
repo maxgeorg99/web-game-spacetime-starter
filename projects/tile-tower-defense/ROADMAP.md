@@ -534,3 +534,11 @@ User confirmed Discord and Google sign-in work locally after provider configurat
 ### 2026-11-18 — itch.io sign-in bridge
 
 Production auth release 739c196 passed both CI and deployment workflows, but user reported callback window.opener loss when signing in from itch.io. Added a stable top-level bridge that keeps the game opener while a separately opened provider window returns its validated result over a nonce-specific BroadcastChannel. Results are checked, retried until acknowledged and time-limited. One Continue to sign in click is required. No tokens in handoff URLs or persistent bridge storage. Lint, all three TypeScript targets and 99 unit tests passed; Chromium verified synthetic credential delivery into a sandboxed cross-origin iframe from a callback with no opener. Real hosted Google/Discord login from itch.io and Safari/iOS remain manual verification.
+
+### 2026-11-18 — live itch.io opener isolation identified
+
+Reproduced the immediate bridge error in Chrome: itch.io's SharedArrayBuffer hosting headers set COOP same-origin and sever the initial Vercel popup opener. Removing COOP/COEP only in the test browser restored the unchanged deployed bridge and navigation to SpacetimeAuth. Three auth unit tests passed; complete provider login was not exercised. Disable SharedArrayBuffer support in itch.io Embed options → Frame options, then verify the resulting CDN origin and account return; changing CDN origin may affect existing browser-stored guest identities. No live settings or production code changed. See docs/AUTH.md for evidence and follow-up.
+
+### 2026-11-18 — captain profile avatars
+
+User confirmed itch.io authentication is fixed. In-game captain navigation now uses verified Google/Discord profile pictures replicated in world seats, with existing faction/COM art for missing or failed images. Pictures refresh on re-entry without resetting gameplay. All three TypeScript targets and 34 targeted auth/world tests passed. No deployment or browser avatar check performed; existing worlds require a save-preserving module update before rejoining populates photos.
