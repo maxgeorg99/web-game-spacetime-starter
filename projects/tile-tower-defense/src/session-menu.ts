@@ -29,19 +29,36 @@ export class SessionMenu {
   private name = document.getElementById('captain-name') as HTMLInputElement;
   private sessionName = document.getElementById('session-name') as HTMLInputElement;
   constructor(private game: GameStore) {
+    const historyDialog = document.getElementById('run-history') as HTMLDialogElement;
+    document.getElementById('run-history-open')!.onclick = () => historyDialog.showModal();
+    document.getElementById('run-history-close')!.onclick = () => historyDialog.close();
     document.getElementById('coordinator-retry')!.onclick = () => this.connect();
-    document.getElementById('captain-save')!.onclick = () => {
-      void this.run(() => this.saveName());
+    const createForm = document.getElementById('session-create-form') as HTMLFormElement;
+    const createToggle = document.getElementById('session-create-open')!;
+    const showCreate = (open: boolean) => {
+      createForm.hidden = !open;
+      createToggle.setAttribute('aria-expanded', String(open));
+      if (open) {
+        this.sessionName.focus();
+      }
     };
-    document.getElementById('session-create')!.onclick = () => {
+    createToggle.onclick = () => showCreate(createForm.hidden);
+    document.getElementById('session-create-cancel')!.onclick = () => {
+      showCreate(false);
+      createToggle.focus();
+    };
+    createForm.onsubmit = (event) => {
+      event.preventDefault();
       void this.run(async () => {
+        const worldName = cleanName(this.sessionName.value, t('form.sessionName'), 40);
         await this.saveName();
-        await this.connection!.reducers.createSession({
-          name: cleanName(this.sessionName.value, t('form.sessionName'), 40),
-        });
+        await this.connection!.reducers.createSession({ name: worldName });
         this.sessionName.value = '';
+        showCreate(false);
+        createToggle.focus();
       });
     };
+    this.name.oninput = () => this.name.removeAttribute('aria-invalid');
     document.getElementById('sessions-open')!.onclick = () => {
       const settings = document.querySelector<HTMLDetailsElement>('details.settings');
       if (settings) {
@@ -170,7 +187,7 @@ export class SessionMenu {
             }
             history();
             this.connected = true;
-            this.status = t('session.choose');
+            this.status = t('harbor.joinHint');
             this.name.value = conn.db.captain.owner.find(identity)?.name ?? this.name.value;
             sync();
           })
@@ -259,7 +276,14 @@ export class SessionMenu {
     this.render();
   }
   private async saveName() {
-    const name = cleanName(this.name.value);
+    let name: string;
+    try {
+      name = cleanName(this.name.value, t('form.captainName'));
+    } catch {
+      this.name.setAttribute('aria-invalid', 'true');
+      this.name.focus();
+      throw Error(t('harbor.invalidName'));
+    }
     await this.connection!.reducers.setName({ name });
     this.name.value = name;
   }
@@ -295,6 +319,10 @@ export class SessionMenu {
     document.body.dataset.screen = playing ? 'game' : 'menu';
     document.getElementById('session-menu')!.hidden = playing;
     if (playing) {
+      const historyDialog = document.getElementById('run-history') as HTMLDialogElement;
+      if (historyDialog.open) {
+        historyDialog.close();
+      }
       return;
     }
     document.getElementById('menu-status')!.textContent = this.status;
@@ -306,7 +334,7 @@ export class SessionMenu {
     (document.getElementById('world-retry') as HTMLButtonElement).disabled =
       !this.connected || this.busy;
     (document.getElementById('coordinator-retry') as HTMLButtonElement).hidden = this.connected;
-    for (const id of ['captain-save', 'session-create']) {
+    for (const id of ['session-create-open', 'session-create']) {
       (document.getElementById(id) as HTMLButtonElement).disabled = !this.connected || this.busy;
     }
     const list = document.getElementById('session-list')!;
@@ -314,6 +342,7 @@ export class SessionMenu {
     for (const session of this.sessions.filter((session) => session.status !== 'finished')) {
       const row = document.createElement('div');
       row.className = 'session-row';
+      row.dataset.status = session.status;
       const details = document.createElement('div');
       const title = document.createElement('strong');
       title.textContent = session.name;
@@ -323,8 +352,8 @@ export class SessionMenu {
         ? Date.now() - Number(slots.updatedAt.microsSinceUnixEpoch / 1000n) > 60_000
         : true;
       const availability = slots
-        ? t('session.availability', {
-            count: slots.capacity - slots.claimed,
+        ? t('harbor.occupancy', {
+            count: slots.claimed,
             capacity: slots.capacity,
             stale: stale ? t('session.lastReported') : '',
           })
@@ -369,8 +398,9 @@ export class SessionMenu {
       list.append(row);
     }
     if (!this.sessions.some((session) => session.status !== 'finished')) {
-      const empty = document.createElement('p');
-      empty.textContent = this.connected ? t('session.empty') : t('session.reconnectHint');
+      const empty = document.createElement('div');
+      empty.className = 'departure-empty';
+      empty.innerHTML = `<strong>${th(this.connected ? 'harbor.emptyTitle' : 'session.connecting')}</strong><p>${th(this.connected ? 'harbor.emptyHint' : 'session.reconnectHint')}</p>`;
       list.append(empty);
     }
   }

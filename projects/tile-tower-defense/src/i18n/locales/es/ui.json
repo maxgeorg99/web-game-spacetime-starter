@@ -285,5 +285,16 @@
   "capacity.close": "Cerrar selector de jugadores",
   "capacity.occupied": "Plazas superiores ocupadas",
   "capacity.upTo": "Hasta",
-  "capacity.limit": "Hasta {{count}} jugadores"
+  "capacity.limit": "Hasta {{count}} jugadores",
+  "harbor.pass": "Tu tarjeta de embarque",
+  "harbor.departures": "Salidas",
+  "harbor.create": "Crear mundo",
+  "harbor.cancel": "Cancelar",
+  "harbor.joinHint": "Únete a un mundo o crea el tuyo.",
+  "harbor.occupancy": "{{count}} / {{capacity}} capitanes{{stale}}",
+  "harbor.emptyTitle": "El cielo es tuyo.",
+  "harbor.emptyHint": "Crea un mundo y reúne a tu tripulación.",
+  "harbor.invalidName": "Introduce un nombre de entre 2 y 24 letras, números o signos de puntuación.",
+  "account.signIn": "Iniciar sesión",
+  "account.comingSoon": "Próximamente"
 }

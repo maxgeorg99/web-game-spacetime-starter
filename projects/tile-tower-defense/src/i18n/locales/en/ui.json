@@ -285,5 +285,16 @@
   "capacity.close": "Close player picker",
   "capacity.occupied": "Higher seats occupied",
   "capacity.upTo": "Up to",
-  "capacity.limit": "Up to {{count}} players"
+  "capacity.limit": "Up to {{count}} players",
+  "harbor.pass": "Your boarding pass",
+  "harbor.departures": "Departures",
+  "harbor.create": "Create world",
+  "harbor.cancel": "Cancel",
+  "harbor.joinHint": "Join a world or start your own.",
+  "harbor.occupancy": "{{count}} / {{capacity}} captains{{stale}}",
+  "harbor.emptyTitle": "The sky is yours.",
+  "harbor.emptyHint": "Create a world and bring your crew.",
+  "harbor.invalidName": "Enter a name with 2–24 letters, numbers or punctuation.",
+  "account.signIn": "Sign in",
+  "account.comingSoon": "Coming soon"
 }

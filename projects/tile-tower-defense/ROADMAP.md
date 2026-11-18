@@ -496,3 +496,17 @@ Replaced the 4/8/16 dropdown with a biome-style dialog: compact archipelago diag
 ### 2026-11-18 — clarify lobby capacity copy
 
 Player-capacity cards now say “Up to” above their numbers; the lobby button reads “Up to N players,” localized in English, German and Spanish. This clarifies that the setting is a maximum rather than a required player count. Formatted source; no checks run for this copy-only change.
+
+### 2026-11-18 — airship departure lounge and illustrated logo
+
+Replaced the initial name/session form with an airship departure lounge: existing blue airship and captain art, a scenic dock, a compact yellow boarding pass and a departure board. Added generated transparent wordmark at `public/art/branding/tiled-tower-defense-logo.png`; removed the old title icon. Logo and airship occupy their own desktop column so the pass never covers the ship. Mobile rearranges into a compact header and stacked controls, including a full-width Create world button at 320px.
+
+Simplified the flow to Create world or a session's Join/Resume/Watch action. World naming appears only after Create world. Name saves through existing create/join actions; removed the standalone Save action, visible Captain name label and save hint, retaining an accessible name. Run history now opens a native modal with an explicit close control and Escape handling. Rows show occupied captains/capacity. Existing reconnect, provisioning retry, history rendering and authorization remain. All new copy is localized EN/DE/ES; reduced-motion disables the airship bob.
+
+Verification: lint, all three TypeScript targets and 95 unit tests passed. Approved browser review covered 1280x720, 390x844 and 320x640 layouts, modal open/Escape focus return, missing-name validation, local world creation/provisioning, joining and saved-name restoration. Found and corrected narrow-screen Create button overflow. Local QA created `Harbor UX review`, captain `Harbor Reviewer`, without touching existing matches. No production deployment or auth/schema changes.
+
+Next phase proposed by user: authenticated profiles, followed by possible between-run progression and achievements. Before implementation, define account linking for existing anonymous identities/history and authoritative award rules. No sign-in controls, progression systems or placeholder achievement UI were added in this overhaul.
+
+### 2026-11-18 — account action placeholder
+
+Added a disabled Sign in / Coming soon button above Run history, aligned in one equal-width vertical action group on the boarding pass. Mobile places the group below and aligned with the name input. Localized EN/DE/ES. This is only the requested visual placeholder for future Spacetime Auth; no authentication behavior is wired. Source formatted.

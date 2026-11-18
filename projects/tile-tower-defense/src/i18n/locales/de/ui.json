@@ -285,5 +285,16 @@
   "capacity.close": "Spielerauswahl schließen",
   "capacity.occupied": "Höhere Plätze belegt",
   "capacity.upTo": "Bis zu",
-  "capacity.limit": "Bis zu {{count}} Spieler"
+  "capacity.limit": "Bis zu {{count}} Spieler",
+  "harbor.pass": "Deine Bordkarte",
+  "harbor.departures": "Abflüge",
+  "harbor.create": "Welt erstellen",
+  "harbor.cancel": "Abbrechen",
+  "harbor.joinHint": "Welt beitreten oder eine eigene erstellen.",
+  "harbor.occupancy": "{{count}} / {{capacity}} Kapitäne{{stale}}",
+  "harbor.emptyTitle": "Der Himmel gehört dir.",
+  "harbor.emptyHint": "Erstelle eine Welt und versammle deine Crew.",
+  "harbor.invalidName": "Gib einen Namen mit 2–24 Buchstaben, Zahlen oder Satzzeichen ein.",
+  "account.signIn": "Anmelden",
+  "account.comingSoon": "Demnächst"
 }

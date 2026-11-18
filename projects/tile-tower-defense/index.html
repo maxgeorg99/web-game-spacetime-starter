@@ -15,48 +15,125 @@
         aria-label="Multiplayer sessions"
         data-i18n-aria-label="a11y.sessions"
       >
+        <div class="harbor-scenery" aria-hidden="true">
+          <div class="harbor-sun"></div>
+          <svg class="harbor-landscape" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+            <g fill="#94b9b8">
+              <path d="m-120 390 300-140 280 140-280 130z" />
+              <path d="m920 250 230-110 260 110-260 110z" />
+            </g>
+            <g fill="#749b98">
+              <path d="m-120 390 300 130 280-130-90 170-190 50-180-70z" />
+              <path d="m920 250 230 110 260-110-80 135-180 45-140-55z" />
+            </g>
+            <g fill="#dce7d8" opacity=".65">
+              <path
+                d="M70 218h80v-20h95v20h65v18H70zM945 470h90v-18h110v18h110v20H945zM520 130h60v-16h80v16h65v16H520z"
+              />
+            </g>
+            <path d="m-130 710 400-160 360 145-355 185z" fill="#82936c" />
+            <path d="m-130 710 405 170 355-185-100 205H0z" fill="#536e62" />
+            <path d="m110 669 192-81 200 79-193 91z" fill="#c7b38a" />
+            <path
+              d="m142 675 169 65 157-72m-110-57 2 111m-79-108 1 112"
+              fill="none"
+              stroke="#ab956f"
+              stroke-width="5"
+            />
+            <path d="M174 690v-74m258 73v-74" stroke="#59675a" stroke-width="12" />
+            <path d="M174 630q130 60 258 0" fill="none" stroke="#e1cf9f" stroke-width="5" />
+          </svg>
+        </div>
         <div class="session-panel">
-          <img class="menu-keep" src="%BASE_URL%art/keep.png" alt="" />
-          <h1><span data-i18n="app.name">Tiled Tower Defense</span></h1>
-          <p id="menu-status" role="status">
-            <span data-i18n="session.connecting">Connecting…</span>
-          </p>
-          <div class="session-form">
-            <label
-              ><span data-i18n="form.captainName">Captain name</span
-              ><input
-                id="captain-name"
-                maxlength="24"
-                placeholder="Your name"
-                data-i18n-placeholder="form.yourName"
-                autocomplete="nickname" /></label
-            ><button id="captain-save"><span data-i18n="common.save">Save</span></button>
-          </div>
-          <h2><span data-i18n="session.worlds">Worlds</span></h2>
-          <div id="session-list"></div>
-          <div class="session-form">
-            <label
-              ><span data-i18n="session.new">New world</span
-              ><input
-                id="session-name"
-                maxlength="40"
-                placeholder="Name your world"
-                data-i18n-placeholder="form.worldName" /></label
-            ><button id="session-create"><span data-i18n="common.create">Create</span></button>
-          </div>
-          <details id="run-history">
-            <summary data-i18n="stats.history">Run history</summary>
-            <p data-i18n="stats.historyHint">Your last 50 completed matches.</p>
-            <div id="run-history-list"></div>
-          </details>
-          <p id="menu-error" role="alert"></p>
-          <button id="coordinator-retry">
-            <span data-i18n="connection.reconnect">Reconnect</span>
-          </button>
-          <p id="world-status" role="status"></p>
-          <div id="world-actions" hidden>
-            <button id="world-retry"><span data-i18n="session.rejoin">Rejoin world</span></button
-            ><button id="world-back"><span data-i18n="session.back">Back to sessions</span></button>
+          <header class="harbor-heading">
+            <h1>
+              <img
+                class="harbor-logo"
+                src="%BASE_URL%art/branding/tiled-tower-defense-logo.png"
+                alt="Tiled Tower Defense"
+              />
+            </h1>
+            <img class="harbor-airship" src="%BASE_URL%art/factions/blue/airship.png" alt="" />
+          </header>
+          <div class="departure-layout">
+            <aside class="captain-pass">
+              <img class="pass-portrait" src="%BASE_URL%art/factions/blue/captain.png" alt="" />
+              <div class="pass-details">
+                <span class="pass-title" data-i18n="harbor.pass">Your boarding pass</span>
+                <input
+                  id="captain-name"
+                  maxlength="24"
+                  placeholder="Your name"
+                  data-i18n-placeholder="form.yourName"
+                  autocomplete="nickname"
+                  aria-label="Captain name"
+                  data-i18n-aria-label="form.captainName"
+                />
+              </div>
+              <div class="captain-account-actions">
+                <button id="captain-sign-in" disabled aria-describedby="captain-auth-status">
+                  <span data-i18n="account.signIn">Sign in</span>
+                  <small id="captain-auth-status" data-i18n="account.comingSoon">Coming soon</small>
+                </button>
+                <button id="run-history-open" aria-haspopup="dialog" data-i18n="stats.history">
+                  Run history
+                </button>
+              </div>
+            </aside>
+            <section class="departure-board" aria-labelledby="departure-title">
+              <div class="departure-head">
+                <div>
+                  <h2 id="departure-title" data-i18n="harbor.departures">Departures</h2>
+                  <p id="menu-status" role="status"></p>
+                </div>
+                <button
+                  id="session-create-open"
+                  class="primary"
+                  aria-expanded="false"
+                  aria-controls="session-create-form"
+                  data-i18n="harbor.create"
+                >
+                  Create world
+                </button>
+              </div>
+              <form id="session-create-form" class="session-form" hidden>
+                <label for="session-name"
+                  ><span data-i18n="form.sessionName">World name</span
+                  ><input
+                    id="session-name"
+                    maxlength="40"
+                    placeholder="Name your world"
+                    data-i18n-placeholder="form.worldName"
+                /></label>
+                <button id="session-create" type="submit" class="primary" data-i18n="common.create">
+                  Create
+                </button>
+                <button id="session-create-cancel" type="button" data-i18n="harbor.cancel">
+                  Cancel
+                </button>
+              </form>
+              <div id="session-list"></div>
+              <p id="menu-error" role="alert"></p>
+              <button id="coordinator-retry" data-i18n="connection.reconnect">Reconnect</button>
+              <p id="world-status" role="status"></p>
+              <div id="world-actions" hidden>
+                <button id="world-retry" data-i18n="session.rejoin">Rejoin world</button>
+                <button id="world-back" data-i18n="session.back">Back to sessions</button>
+              </div>
+              <dialog id="run-history" aria-labelledby="run-history-title">
+                <div class="catalog-head">
+                  <h2 id="run-history-title" data-i18n="stats.history">Run history</h2>
+                  <button
+                    id="run-history-close"
+                    aria-label="Close"
+                    data-i18n-aria-label="stats.close"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div id="run-history-list"></div>
+              </dialog>
+            </section>
           </div>
         </div>
       </section>
