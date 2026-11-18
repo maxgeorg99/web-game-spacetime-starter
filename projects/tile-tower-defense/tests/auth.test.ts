@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from 'bun:test';
+import { rejects } from 'node:assert/strict';
 import { InMemoryWebStorage } from 'oidc-client-ts';
 import { AccountAuth } from '../src/account-auth';
 import {
@@ -149,7 +150,7 @@ describe('account renewal', () => {
     const renewed = session(Date.now() + 3_600_000);
     const refresh = mock(async () => renewed).mockRejectedValueOnce(new TypeError('Offline'));
     auth = new AccountAuth(refresh);
-    await expect(auth.getToken()).rejects.toThrow();
+    await rejects(auth.getToken(), Error);
     expect(auth.token).toBe(initial.token);
     expect(auth.needsSignIn).toBe(false);
     expect(await auth.getToken()).toBe(renewed.token);
@@ -162,7 +163,7 @@ describe('account renewal', () => {
       throw { error: 'invalid_grant' };
     });
     auth.onChange = mock();
-    await expect(auth.getToken()).rejects.toThrow();
+    await rejects(auth.getToken(), Error);
     expect(auth.needsSignIn).toBe(true);
     expect(auth.token).toBe(initial.token);
     expect(auth.onChange).not.toHaveBeenCalled();
@@ -173,7 +174,7 @@ describe('account renewal', () => {
     const initial = { ...session(), refreshToken: undefined };
     save(initial);
     auth = new AccountAuth();
-    await expect(auth.getToken()).rejects.toThrow();
+    await rejects(auth.getToken(), Error);
     expect(auth.needsSignIn).toBe(true);
     expect(auth.token).toBe(initial.token);
   });
@@ -190,7 +191,7 @@ describe('account renewal', () => {
     const pending = auth.getToken();
     auth.signOut();
     complete(session(Date.now() + 3_600_000));
-    await expect(pending).rejects.toThrow();
+    await rejects(pending, Error);
     expect(auth.token).toBeUndefined();
     expect(storage.getItem(key)).toBeFalsy();
   });
@@ -263,7 +264,7 @@ describe('account renewal', () => {
         scope: 'openid profile offline_access',
       }),
     );
-    await expect(refreshAccount(initial)).rejects.toThrow();
+    await rejects(refreshAccount(initial), Error);
     response.mockResolvedValue(
       Response.json({
         access_token: 'access',
@@ -271,6 +272,6 @@ describe('account renewal', () => {
         scope: 'openid profile offline_access',
       }),
     );
-    await expect(refreshAccount(initial)).rejects.toBeInstanceOf(AccountRenewalRequired);
+    await rejects(refreshAccount(initial), AccountRenewalRequired);
   });
 });

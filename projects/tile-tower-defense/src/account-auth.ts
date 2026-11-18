@@ -143,7 +143,7 @@ export class AccountAuth {
       if (!this.needsSignIn && session.expiresAt > Date.now() + 15_000) {
         return session.token;
       }
-      throw new Error(this.error);
+      throw new Error(this.error, { cause: error });
     }
   }
   signOut() {
