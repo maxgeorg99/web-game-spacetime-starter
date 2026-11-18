@@ -63,7 +63,11 @@ export async function refreshAccount(session: AccountSession): Promise<AccountSe
   });
   const next = accountClaims(response.id_token ?? '');
   // Access-token expiry is not the expiry of the ID token used by SpacetimeDB.
-  if (next.sub !== profile.sub || next.exp! <= profile.exp! || next.exp! * 1000 <= Date.now() + 30_000) {
+  if (
+    next.sub !== profile.sub ||
+    next.exp! <= profile.exp! ||
+    next.exp! * 1000 <= Date.now() + 30_000
+  ) {
     throw new AccountRenewalRequired('Account could not be renewed.');
   }
   return {

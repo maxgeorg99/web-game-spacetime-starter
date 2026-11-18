@@ -20,6 +20,7 @@ export class SessionMenu {
   private token = '';
   private identity = '';
   private connected = false;
+  private retryAfterRenewal = false;
   private busy = false;
   private error = '';
   private status = t('session.connecting');
@@ -35,6 +36,9 @@ export class SessionMenu {
   constructor(private game: GameStore) {
     this.account.onRenewed = () => {
       this.token = this.account.token!;
+      if (this.retryAfterRenewal) {
+        this.connect();
+      }
     };
     this.account.onStatus = () => {
       this.error = this.account.error;
@@ -137,6 +141,7 @@ export class SessionMenu {
     void this.connectAccount();
   }
   private async connectAccount() {
+    this.retryAfterRenewal = false;
     const generation = ++this.generation;
     this.connection?.disconnect();
     this.connected = false;
@@ -156,6 +161,7 @@ export class SessionMenu {
       accountToken = this.account.token ? await this.account.getToken() : undefined;
     } catch {
       if (current()) {
+        this.retryAfterRenewal = !this.account.needsSignIn;
         this.failed(Error(this.account.error || t('account.expired')));
       }
       return;
@@ -308,11 +314,13 @@ export class SessionMenu {
       url.searchParams.set('cleanup', '1');
       this.cleaning.add(row.id);
       void (this.account.token ? this.account.getToken() : Promise.resolve(this.token))
-        .then((token) => fetch(url, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          signal: AbortSignal.timeout(30_000),
-        }))
+        .then((token) =>
+          fetch(url, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            signal: AbortSignal.timeout(30_000),
+          }),
+        )
         .catch(() => {})
         .finally(() => this.cleaning.delete(row.id));
     }

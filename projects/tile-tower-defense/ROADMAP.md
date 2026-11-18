@@ -542,3 +542,7 @@ Reproduced the immediate bridge error in Chrome: itch.io's SharedArrayBuffer hos
 ### 2026-11-18 — captain profile avatars
 
 User confirmed itch.io authentication is fixed. In-game captain navigation now uses verified Google/Discord profile pictures replicated in world seats, with existing faction/COM art for missing or failed images. Pictures refresh on re-entry without resetting gameplay. All three TypeScript targets and 34 targeted auth/world tests passed. No deployment or browser avatar check performed; existing worlds require a save-preserving module update before rejoining populates photos.
+
+### 2026-11-18 — renew captain sessions during play
+
+Added offline-access handoff and background refresh, with rotation, single-flight requests, bounded retries, wake-up checks and protection against late sign-out responses. Renewal does not leave the game; revoked or legacy sessions ask for sign-in without switching to a guest. Account connections can reconnect with fresh credentials while retaining the match, and HTTP provisioning/cleanup use current tokens. All three TypeScript targets and 24 targeted auth/localization tests passed; Chrome verified synthetic renewal and live itch.io token-endpoint CORS access. Real provider refresh requires a fresh-login playtest after frontend/auth-page deployment. Existing sessions lack refresh tokens and must sign in once. No server integration run or deployment; see docs/AUTH.md.
