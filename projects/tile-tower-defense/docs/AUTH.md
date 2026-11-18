@@ -1,4 +1,4 @@
-# Captain accounts — integration in progress
+# Captain accounts
 
 Public SpacetimeAuth client: `client_034zt4DiqcDiIk5LQ93O7A`.
 
@@ -21,11 +21,11 @@ Account tokens use session storage with an in-memory fallback. Account expiry re
 
 ## Required before release
 
-- User confirmed Google and Discord provider setup. Verify the client redirect allowlist during the first sign-in.
+- User confirmed successful local Google and Discord sign-in after correcting the Google provider configuration.
 - Approved lint, all three TypeScript targets and 96 unit tests passed before the prompt fix. Real provider sign-in remains to be verified.
-- Test actual Google and Discord callbacks and pictures, cancellation, expiration and sign-out/reentry.
+- Verify production Google and Discord callbacks and pictures, cancellation, expiration and sign-out/reentry. Local provider sign-in is user-confirmed.
 - Test the actual itch.io embed across Chrome and Safari/iOS, including third-party storage restrictions and loss of window.opener. Current fallback explains the problem and links to the standalone game; a server-backed handoff may be needed if the opener is severed.
 - Test private run-history access under guest and account identities; design explicit linking before migrating existing records.
-- Publish coordinator's new table and callback routes together with the frontend only when production deployment is authorized. No production deployment has been performed for auth.
+- Production deployment authorized on 2026-11-18. The main-branch release workflow publishes the coordinator without resetting saves, then Vercel and itch.io. Confirm that workflow succeeds before considering production updated.
 
 Sources: [SpacetimeAuth configuration](https://spacetimedb.com/docs/core-concepts/authentication/spacetimeauth/configuring-a-project/), [verified claims](https://spacetimedb.com/docs/core-concepts/authentication/usage/), [oidc-client-ts](https://github.com/authts/oidc-client-ts).

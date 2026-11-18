@@ -526,3 +526,7 @@ User confirmed Google and Discord setup. Local coordinator account-profile table
 ### 2026-11-18 — sign-in prompt compatibility fix
 
 User callback reported `invalid_request: unsupported prompt value requested`. Removed the explicit `select_account` prompt so SpacetimeAuth uses its default flow; corrected the generic failure message to avoid blaming callback configuration. Prior approved auth checks passed lint, all three TypeScript targets and 96 unit tests. Actual provider login/avatar handoff still requires verification after this fix. No production deployment.
+
+### 2026-11-18 — auth release authorized
+
+User confirmed Discord and Google sign-in work locally after provider configuration corrections and authorized shipping. Release includes account sign-in/profile handling and straighter arrow presentation. Use the installed isolated pre-push gate and main-branch release workflow (save-preserving coordinator publish, Vercel, itch.io). Production/embedded sign-in and profile pictures still need post-deployment playtesting; guest history remains separate and token renewal is not implemented.

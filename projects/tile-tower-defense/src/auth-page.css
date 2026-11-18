@@ -25,3 +25,18 @@ a {
 [hidden] {
   display: none;
 }
+
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 12px 20px;
+  background: #edcf88;
+  color: #233c39;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
