@@ -304,5 +304,6 @@
   "account.popupBlocked": "Allow popups to sign in, then try again.",
   "account.failed": "Sign-in failed. Please try again.",
   "account.cancelled": "Sign-in was closed or timed out. Please try again.",
-  "account.expired": "Your sign-in expired. Sign in again to use your account."
+  "account.expired": "Your sign-in expired. Sign in again to use your account.",
+  "account.refreshRetry": "Reconnecting your account. Your current game stays open."
 }

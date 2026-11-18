@@ -26,6 +26,7 @@ export class GameStore {
   private sequence = 0;
   private connection?: DbConnection;
   private generation = 0;
+  private reconnecting = false;
   private listeners = new Set<() => void>();
   get faction() {
     return worldIslands[this.ownSlot ?? 0].faction;
@@ -49,11 +50,18 @@ export class GameStore {
     this.ownSlot = null;
     this.ready = false;
     this.pending = false;
+    this.reconnecting = false;
     this.error = '';
     this.status = t('session.chooseSession');
     this.notify();
   }
-  enter(destination: WorldDestination, name: string, coordinatorToken: string, account = false) {
+  enter(
+    destination: WorldDestination,
+    name: string,
+    coordinatorToken: string,
+    account = false,
+    tokenProvider?: () => Promise<string>,
+  ) {
     this.leave();
     this.destination = destination;
     const generation = this.generation;
@@ -63,10 +71,14 @@ export class GameStore {
     // Preserve the original per-world token where present; otherwise reuse coordinator identity.
     const tokenKey = `tile-td:${destination.uri}:${destination.database}${captain ? `:captain:${captain}` : ''}`;
     const current = () => generation === this.generation;
-    this.connection = DbConnection.builder()
+    const builder = DbConnection.builder()
       .withUri(destination.uri)
       .withDatabaseName(destination.database)
-      .withToken(account ? coordinatorToken : (localStorage.getItem(tokenKey) ?? coordinatorToken))
+      .withToken(account ? coordinatorToken : (localStorage.getItem(tokenKey) ?? coordinatorToken));
+    if (account && tokenProvider) {
+      builder.withAutomaticReconnect().withTokenProvider(tokenProvider);
+    }
+    this.connection = builder
       .onConnect((conn, identity, token) => {
         if (!current()) {
           conn.disconnect();
@@ -97,6 +109,7 @@ export class GameStore {
               : fresh(false, biomeDef(world.biome).campaign);
             this.sequence = seat?.sequence ?? 0;
             this.ready = true;
+            this.reconnecting = false;
             this.error = '';
             this.status = t('connection.worldStatus', {
               world: destination.name,
@@ -140,14 +153,22 @@ export class GameStore {
           })
           .subscribe('SELECT * FROM world WHERE id = 1');
       })
-      .onConnectError((_ctx, error) => {
+      .onConnectError((_ctx, error, nextAttempt) => {
         if (current()) {
-          this.failed(error);
+          if (nextAttempt !== undefined) {
+            this.reconnecting = true;
+          } else {
+            this.failed(error);
+          }
         }
       })
-      .onDisconnect(() => {
+      .onDisconnect((_ctx, _error, nextAttempt) => {
         if (current()) {
-          this.failed(Error(t('connection.lostRejoin')));
+          if (nextAttempt !== undefined) {
+            this.reconnecting = true;
+          } else {
+            this.failed(Error(t('connection.lostRejoin')));
+          }
         }
       })
       .build();
@@ -159,7 +180,7 @@ export class GameStore {
     this.notify();
   }
   async send(action: WorldAction) {
-    if (!this.ready || this.pending || !this.connection) {
+    if (!this.ready || this.pending || this.reconnecting || !this.connection) {
       return;
     }
     const generation = this.generation;

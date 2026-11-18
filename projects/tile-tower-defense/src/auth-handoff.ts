@@ -4,6 +4,7 @@ export type AccountHandoff = {
   nonce: string;
   token: string;
   expiresAt: number;
+  refreshToken?: string;
 };
 export const handoffChannel = (nonce: string) => `tile-td:signin:${nonce}`;
 
@@ -18,6 +19,10 @@ export function validHandoff(data: unknown, nonce: string): data is AccountHando
     typeof value.token === 'string' &&
     value.token.length > 0 &&
     value.token.length <= 32_768 &&
+    (value.refreshToken === undefined ||
+      (typeof value.refreshToken === 'string' &&
+        value.refreshToken.length > 0 &&
+        value.refreshToken.length <= 32_768)) &&
     typeof value.expiresAt === 'number' &&
     Number.isFinite(value.expiresAt) &&
     value.expiresAt > Date.now() + 30_000

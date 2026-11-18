@@ -1,5 +1,6 @@
 import { UserManager, WebStorageStateStore } from 'oidc-client-ts';
 import { accountAuth } from '../shared/config/auth';
+import { accountScope } from './account-refresh';
 import './auth-page.css';
 import { deliverHandoff, handoffChannel, validHandoff } from './auth-handoff';
 
@@ -10,7 +11,7 @@ const manager = new UserManager({
   redirect_uri: `${location.origin}/auth/callback.html`,
   post_logout_redirect_uri: `${location.origin}/`,
   response_type: 'code',
-  scope: 'openid profile',
+  scope: accountScope,
   automaticSilentRenew: false,
   loadUserInfo: false,
   stateStore: new WebStorageStateStore({ store: sessionStorage }),
@@ -32,6 +33,7 @@ async function run() {
         nonce: state.nonce,
         token: user.id_token,
         expiresAt: user.profile.exp * 1000,
+        refreshToken: user.refresh_token,
       });
     } finally {
       await manager.removeUser();

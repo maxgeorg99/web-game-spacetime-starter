@@ -304,5 +304,6 @@
   "account.popupBlocked": "Erlaube Pop-ups und versuche es erneut.",
   "account.failed": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
   "account.cancelled": "Anmeldung geschlossen oder abgelaufen. Bitte erneut versuchen.",
-  "account.expired": "Deine Anmeldung ist abgelaufen. Melde dich erneut an."
+  "account.expired": "Deine Anmeldung ist abgelaufen. Melde dich erneut an.",
+  "account.refreshRetry": "Dein Konto wird erneut verbunden. Dein aktuelles Spiel bleibt geöffnet."
 }

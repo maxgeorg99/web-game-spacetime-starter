@@ -33,21 +33,36 @@ export class SessionMenu {
   private name = document.getElementById('captain-name') as HTMLInputElement;
   private sessionName = document.getElementById('session-name') as HTMLInputElement;
   constructor(private game: GameStore) {
+    this.account.onRenewed = () => {
+      this.token = this.account.token!;
+    };
+    this.account.onStatus = () => {
+      this.error = this.account.error;
+      this.render();
+    };
     this.account.onChange = () => {
       this.game.leave();
       this.name.value = '';
       this.connect();
     };
     document.getElementById('captain-sign-in')!.onclick = () => {
-      if (this.account.token) {
+      if (this.account.token && !this.account.needsSignIn) {
         this.account.signOut();
         this.account.onChange();
         return;
       }
+      const previousSubject = this.account.subject;
       const pending = this.account.signIn();
       this.render();
       void pending
-        .then(() => this.account.onChange())
+        .then(() => {
+          if (previousSubject && previousSubject === this.account.subject) {
+            this.account.onRenewed();
+            this.connect();
+          } else {
+            this.account.onChange();
+          }
+        })
         .catch((error) => {
           this.error = error instanceof Error ? error.message : t('account.failed');
           this.render();
@@ -119,6 +134,9 @@ export class SessionMenu {
     this.connect();
   }
   private connect() {
+    void this.connectAccount();
+  }
+  private async connectAccount() {
     const generation = ++this.generation;
     this.connection?.disconnect();
     this.connected = false;
@@ -133,10 +151,26 @@ export class SessionMenu {
     const captain = new URLSearchParams(location.search).get('captain')?.slice(0, 32) ?? 'default';
     const tokenKey = `tile-td:coordinator:${uri}:${database}:${captain}`;
     const current = () => generation === this.generation;
-    this.connection = DbConnection.builder()
+    let accountToken: string | undefined;
+    try {
+      accountToken = this.account.token ? await this.account.getToken() : undefined;
+    } catch {
+      if (current()) {
+        this.failed(Error(this.account.error || t('account.expired')));
+      }
+      return;
+    }
+    if (!current()) {
+      return;
+    }
+    const builder = DbConnection.builder()
       .withUri(uri)
       .withDatabaseName(database)
-      .withToken(this.account.token ?? localStorage.getItem(tokenKey) ?? undefined)
+      .withToken(accountToken ?? localStorage.getItem(tokenKey) ?? undefined);
+    if (accountToken) {
+      builder.withAutomaticReconnect().withTokenProvider(() => this.account.getToken());
+    }
+    this.connection = builder
       .onConnect((conn, identity, token) => {
         if (!current()) {
           conn.disconnect();
@@ -239,6 +273,11 @@ export class SessionMenu {
             `SELECT * FROM membership WHERE owner = 0x${identity.toHexString()}`,
           ]);
       })
+      .onAutomaticReconnect(() => {
+        if (current()) {
+          this.token = this.account.token!;
+        }
+      })
       .onConnectError((_ctx, error) => {
         if (current()) {
           this.failed(error);
@@ -268,11 +307,12 @@ export class SessionMenu {
       url.searchParams.set('id', String(row.id));
       url.searchParams.set('cleanup', '1');
       this.cleaning.add(row.id);
-      void fetch(url, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${this.token}` },
-        signal: AbortSignal.timeout(30_000),
-      })
+      void (this.account.token ? this.account.getToken() : Promise.resolve(this.token))
+        .then((token) => fetch(url, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(30_000),
+        }))
         .catch(() => {})
         .finally(() => this.cleaning.delete(row.id));
     }
@@ -286,11 +326,12 @@ export class SessionMenu {
     this.error = '';
     this.render();
     try {
+      const token = this.account.token ? await this.account.getToken() : this.token;
       const url = new URL(this.provisioner, location.href);
       url.searchParams.set('id', String(id));
       const response = await fetch(url, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${this.token}` },
+        headers: { Authorization: `Bearer ${token}` },
         signal: AbortSignal.timeout(290_000),
       });
       if (!response.ok) {
@@ -340,6 +381,7 @@ export class SessionMenu {
   }
   private async enter(id: number) {
     await this.run(async () => {
+      const token = this.account.token ? await this.account.getToken() : this.token;
       const session = this.sessions.find((row) => row.id === id && row.status === 'ready');
       if (!session) {
         throw Error(t('session.notReady'));
@@ -349,8 +391,9 @@ export class SessionMenu {
       this.game.enter(
         session,
         this.name.value,
-        this.account.token ?? this.token,
+        token,
         !!this.account.token,
+        this.account.token ? () => this.account.getToken() : undefined,
       );
     });
   }
@@ -368,14 +411,16 @@ export class SessionMenu {
     const signIn = document.getElementById('captain-sign-in') as HTMLButtonElement;
     signIn.disabled = this.account.pending || this.busy;
     signIn.querySelector('span')!.textContent = t(
-      this.account.token ? 'account.signOut' : 'account.signIn',
+      this.account.token && !this.account.needsSignIn ? 'account.signOut' : 'account.signIn',
     );
     document.getElementById('captain-auth-status')!.textContent = t(
       this.account.pending
         ? 'account.connecting'
-        : this.account.token
-          ? 'account.signedIn'
-          : 'account.guest',
+        : this.account.needsSignIn
+          ? 'account.expired'
+          : this.account.token
+            ? 'account.signedIn'
+            : 'account.guest',
     );
     const portrait = document.querySelector<HTMLImageElement>('.pass-portrait')!;
     const fallback = assetUrl('art/factions/blue/captain.png');
