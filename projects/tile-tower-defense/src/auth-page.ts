@@ -57,7 +57,9 @@ async function run() {
   const provider = new URLSearchParams(location.search).get('provider') === '1';
   history.replaceState(null, '', location.pathname);
   if (!provider) {
-    if (!window.opener) throw Error('Start sign-in from the game.');
+    if (!window.opener) {
+      throw Error('Start sign-in from the game.');
+    }
     const game = window.opener as Window;
     const channel = new BroadcastChannel(handoffChannel(nonce));
     const button = document.createElement('button');
@@ -80,7 +82,9 @@ async function run() {
       { once: true },
     );
     channel.onmessage = (event) => {
-      if (!validHandoff(event.data, nonce) || game.closed) return;
+      if (!validHandoff(event.data, nonce) || game.closed) {
+        return;
+      }
       channel.postMessage({ type: 'tile-td:received', nonce });
       game.postMessage(event.data, origin);
       message.textContent = 'Signed in. Return to your game.';

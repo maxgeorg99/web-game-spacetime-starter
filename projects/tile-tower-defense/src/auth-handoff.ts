@@ -8,7 +8,9 @@ export type AccountHandoff = {
 export const handoffChannel = (nonce: string) => `tile-td:signin:${nonce}`;
 
 export function validHandoff(data: unknown, nonce: string): data is AccountHandoff {
-  if (!data || typeof data !== 'object') return false;
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
   const value = data as Partial<AccountHandoff>;
   return (
     value.type === 'tile-td:account' &&
@@ -30,11 +32,16 @@ export function deliverHandoff(data: AccountHandoff): Promise<void> {
       clearInterval(retry);
       clearTimeout(timeout);
       channel.close();
-      if (error) reject(error);
-      else resolve();
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
     };
     channel.onmessage = (event) => {
-      if (event.data?.type === 'tile-td:received' && event.data.nonce === data.nonce) finish();
+      if (event.data?.type === 'tile-td:received' && event.data.nonce === data.nonce) {
+        finish();
+      }
     };
     const retry = setInterval(() => channel.postMessage(data), 250);
     const timeout = setTimeout(() => finish(Error('Sign-in bridge unavailable.')), 10_000);
