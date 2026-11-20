@@ -66,7 +66,6 @@
   "common.build": "Build",
   "common.recruit": "Send troops",
   "world.opponent": "Opponent",
-  "world.troopsLabel": "Troops",
   "catalog.title": "Field guide",
   "form.yourName": "Your name",
   "form.worldName": "Name your world",
@@ -231,7 +230,7 @@
   "result.victory": "Victory!",
   "result.defeat": "Defeat",
   "result.draw": "Match over",
-  "result.finished": "The match has ended. Return to sessions to play again.",
+  "result.finished": "The match has ended.",
   "result.eliminated": "Your keep has fallen. You can watch the remaining captains or return to sessions.",
   "result.stats": "{{waves}} waves cleared · {{kills}} enemies defeated",
   "result.sessions": "Back to sessions",
@@ -308,5 +307,10 @@
   "account.refreshRetry": "Reconnecting your account. Your current game stays open.",
   "layout.navigation": "Map",
   "layout.match": "Match setup",
-  "layout.reference": "Guide & statistics"
+  "layout.reference": "Guide & statistics",
+  "world.tapToSend": "Tap to send one unit",
+  "world.sending": "Sending…",
+  "world.airshipsBusy": "All airships in flight",
+  "world.airshipCapacity": "Airships {{count}}/{{max}}",
+  "world.sendUnit": "Send one {{unit}} for {{cost}} meat"
 }

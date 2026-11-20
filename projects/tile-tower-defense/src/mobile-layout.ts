@@ -42,8 +42,11 @@ export class MobileLayout {
       this.menu.open = false;
       document.body.classList.toggle('compact-layout', compactLayout.matches);
       for (const { element, marker, section } of moved) {
-        if (compactLayout.matches) section.append(element);
-        else marker.after(element);
+        if (compactLayout.matches) {
+          section.append(element);
+        } else {
+          marker.after(element);
+        }
       }
       (document.getElementById('wave-preview') as HTMLDetailsElement).open = !compactLayout.matches;
       this.setActions(false);
@@ -52,7 +55,9 @@ export class MobileLayout {
     compactLayout.addEventListener('change', update);
     this.toggle.onclick = () => this.setActions(document.body.classList.contains('dock-collapsed'));
     this.menu.addEventListener('toggle', () => {
-      if (compactLayout.matches && this.menu.open) this.setActions(false);
+      if (compactLayout.matches && this.menu.open) {
+        this.setActions(false);
+      }
     });
     panel.addEventListener('click', (event) => {
       const button = (event.target as HTMLElement).closest('button');
@@ -64,7 +69,9 @@ export class MobileLayout {
       }
     });
     document.addEventListener('pointerdown', (event) => {
-      if (!this.menu.contains(event.target as Node)) this.menu.open = false;
+      if (!this.menu.contains(event.target as Node)) {
+        this.menu.open = false;
+      }
     });
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && this.menu.open) {
@@ -78,6 +85,8 @@ export class MobileLayout {
     document.body.classList.toggle('dock-collapsed', !open);
     this.toggle.setAttribute('aria-expanded', String(open));
     this.toggle.textContent = t(open ? 'layout.hideActions' : 'layout.showActions');
-    if (open) this.menu.open = false;
+    if (open) {
+      this.menu.open = false;
+    }
   }
 }

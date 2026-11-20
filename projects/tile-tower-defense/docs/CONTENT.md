@@ -203,3 +203,17 @@ Touches beginning on controls remain UI interactions. Manual pan/zoom persists
 through replicated island expansion and phase changes; choosing an island/world
 view or rotating the device reframes the map. This follow-up awaits manual testing
 in a freshly rebuilt Android app.
+
+### Mobile recruitment
+
+Recruit cards now send one unit per enabled tap; there is no quantity field. Each
+card shows its portrait, name and single-unit meat cost. The opponent selector stays
+above the roster, and Compare stats below it contains health, speed, keep damage
+and traits. Mobile uses a vertically scrollable two-column roster in the side tray.
+Buttons and scroll position remain stable across replicated updates.
+
+The existing three concurrent airships limit is displayed in the tray. Each tap
+launches one airship; the UI disables purchases while a command awaits acknowledgement
+or all ships are busy. Taps are not queued. The server still supports older clients'
+batches and existing multi-unit flights; these presentation changes do not alter
+saved data or authoritative combat rules.

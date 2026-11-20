@@ -17,8 +17,9 @@ Phaser and shared authoritative gameplay remain unchanged. Network access is req
   page is deployed; see [Captain accounts](AUTH.md).
   Browser sign-in is unchanged. Guest credentials are local to this installation;
   they do not import browser progress. Uninstall/clear data loses guest access.
-- Stock Capacitor launcher/splash assets remain placeholders.
-- Backup and cleartext traffic are disabled. No production signing keys are configured.
+- Native launcher/splash use the existing keep artwork; device visual review is pending.
+- Backup and cleartext traffic are disabled. A local upload key and optional release
+  signing configuration are prepared; see [Play preparation](PLAY-STORE.md).
 
 ## Build locally
 
@@ -109,5 +110,16 @@ Android publishing, add the native checks to its release gate and align the hook
 
 The shell, artifact pipeline and native account implementation are prepared. The
 hosted Android callback was deployed with user authorization on 2026-11-20. No Play
-app has been created and no signing credentials have been added. See the latest
+app has been created. A local upload key has since been prepared; see
+[Play preparation](PLAY-STORE.md) and the latest
 `ROADMAP.md` entry for actual verification results.
+
+## Play release preparation
+
+See [Google Play preparation](PLAY-STORE.md) for signing, the local upload key,
+version-code rules, draft listing/privacy documents and remaining release blockers.
+Use `bun --env-file=.env.android-signing run android:release` for a signed
+upload bundle. Preview CI remains unsigned and does not publish.
+
+Native launcher and launch-theme resources now use the existing keep artwork.
+The public store icon, feature graphic and real screenshots still need preparation.

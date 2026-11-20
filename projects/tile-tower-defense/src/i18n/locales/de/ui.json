@@ -66,7 +66,6 @@
   "common.build": "Bauen",
   "common.recruit": "Truppen senden",
   "world.opponent": "Gegner",
-  "world.troopsLabel": "Truppen",
   "catalog.title": "Handbuch",
   "form.yourName": "Dein Name",
   "form.worldName": "Name deiner Welt",
@@ -308,5 +307,10 @@
   "account.refreshRetry": "Dein Konto wird erneut verbunden. Dein aktuelles Spiel bleibt geöffnet.",
   "layout.navigation": "Karte",
   "layout.match": "Spieleinstellungen",
-  "layout.reference": "Handbuch & Statistik"
+  "layout.reference": "Handbuch & Statistik",
+  "world.tapToSend": "Tippen sendet eine Einheit",
+  "world.sending": "Wird gesendet…",
+  "world.airshipsBusy": "Alle Luftschiffe unterwegs",
+  "world.airshipCapacity": "Luftschiffe {{count}}/{{max}}",
+  "world.sendUnit": "Eine Einheit {{unit}} für {{cost}} Fleisch senden"
 }

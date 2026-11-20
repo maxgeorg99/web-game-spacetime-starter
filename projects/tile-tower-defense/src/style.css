@@ -826,8 +826,7 @@ dialog::backdrop {
   align-items: center;
   gap: 7px;
 }
-.expedition-controls select,
-.expedition-controls input {
+.expedition-controls select {
   font: inherit;
   font-size: 12px;
   background: #fffdf0;
@@ -835,9 +834,6 @@ dialog::backdrop {
   border-radius: 5px;
   padding: 6px;
   color: #465d49;
-}
-.expedition-controls input {
-  width: 48px;
 }
 
 #wave-units {
@@ -2341,4 +2337,88 @@ details[open] > .disclosure-summary::after {
   image-rendering: auto;
   object-fit: cover;
   border: 2px solid #b9a16b;
+}
+
+/* Sending is a repeatable purchase: portrait, unit name and the price of one unit. */
+#send-tray .expedition-controls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  margin-bottom: 6px;
+  padding: 0;
+}
+#send-tray #opponent {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 44px;
+}
+.send-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: #586d51;
+}
+#send-capacity {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+#send-cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow-x: hidden;
+}
+#send-cards .recruit-card {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  min-height: 66px;
+  gap: 6px;
+  padding: 6px;
+  text-align: left;
+  touch-action: manipulation;
+}
+#send-cards .recruit-card .avatar,
+#send-cards .recruit-card .portrait {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  object-fit: contain;
+  pointer-events: none;
+}
+.recruit-card-body {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+#send-cards .card-name {
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+}
+#send-cards .card-cost {
+  font-size: 13px;
+  color: #645b32;
+}
+#send-cards .card-cost .stat-icon {
+  width: 18px;
+  height: 18px;
+}
+#send-cards .recruit-card:active:not(:disabled) {
+  background: #dce5cb;
+  border-color: #718d59;
+  transform: translateY(1px);
+}
+#send-tray > .stat-help {
+  margin-top: 8px;
+}
+#send-tray > .stat-help > summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+#unit-comparison .unit-traits {
+  width: 100%;
 }

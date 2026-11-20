@@ -226,7 +226,9 @@ export class IslandScene extends Phaser.Scene {
     };
     const cancelGesture = () => {
       for (const id of this.touchPositions.keys()) {
-        if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
+        if (canvas.hasPointerCapture(id)) {
+          canvas.releasePointerCapture(id);
+        }
       }
       this.touchPositions.clear();
       this.pinch = undefined;
@@ -304,7 +306,9 @@ export class IslandScene extends Phaser.Scene {
         }
       : undefined;
     // Keep the gesture consumed until every finger lifts; never build after a pinch.
-    if (remaining) this.dragged = true;
+    if (remaining) {
+      this.dragged = true;
+    }
   }
 
   /** Quiet distant battles while the camera visits another island. */
@@ -594,8 +598,9 @@ export class IslandScene extends Phaser.Scene {
       this.cursors.right.isDown ||
       this.cursors.up.isDown ||
       this.cursors.down.isDown
-    )
+    ) {
       this.manualCamera = true;
+    }
     const speed = (delta * 0.8) / this.cameras.main.zoom;
     if (this.cursors.left.isDown) {
       this.cameras.main.scrollX -= speed;

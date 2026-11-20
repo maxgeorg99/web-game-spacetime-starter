@@ -1,5 +1,25 @@
 apply plugin: 'com.android.application'
 
+// Local/CI environment only: never put signing passwords in tracked Gradle files.
+def uploadSigning = [
+    path: System.getenv('ANDROID_KEYSTORE_PATH'),
+    storePassword: System.getenv('ANDROID_KEYSTORE_PASSWORD'),
+    alias: System.getenv('ANDROID_KEY_ALIAS'),
+    keyPassword: System.getenv('ANDROID_KEY_PASSWORD')
+]
+def signingValues = uploadSigning.values().count { it }
+def playRelease = providers.gradleProperty('playRelease').orNull == 'true'
+if ((signingValues > 0 && signingValues < 4) || (playRelease && signingValues != 4)) {
+    throw new GradleException('Play signing requires all four ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD variables.')
+}
+if (playRelease && (!System.getenv('ANDROID_VERSION_CODE') || !System.getenv('ANDROID_VERSION_NAME'))) {
+    throw new GradleException('Set an explicit ANDROID_VERSION_CODE and ANDROID_VERSION_NAME for Play releases.')
+}
+def releaseVersionCode = System.getenv('ANDROID_VERSION_CODE') ?: '1'
+if (!(releaseVersionCode ==~ /[1-9][0-9]*/) || releaseVersionCode.toLong() > 2100000000L) {
+    throw new GradleException('ANDROID_VERSION_CODE must be a positive integer no greater than 2100000000.')
+}
+
 android {
     namespace = "com.maxgeorg.tiletowerdefense"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,7 +27,7 @@ android {
         applicationId "com.maxgeorg.tiletowerdefense"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode Integer.parseInt(System.getenv('ANDROID_VERSION_CODE') ?: '1')
+        versionCode releaseVersionCode.toInteger()
         versionName System.getenv('ANDROID_VERSION_NAME') ?: '0.1.0'
         manifestPlaceholders = [appAuthRedirectScheme: 'com.maxgeorg.tiletowerdefense']
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -17,8 +37,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (signingValues == 4) {
+            upload {
+                storeFile rootProject.file(uploadSigning.path)
+                storePassword uploadSigning.storePassword
+                keyAlias uploadSigning.alias
+                keyPassword uploadSigning.keyPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            if (signingValues == 4) signingConfig signingConfigs.upload
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

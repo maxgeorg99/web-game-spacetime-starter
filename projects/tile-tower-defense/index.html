@@ -284,14 +284,16 @@
           <div id="build-tray" class="card-tray"></div>
           <div id="send-tray" hidden>
             <div class="expedition-controls">
-              <label
-                ><span data-i18n="world.opponent">Opponent</span>
-                <select id="opponent"></select></label
-              ><label
-                ><span data-i18n="world.troopsLabel">Troops</span>
-                <input id="passengers" type="number" min="1" max="6" value="1"
-              /></label>
+              <label for="opponent" data-i18n="world.opponent">Opponent</label>
+              <select id="opponent"></select>
             </div>
+            <div class="send-caption">
+              <span id="send-status" role="status" aria-live="polite" data-i18n="world.tapToSend"
+                >Tap to send one unit</span
+              >
+              <span id="send-capacity"></span>
+            </div>
+            <div id="send-cards" class="card-tray"></div>
             <details class="stat-help">
               <summary data-i18n="ui.compareStats">Compare stats</summary>
               <p>
@@ -301,7 +303,6 @@
               </p>
               <div id="unit-comparison"></div>
             </details>
-            <div id="send-cards" class="card-tray"></div>
           </div>
         </div>
       </section>

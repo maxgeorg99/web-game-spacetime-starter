@@ -30,7 +30,8 @@
     "provisioner:maincloud": "bun --env-file=.env.provisioner run scripts/provisioner.ts",
     "secrets:github": "bun --env-file=.env.provisioner run scripts/configure-secrets.ts",
     "check:push": "bun run scripts/check-push.ts",
-    "hooks:install": "bun run scripts/install-hooks.ts"
+    "hooks:install": "bun run scripts/install-hooks.ts",
+    "android:release": "bun run scripts/android-release.ts"
   },
   "dependencies": {
     "@capacitor/android": "8.6.2",

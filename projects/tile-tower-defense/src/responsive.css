@@ -220,9 +220,6 @@
   .expedition-controls select {
     max-width: 140px;
   }
-  .expedition-controls input {
-    width: 52px;
-  }
   .selection-panel {
     top: auto;
     bottom: var(--edge-bottom);
@@ -593,4 +590,31 @@
 }
 .compact-layout.dock-collapsed .bottom-hud:has(#send-tray:not([hidden])) {
   width: auto;
+}
+
+/* A vertical roster fits the narrow side dock without sideways card scrolling. */
+.compact-layout #send-cards {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  max-height: clamp(112px, calc(100dvh - 250px - var(--edge-top) - var(--edge-bottom)), 280px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 3px 4px 6px;
+  scroll-snap-type: y proximity;
+  scroll-padding-block: 3px;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+.compact-layout #send-cards .recruit-card {
+  min-height: 62px;
+  scroll-snap-align: start;
+}
+.compact-layout #send-tray .expedition-controls label {
+  font-size: 12px;
+}
+.compact-layout #send-tray .send-caption {
+  font-size: 11px;
+}
+.compact-layout #send-tray #unit-comparison {
+  max-height: 140px;
 }

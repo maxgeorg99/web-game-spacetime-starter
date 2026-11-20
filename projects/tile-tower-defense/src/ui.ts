@@ -61,7 +61,9 @@ export class UI {
       const target = this.clickedButton(event);
       if (target?.dataset.build) {
         this.buildKind = target.dataset.build;
-        if (compactLayout.matches) this.mobile.setActions(false);
+        if (compactLayout.matches) {
+          this.mobile.setActions(false);
+        }
         this.closeSelection();
       }
     };
@@ -86,7 +88,9 @@ export class UI {
         this.selected = undefined;
         this.scene.clearSelection();
         this.draftKind = target.dataset.tile;
-        if (compactLayout.matches) this.mobile.setActions(false);
+        if (compactLayout.matches) {
+          this.mobile.setActions(false);
+        }
         this.render(true);
       }
     };

@@ -670,3 +670,62 @@ unsigned release AAB builds passed, including Android release vital lint. The
 artifacts at android/app/build/outputs now include the pinch-control follow-up.
 No installation or gesture verification performed; emulator playtesting remains
 with the user. No deployment or database changes.
+
+### 2026-11-20 — Google Play internal-test candidate
+
+User has a developer account but no app entry. Confirmed support email
+maxi.georg.mg@gmail.com, authorized a new local upload key, release checks and build.
+Added environment-based release signing, explicit version requirements and the
+android:release command. Generated a private RSA upload keystore and ignored
+password environment file with restricted permissions; credentials were not printed.
+Native adaptive/legacy launch icons and splash now reuse existing keep art.
+
+Prepared English listing and privacy drafts, source-based data inventory and
+docs/PLAY-STORE.md with the Console steps and outstanding public-release blockers.
+Publisher name, asset rights, store graphics/screenshots, privacy publication,
+end-to-end account deletion and device quality remain unresolved. No policy draft
+was published and no account-deletion capability is claimed.
+
+Validation: formatting, lint, all three TypeScript targets, 120 unit tests and
+production web build passed. Signed release bundle and Android release vital lint
+passed. Jarsigner confirmed the AAB signature; the archive contains the upload
+signature and no native shared libraries. Missing release credentials correctly
+stop the release command before building. Git ignores the key and password file.
+Preserved candidate: .local/play-release/1/tile-tower-defense-0.1.0-1.aab, with
+SHA256SUMS and public upload certificate. Back up private signing materials securely.
+No Play Console creation/upload, device installation, server publish or deployment.
+
+### 2026-11-20 — Play app created; upload blocked by browser tools
+
+User created Play Console app 4973384007831405021 under developer
+6007134330131227268 and explicitly authorized uploading the signed candidate.
+Intended destination: internal-testing draft, without rollout. Browser tab listing
+confirmed the app dashboard, but tab access, page reading and screenshots failed
+with a browser-tool timeoutMs error. Native Chrome fallback reported missing
+Computer Use permissions. No bundle upload, signing enrollment, draft save or
+release rollout was performed. Candidate remains at
+.local/play-release/1/tile-tower-defense-0.1.0-1.aab. Resume upload when browser
+control is available; do not infer any Console release state from this attempt.
+
+### 2026-11-20 — compact recruit tray and single-unit taps
+
+Removed the quantity input and its client state. Each enabled recruit-card tap
+sends one unit to the selected opponent. Reworked the roster into portrait/name/
+per-unit-price buttons; combat values and traits remain in the expandable Compare
+stats section. Compact layouts use two columns with vertical scrolling rather than
+wide cards requiring sideways scrolling. The opponent selector uses the tray width.
+
+Unit buttons and comparison rows persist across snapshots, preserving focus and
+scroll position. Opponent options only rebuild when the available roster changes.
+A localized status and in-flight airship count explain waiting/full-capacity states.
+Existing pending-command lock and three-airship limit still apply: taps during a
+pending command are disabled, not queued, and each purchase launches one airship.
+No balance, server, transport or binding changes. This reduces the former maximum
+of six units per purchase to one in this UI; saved flights and server batch support
+remain compatible.
+
+Handoff: authored files formatted. No automated checks, build, browser/device
+verification or deployment run for this slice. Manually check all eight units,
+repeated purchases after acknowledgement, full flights and return, insufficient
+meat, opponent elimination, narrow landscape scrolling and expanded stat comparison.
+Existing Android/Play artifacts predate this change and need an authorized rebuild.

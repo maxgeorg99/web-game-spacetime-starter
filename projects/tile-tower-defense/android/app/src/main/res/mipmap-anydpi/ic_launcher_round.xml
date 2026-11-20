@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><shape android:shape="rectangle"><solid android:color="#C6D3D6" /></shape></item>
+    <item android:width="40dp" android:height="32dp" android:gravity="center"
+        android:drawable="@drawable/game_keep" />
+</layer-list>

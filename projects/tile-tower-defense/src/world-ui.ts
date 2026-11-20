@@ -13,7 +13,8 @@ import { avatar, icon, stat, unitTraits } from './views';
 /** World navigation never changes whose island the HUD commands control. */
 export class WorldUI {
   target: number | null = null;
-  count = 1;
+  private rosterSignature = '';
+  private opponentSignature = '';
   private signature = '';
   private failedPictures = new Set<string>();
   constructor(
@@ -105,22 +106,14 @@ export class WorldUI {
       this.target = Number((event.target as HTMLSelectElement).value);
       this.render(true);
     };
-    document.getElementById('passengers')!.onchange = (event) => {
-      const value = Number((event.target as HTMLInputElement).value);
-      this.count = Number.isInteger(value)
-        ? Math.max(1, Math.min(worldBalance.maxFlightUnits, value))
-        : 1;
-      (event.target as HTMLInputElement).value = String(this.count);
-      this.render(true);
-    };
     document.getElementById('send-cards')!.onclick = (event) => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-send]');
-      if (button?.dataset.send && this.target !== null) {
+      if (button?.dataset.send && !button.disabled && this.target !== null) {
         void store.send({
           type: 'send',
           kind: button.dataset.send,
           target: this.target,
-          count: this.count,
+          count: 1,
         });
       }
     };
@@ -135,6 +128,7 @@ export class WorldUI {
     if (!opponents.some((seat) => seat.slot === this.target)) {
       this.target = opponents[0]?.slot ?? null;
     }
+    const flightCount = world.flights.filter((flight) => flight.from === this.store.ownSlot).length;
     const signature = JSON.stringify([
       world.seats.map((seat) => [
         seat.owner,
@@ -153,7 +147,7 @@ export class WorldUI {
       this.store.world?.round?.phase,
       this.store.world?.biome,
       this.target,
-      this.count,
+      flightCount,
       this.store.ownSlot,
     ]);
     if (!force && signature === this.signature) {
@@ -276,14 +270,21 @@ export class WorldUI {
         };
       });
     const select = document.getElementById('opponent') as HTMLSelectElement;
-    select.innerHTML = opponents.length
+    const options = opponents.length
       ? opponents
           .map(
             (seat) =>
-              `<option value="${seat.slot}" ${seat.slot === this.target ? 'selected' : ''}>${seat.slot + 1} · ${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}</option>`,
+              `<option value="${seat.slot}">${seat.slot + 1} · ${escapeHtml(seat.name ?? worldIslands[seat.slot].name)}</option>`,
           )
           .join('')
       : `<option>${th('world.noOpponent')}</option>`;
+    if (options !== this.opponentSignature) {
+      this.opponentSignature = options;
+      select.innerHTML = options;
+    }
+    if (this.target !== null) {
+      select.value = String(this.target);
+    }
     select.disabled = !opponents.length;
     const locked =
       ['lobby', 'finished'].includes(this.store.world?.round?.phase ?? '') ||
@@ -291,21 +292,51 @@ export class WorldUI {
       this.store.pending ||
       this.store.ownSlot === null ||
       this.target === null ||
-      this.store.state.phase === 'lost';
-    document.getElementById('send-cards')!.innerHTML = recruitableUnits
-      .map((unit) => {
-        const cost = unit.meatCost * this.count;
-        return `<button class="action-card" data-send="${unit.id}" ${locked || cost > this.store.state.meat ? 'disabled' : ''} title="${th('world.sendTitle', { troops: t('count.troops', { count: this.count }), unit: unit.name, damage: unit.leak })}">
-        ${avatar(unit, this.store.faction)}<span class="card-name">${escapeHtml(unit.name)}</span><span class="unit-stats">${stat('health', `${unit.health} HP`)}${stat('leak', `${unit.leak} DMG`)}</span><span class="unit-traits">${unitTraits(unit)}</span><span class="card-cost">${icon('meat')}${cost}</span>
-      </button>`;
-      })
-      .join('');
-    document.getElementById('unit-comparison')!.innerHTML = recruitableUnits
-      .map(
-        (unit) =>
-          `<div class="unit-comparison-row"><b>${escapeHtml(unit.name)}</b><span class="unit-stats">${stat('health', unit.health)}${stat('speed', Number(unit.speed.toFixed(2)))}${stat('leak', unit.leak)}</span></div>`,
-      )
-      .join('');
+      this.store.state.phase === 'lost' ||
+      flightCount >= worldBalance.maxFlightsPerCaptain;
+    const cards = document.getElementById('send-cards')!;
+    // Keep buttons and scroll positions stable across server acknowledgements.
+    const rosterSignature = this.store.faction;
+    if (rosterSignature !== this.rosterSignature) {
+      this.rosterSignature = rosterSignature;
+      cards.innerHTML = recruitableUnits
+        .map((unit) => {
+          const label = th('world.sendUnit', { unit: unit.name, cost: unit.meatCost });
+          return `<button class="action-card recruit-card" data-send="${unit.id}" aria-label="${label}" title="${label}">
+          ${avatar(unit, this.store.faction)}
+          <span class="recruit-card-body"><span class="card-name">${escapeHtml(unit.name)}</span>
+          <span class="card-cost">${icon('meat')}${unit.meatCost}</span></span>
+        </button>`;
+        })
+        .join('');
+      document.getElementById('unit-comparison')!.innerHTML = recruitableUnits
+        .map(
+          (unit) =>
+            `<div class="unit-comparison-row"><b>${escapeHtml(unit.name)}</b>
+        <span class="unit-stats">${stat('health', unit.health)}${stat('speed', Number(unit.speed.toFixed(2)))}${stat('leak', unit.leak)}</span>
+        <span class="unit-traits">${unitTraits(unit)}</span></div>`,
+        )
+        .join('');
+    }
+    for (const unit of recruitableUnits) {
+      cards.querySelector<HTMLButtonElement>(`[data-send="${unit.id}"]`)!.disabled =
+        locked || unit.meatCost > this.store.state.meat;
+    }
+    const status = this.store.pending
+      ? t('world.sending')
+      : !opponents.length
+        ? t('world.noOpponent')
+        : flightCount >= worldBalance.maxFlightsPerCaptain
+          ? t('world.airshipsBusy')
+          : t('world.tapToSend');
+    const statusElement = document.getElementById('send-status')!;
+    if (statusElement.textContent !== status) {
+      statusElement.textContent = status;
+    }
+    document.getElementById('send-capacity')!.textContent = t('world.airshipCapacity', {
+      count: flightCount,
+      max: worldBalance.maxFlightsPerCaptain,
+    });
   }
 }
 

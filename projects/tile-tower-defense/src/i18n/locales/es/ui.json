@@ -66,7 +66,6 @@
   "common.build": "Construir",
   "common.recruit": "Enviar tropas",
   "world.opponent": "Rival",
-  "world.troopsLabel": "Tropas",
   "catalog.title": "Guía de campo",
   "form.yourName": "Tu nombre",
   "form.worldName": "Nombre de tu mundo",
@@ -308,5 +307,10 @@
   "account.refreshRetry": "Reconectando tu cuenta. Tu partida actual permanece abierta.",
   "layout.navigation": "Mapa",
   "layout.match": "Configurar partida",
-  "layout.reference": "Guía y estadísticas"
+  "layout.reference": "Guía y estadísticas",
+  "world.tapToSend": "Toca para enviar una unidad",
+  "world.sending": "Enviando…",
+  "world.airshipsBusy": "Todos los dirigibles en vuelo",
+  "world.airshipCapacity": "Dirigibles {{count}}/{{max}}",
+  "world.sendUnit": "Enviar una unidad {{unit}} por {{cost}} de carne"
 }
