@@ -60,6 +60,10 @@ M1 deliberately uses a fixed road. Land expands building/economy choices; it doe
 
 - Mobile interaction, accessibility, audio, art polish, performance/load checks.
 - Abuse limits, private data where required, deployment, public playtests.
+- Android delivery in progress: Capacitor guest-preview shell and APK/AAB artifact
+  workflow added; native login implemented pending callback deployment/device
+  validation, signing and Play release remain.
+  See [Android delivery](docs/ANDROID.md).
 
 ## Session log
 
@@ -546,3 +550,47 @@ User confirmed itch.io authentication is fixed. In-game captain navigation now u
 ### 2026-11-18 — renew captain sessions during play
 
 Added offline-access handoff and background refresh, with rotation, single-flight requests, bounded retries, wake-up checks and protection against late sign-out responses. Renewal does not leave the game; revoked or legacy sessions ask for sign-in without switching to a guest. Account connections can reconnect with fresh credentials while retaining the match, and HTTP provisioning/cleanup use current tokens. All three TypeScript targets and 24 targeted auth/localization tests passed; Chrome verified synthetic renewal and live itch.io token-endpoint CORS access. Real provider refresh requires a fresh-login playtest after frontend/auth-page deployment. Existing sessions lack refresh tokens and must sign in once. No server integration run or deployment; see docs/AUTH.md.
+
+### 2026-11-20 — Android shell and build pipeline
+
+Added Capacitor 8.6.2 with the approved name Tile Tower Defense and package ID
+`com.maxgeorg.tiletowerdefense`. Native assets bundle the existing production web
+client; gameplay and backend remain shared. Added local sync/build commands and a
+separate GitHub Actions workflow producing a debug APK and unsigned release AAB on
+push/PR/manual runs, without publishing or signing secrets. The pre-push hook now
+recognizes this workflow; existing web release blockers remain unchanged. Native
+sign-in is hidden in this guest-preview slice because the browser popup handoff is
+not a native login flow. Native OIDC, secure credential storage, device/lifecycle
+playtesting, final icons, signing and Play setup remain; see docs/ANDROID.md.
+
+User approved builds/checks: formatting, lint, all three TypeScript targets and all
+111 unit tests passed, as did the production Vite build, Capacitor sync, frozen-lockfile
+install and workflow YAML parsing. Gradle `assembleDebug bundleRelease` succeeded,
+including release vital lint, producing the debug APK and unsigned release AAB.
+Local verification used Android Studio's Java 21 and an ignored project-local Gradle
+home to avoid the machine's unreachable corporate repository override; global
+configuration was preserved. Transient public dependency timeouts cleared on retry.
+No emulator/device playtest, GitHub workflow run, commit/push or production deployment
+has been performed.
+
+### 2026-11-20 — Android account sign-in
+
+Implemented an AppAuth Android plugin with system-browser authorization-code/PKCE
+login, encrypted Android Keystore persistence, native refresh-token rotation and
+sign-out. Native refresh credentials never enter Web Storage or the JavaScript
+bridge. The account controller awaits native restoration before connecting the lobby,
+preserves account identity on errors and protects against late sign-out responses.
+Capacitor restores pending activity calls after process death; actual device behavior
+still needs playtesting. Browser authentication remains on the existing popup bridge.
+
+SpacetimeAuth rejected the private-scheme redirect. User confirmed registering
+`https://tiled-tower-defense.vercel.app/auth/android.html` on the existing client.
+Added this HTTPS callback as a Vite entry with a fixed app-scheme return, forwarding
+only code/error and state, plus no-store/no-referrer/CSP headers. No database changes.
+The hosted callback must be deployed before Android sign-in can complete; explicit
+production deployment authorization is still pending. See docs/AUTH.md for handoff.
+
+Formatting, lint, all three TypeScript targets and all 120 unit tests passed, including
+nine new native-account/callback cases. Android debug APK and unsigned release AAB
+builds, including release vital lint, passed. No real Google/Discord native login,
+emulator/device verification, production deployment or Play upload performed.

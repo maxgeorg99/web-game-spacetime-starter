@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tile Tower Defense</string>
+    <string name="title_activity_main">Tile Tower Defense</string>
+    <string name="package_name">com.maxgeorg.tiletowerdefense</string>
+    <string name="custom_url_scheme">com.maxgeorg.tiletowerdefense</string>
+</resources>

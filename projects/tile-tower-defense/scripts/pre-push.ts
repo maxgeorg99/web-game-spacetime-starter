@@ -37,6 +37,7 @@ try {
         project,
         '.github/workflows/tile-tower-defense.yml',
         '.github/workflows/tile-tower-defense-release.yml',
+        '.github/workflows/tile-tower-defense-android.yml',
       ]);
       if (!changed) {
         continue;

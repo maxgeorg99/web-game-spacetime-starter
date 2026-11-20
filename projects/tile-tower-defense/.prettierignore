@@ -11,3 +11,6 @@ coordinator/dist
 spacetimedb/src/remote_bindings
 
 .vercel
+
+# Native sources and Capacitor-generated Android files use Android tooling.
+android

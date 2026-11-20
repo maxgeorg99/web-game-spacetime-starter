@@ -9,6 +9,7 @@ export default defineConfig({
         game: resolve(import.meta.dirname, 'index.html'),
         signin: resolve(import.meta.dirname, 'auth/index.html'),
         callback: resolve(import.meta.dirname, 'auth/callback.html'),
+        androidCallback: resolve(import.meta.dirname, 'auth/android.html'),
       },
     },
   },

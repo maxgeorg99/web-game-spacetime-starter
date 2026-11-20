@@ -51,8 +51,13 @@ export class SessionMenu {
     };
     document.getElementById('captain-sign-in')!.onclick = () => {
       if (this.account.token && !this.account.needsSignIn) {
-        this.account.signOut();
-        this.account.onChange();
+        void this.account
+          .signOut()
+          .then(() => this.account.onChange())
+          .catch(() => {
+            this.error = t('account.failed');
+            this.render();
+          });
         return;
       }
       const previousSubject = this.account.subject;
@@ -158,6 +163,7 @@ export class SessionMenu {
     const current = () => generation === this.generation;
     let accountToken: string | undefined;
     try {
+      await this.account.ready;
       accountToken = this.account.token ? await this.account.getToken() : undefined;
     } catch {
       if (current()) {
@@ -417,7 +423,7 @@ export class SessionMenu {
       return;
     }
     const signIn = document.getElementById('captain-sign-in') as HTMLButtonElement;
-    signIn.disabled = this.account.pending || this.busy;
+    signIn.disabled = this.account.initializing || this.account.pending || this.busy;
     signIn.querySelector('span')!.textContent = t(
       this.account.token && !this.account.needsSignIn ? 'account.signOut' : 'account.signIn',
     );

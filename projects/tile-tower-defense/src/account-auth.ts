@@ -1,6 +1,7 @@
 import { accountAuth } from '../shared/config/auth';
 import { t } from './i18n';
 import { validHandoff } from './auth-handoff';
+import { nativeAccount, type NativeAccountDriver } from './native-account';
 import {
   accountClaims,
   AccountRenewalRequired,
@@ -22,22 +23,58 @@ export class AccountAuth {
   onChange = () => {};
   onRenewed = () => {};
   onStatus = () => {};
-  constructor(private refresh = refreshAccount) {
-    try {
-      const saved = JSON.parse(sessionStorage.getItem(key) ?? 'null') as AccountSession | null;
-      if (
-        saved &&
-        typeof saved.token === 'string' &&
-        Number.isFinite(saved.expiresAt) &&
-        (saved.refreshToken === undefined ||
-          (typeof saved.refreshToken === 'string' && saved.refreshToken.length > 0))
-      ) {
-        const claims = accountClaims(saved.token);
-        saved.expiresAt = claims.exp! * 1000;
-        this.session = saved;
+  ready: Promise<void> = Promise.resolve();
+  initializing = false;
+  private refresh: typeof refreshAccount;
+  constructor(
+    refresh = refreshAccount,
+    private native: NativeAccountDriver | undefined = nativeAccount,
+  ) {
+    this.refresh = native ? () => native.refresh() : refresh;
+    if (native) {
+      this.initializing = true;
+      const revision = this.revision;
+      this.ready = native
+        .load()
+        .then((saved) => {
+          if (revision !== this.revision) {
+            return;
+          }
+          if (saved) {
+            this.session = {
+              token: saved.token,
+              expiresAt: accountClaims(saved.token).exp! * 1000,
+            };
+          }
+          this.scheduleExpiry();
+        })
+        .catch(() => {
+          this.error = t('account.failed');
+          throw Error(this.error);
+        })
+        .finally(() => {
+          this.initializing = false;
+          this.onStatus();
+        });
+      // Connection setup awaits this promise; also handle it if no connection is started.
+      void this.ready.catch(() => {});
+    } else {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem(key) ?? 'null') as AccountSession | null;
+        if (
+          saved &&
+          typeof saved.token === 'string' &&
+          Number.isFinite(saved.expiresAt) &&
+          (saved.refreshToken === undefined ||
+            (typeof saved.refreshToken === 'string' && saved.refreshToken.length > 0))
+        ) {
+          const claims = accountClaims(saved.token);
+          saved.expiresAt = claims.exp! * 1000;
+          this.session = saved;
+        }
+      } catch {
+        /* Storage may be unavailable inside an embed; in-memory login still works. */
       }
-    } catch {
-      /* Storage may be unavailable inside an embed; in-memory login still works. */
     }
     this.scheduleExpiry();
     window.addEventListener('online', this.wake);
@@ -56,6 +93,10 @@ export class AccountAuth {
     return this.session ? accountClaims(this.session.token).sub : undefined;
   }
   private persist() {
+    // Native OAuth owns encrypted persistence; never mirror tokens into Web Storage.
+    if (this.native) {
+      return;
+    }
     try {
       if (this.session) {
         sessionStorage.setItem(key, JSON.stringify(this.session));
@@ -78,6 +119,9 @@ export class AccountAuth {
     }
   }
   async getToken(): Promise<string> {
+    if (this.native) {
+      await this.ready;
+    }
     const session = this.session;
     if (!session || this.needsSignIn) {
       throw new AccountRenewalRequired(t('account.expired'));
@@ -146,10 +190,15 @@ export class AccountAuth {
       throw new Error(this.error, { cause: error });
     }
   }
-  signOut() {
+  async signOut() {
     this.cancelPending?.();
-    this.session = undefined;
     this.revision++;
+    if (this.native) {
+      await this.native.signOut();
+    }
+    this.session = undefined;
+    this.ready = Promise.resolve();
+    this.pending = false;
     this.renewing = undefined;
     this.needsSignIn = false;
     this.failures = 0;
@@ -168,6 +217,9 @@ export class AccountAuth {
   signIn(): Promise<void> {
     if (this.pending) {
       return Promise.resolve();
+    }
+    if (this.native) {
+      return this.signInNative();
     }
     const origin = import.meta.env.DEV ? location.origin : accountAuth.productionOrigin;
     const nonce = crypto.randomUUID();
@@ -242,5 +294,45 @@ export class AccountAuth {
       this.cancelPending = () => finish(Error(t('account.cancelled')));
       window.addEventListener('message', receive);
     });
+  }
+
+  private async signInNative() {
+    this.pending = true;
+    this.error = '';
+    clearTimeout(this.expiry);
+    const revision = ++this.revision;
+    try {
+      // Finish any existing rotation before opening a second native account operation.
+      if (this.renewing) {
+        await this.renewing.catch(() => {});
+      }
+      if (revision !== this.revision) {
+        throw Error(t('account.cancelled'));
+      }
+      const session = await this.native!.signIn();
+      if (revision !== this.revision) {
+        throw Error(t('account.cancelled'));
+      }
+      const claims = accountClaims(session.token);
+      if (claims.exp! * 1000 <= Date.now() + 30_000) {
+        throw Error(t('account.failed'));
+      }
+      this.session = { token: session.token, expiresAt: claims.exp! * 1000 };
+      this.ready = Promise.resolve();
+      this.renewing = undefined;
+      this.needsSignIn = false;
+      this.failures = 0;
+      this.error = '';
+      this.scheduleExpiry();
+    } catch (error) {
+      const cancelled =
+        error && typeof error === 'object' && 'code' in error && error.code === 'CANCELLED';
+      throw Error(t(cancelled ? 'account.cancelled' : 'account.failed'), { cause: error });
+    } finally {
+      this.pending = false;
+      if (revision === this.revision) {
+        this.scheduleExpiry();
+      }
+    }
   }
 }

@@ -6,6 +6,7 @@ Register these redirect URIs on that client:
 
 - `http://127.0.0.1:5175/auth/callback.html`
 - `https://tiled-tower-defense.vercel.app/auth/callback.html`
+- `https://tiled-tower-defense.vercel.app/auth/android.html` (Android; user confirmed registered)
 
 Post-logout URIs: `http://127.0.0.1:5175/` and `https://tiled-tower-defense.vercel.app/`.
 
@@ -39,6 +40,54 @@ Verification: 24 targeted auth/localization tests and all three TypeScript targe
 - Production deployment authorized on 2026-11-18. The main-branch release workflow publishes the coordinator without resetting saves, then Vercel and itch.io. Confirm that workflow succeeds before considering production updated.
 
 Sources: [SpacetimeAuth configuration](https://spacetimedb.com/docs/core-concepts/authentication/spacetimeauth/configuring-a-project/), [verified claims](https://spacetimedb.com/docs/core-concepts/authentication/usage/), [oidc-client-ts](https://github.com/authts/oidc-client-ts).
+
+## Android accounts
+
+Android uses the same public SpacetimeAuth client, issuer and Google/Discord provider
+configuration. No server audience or schema changes are required. The dashboard
+rejected the private-scheme redirect; the user instead registered the HTTPS Android
+callback above. Keep all existing browser callback URLs.
+
+`CaptainAccountPlugin` uses AppAuth Android 0.11.1 to discover the provider, open the
+system browser and perform the authorization-code exchange with PKCE, state and
+nonce. The hosted `auth/android.html` page forwards only the code (or OAuth error)
+and state to `com.maxgeorg.tiletowerdefense:/oauth2redirect`. AppAuth verifies the
+transaction and exchanges the code using the original HTTPS redirect URI. The relay
+never receives tokens or the PKCE verifier, never chooses a caller-supplied destination,
+removes its query from browser history and uses no-store/no-referrer headers. It offers
+a Return to Tile Tower Defense link when automatic app opening is blocked.
+
+The native plugin encrypts its account record with AES-256-GCM and a non-exportable
+Android Keystore key. Refresh credentials stay native; JavaScript receives the ID
+token and its expiry for SpacetimeDB connections. Nothing is copied to session/local
+storage. App backup and Capacitor bridge logging are disabled. Native token refresh
+checks subject continuity and ID-token expiry and saves rotated credentials before
+returning. OAuth revocation requires sign-in; transient errors retain the account.
+SpacetimeDB still verifies ID-token signatures for authoritative access.
+
+The lobby awaits native account restoration before deciding whether to connect as
+an account or guest. Unreadable storage blocks that connection instead of silently
+selecting a guest. A native OAuth activity restored after process death retains its
+pending transaction; startup waits for its exchange or cancellation (bounded by the
+five-minute transaction deadline). Revision checks prevent late requests restoring
+a signed-out account. Sign-out reports storage deletion failures rather than claiming
+the saved session was removed. It signs out of the game, not Google/Discord.
+
+Before device testing, deploy the prepared web build containing `auth/android.html`
+and its JS/CSS assets plus the Vercel response headers. **Production deployment still
+requires explicit authorization.** Install the rebuilt APK, then verify Google and
+Discord, browser Back/cancel, cold return, app restart, expiry/refresh, sign-out and
+existing browser sign-in. Real provider login and Android Keystore/process-death
+behavior have not yet been exercised on a device. Once Play signing is configured,
+verified HTTPS App Links can remove the relay step.
+
+Reference: [AppAuth Android](https://github.com/openid/AppAuth-Android).
+
+Verification for this slice: formatting, lint, all TypeScript targets and 120 unit
+tests passed, including nine native-account/relay regression cases. Native debug APK
+and unsigned release AAB builds passed release vital lint. Unit tests use an injected
+native driver; they do not substitute for device testing of AppAuth, Keystore or real
+provider sign-in. No production deployment has been performed for this slice.
 
 ## itch.io opener isolation investigation (2026-11-18)
 

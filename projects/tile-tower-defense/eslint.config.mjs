@@ -14,6 +14,7 @@ export default defineConfig(
       '.playwright-cli/**',
       '.local/**',
       '.vercel/**',
+      'android/**',
     ],
   },
   {

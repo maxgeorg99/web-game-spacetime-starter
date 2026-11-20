@@ -18,3 +18,8 @@ coordinator/dist/
 
 .vercel/
 .vercel
+
+# Android upload/signing credentials must never be committed.
+*.jks
+*.keystore
+keystore.properties

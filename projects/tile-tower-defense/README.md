@@ -70,6 +70,10 @@ Art/audio are copied from the Bevy project and shared asset pack; retain upstrea
 
 ## Localization and mobile controls
 
+Android shell, local APK/AAB commands and GitHub Actions artifacts: [Android delivery](docs/ANDROID.md).
+Native account sign-in requires the hosted Android callback described in [Captain accounts](docs/AUTH.md).
+Play signing remains follow-up work.
+
 Edit the English UI/content catalogs under `src/i18n/locales/en`; see [Localization](docs/LOCALIZATION.md) for typed keys, plural counts and adding languages.
 
 On phones, drag to pan and pinch to zoom. Use **Hide actions** to free the battlefield. Recruit cards scroll sideways; selecting a tower opens a scrollable upgrade sheet. Compact layouts live in `src/responsive.css`, including safe-area spacing and a landscape side dock.

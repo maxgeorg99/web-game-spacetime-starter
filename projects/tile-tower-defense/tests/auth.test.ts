@@ -10,6 +10,46 @@ import {
 } from '../src/account-refresh';
 import { accountAuth } from '../shared/config/auth';
 import { validHandoff } from '../src/auth-handoff';
+import { androidAuthReturn } from '../src/android-auth-return';
+import type { NativeAccountDriver } from '../src/native-account';
+
+describe('Android HTTPS callback', () => {
+  test('forwards only the code and state to the fixed app destination', () => {
+    const result = new URL(
+      androidAuthReturn(
+        '?code=one%26two&state=pending&redirect_uri=https://evil.test&access_token=secret',
+      )!,
+    );
+    expect(result.protocol).toBe('com.maxgeorg.tiletowerdefense:');
+    expect(result.pathname).toBe('/oauth2redirect');
+    expect([...result.searchParams]).toEqual([
+      ['state', 'pending'],
+      ['code', 'one&two'],
+    ]);
+  });
+  test('returns a provider cancellation without reflecting its description', () => {
+    const result = new URL(
+      androidAuthReturn('?state=pending&error=access_denied&error_description=private')!,
+    );
+    expect([...result.searchParams]).toEqual([
+      ['state', 'pending'],
+      ['error', 'access_denied'],
+    ]);
+  });
+  test('rejects missing state, ambiguous responses, duplicates and oversized data', () => {
+    for (const query of [
+      '?code=x',
+      '?state=x',
+      '?state=x&code=a&error=access_denied',
+      '?state=x&state=y&code=a',
+      '?state=x&code=a&code=b',
+      '?state=x&error=<script>',
+      `?state=x&code=${'a'.repeat(8193)}`,
+    ]) {
+      expect(androidAuthReturn(query)).toBeUndefined();
+    }
+  });
+});
 
 describe('account handoff', () => {
   const nonce = 'transaction-nonce';
@@ -93,6 +133,118 @@ describe('account renewal', () => {
     }
   });
   const save = (value: AccountSession) => sessionStorage.setItem(key, JSON.stringify(value));
+
+  const nativeDriver = (overrides: Partial<NativeAccountDriver> = {}): NativeAccountDriver => ({
+    load: async () => undefined,
+    signIn: async () => session(Date.now() + 3_600_000),
+    refresh: async () => session(Date.now() + 3_600_000),
+    signOut: async () => {},
+    ...overrides,
+  });
+
+  test('native restoration waits for secure storage and ignores web credentials', async () => {
+    save(session());
+    let restore!: (value: AccountSession) => void;
+    const saved = session(Date.now() + 3_600_000);
+    auth = new AccountAuth(
+      undefined,
+      nativeDriver({
+        load: () =>
+          new Promise((resolve) => {
+            restore = resolve;
+          }),
+      }),
+    );
+    expect(auth.initializing).toBe(true);
+    expect(auth.token).toBeUndefined();
+    const token = auth.getToken();
+    restore(saved);
+    expect(await token).toBe(saved.token);
+    expect(auth.initializing).toBe(false);
+  });
+
+  test('native sign-in and renewal never write credentials to web storage', async () => {
+    const initial = session(Date.now() + 45_000);
+    const refreshed = session(Date.now() + 3_600_000);
+    const refresh = mock(async () => refreshed);
+    auth = new AccountAuth(undefined, nativeDriver({ signIn: async () => initial, refresh }));
+    await auth.ready;
+    await auth.signIn();
+    const first = auth.getToken();
+    const second = auth.getToken();
+    expect(await first).toBe(refreshed.token);
+    expect(await second).toBe(refreshed.token);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(storage.getItem(key) ?? null).toBeNull();
+  });
+
+  test('unreadable native storage blocks startup instead of selecting a guest', async () => {
+    auth = new AccountAuth(
+      undefined,
+      nativeDriver({
+        load: async () => {
+          throw Error('Keystore unavailable');
+        },
+      }),
+    );
+    await rejects(auth.ready);
+    await rejects(auth.getToken());
+    expect(auth.error).not.toBe('');
+    expect(auth.initializing).toBe(false);
+  });
+
+  test('native sign-out cannot be undone by a late restore', async () => {
+    let restore!: (value: AccountSession) => void;
+    auth = new AccountAuth(
+      undefined,
+      nativeDriver({
+        load: () =>
+          new Promise((resolve) => {
+            restore = resolve;
+          }),
+      }),
+    );
+    const loading = auth.ready;
+    await auth.signOut();
+    restore(session());
+    await loading;
+    expect(auth.token).toBeUndefined();
+  });
+
+  test('native sign-out cannot be undone by a late sign-in response', async () => {
+    let complete!: (value: AccountSession) => void;
+    auth = new AccountAuth(
+      undefined,
+      nativeDriver({
+        signIn: () =>
+          new Promise((resolve) => {
+            complete = resolve;
+          }),
+      }),
+    );
+    await auth.ready;
+    const signingIn = auth.signIn();
+    await auth.signOut();
+    complete(session(Date.now() + 3_600_000));
+    await rejects(signingIn);
+    expect(auth.token).toBeUndefined();
+  });
+
+  test('failed secure deletion does not falsely report a successful sign-out', async () => {
+    const saved = session(Date.now() + 3_600_000);
+    auth = new AccountAuth(
+      undefined,
+      nativeDriver({
+        load: async () => saved,
+        signOut: async () => {
+          throw Error('Storage unavailable');
+        },
+      }),
+    );
+    await auth.ready;
+    await rejects(auth.signOut());
+    expect(auth.token).toBe(saved.token);
+  });
 
   test('renews before ID-token expiry without invoking account-change/leave behavior', async () => {
     save(session());
@@ -189,7 +341,7 @@ describe('account renewal', () => {
         }),
     );
     const pending = auth.getToken();
-    auth.signOut();
+    await auth.signOut();
     complete(session(Date.now() + 3_600_000));
     await rejects(pending, Error);
     expect(auth.token).toBeUndefined();
