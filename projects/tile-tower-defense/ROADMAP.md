@@ -594,3 +594,79 @@ Formatting, lint, all three TypeScript targets and all 120 unit tests passed, in
 nine new native-account/callback cases. Android debug APK and unsigned release AAB
 builds, including release vital lint, passed. No real Google/Discord native login,
 emulator/device verification, production deployment or Play upload performed.
+
+### 2026-11-20 — Android callback deployed; Google photo follow-up
+
+User authorized production Vercel deployment. Deployment
+`dpl_BXGqdUUbq6VAwPWuLJxS8HwuyrNi` completed successfully and serves the stable
+production domain. Remote build/typechecks passed. Verified Android callback HTTP
+200 and no-store/no-referrer/CSP headers; separate asset-fetch verification was
+interrupted. Excluded native Android files from Vercel uploads. No database publish,
+Play upload or Git push performed.
+
+User initially reported a missing Google profile photo in both Android views, then
+confirmed it worked. Coordinator picture data and the Google image response were
+valid; emulator inspection showed the expected URL and a prior failed image request
+with fallback presentation. Exact network cause remains unconfirmed. No avatar code
+changed. See docs/AUTH.md for evidence and remaining device playtests.
+
+### 2026-11-20 — landscape mobile HUD and map controls
+
+Implemented a compact layout for phones, short windows and coarse-pointer tablets
+up to 1100px. Secondary controls move into the existing menu, grouped as Map,
+Wave preview, Match setup and Guide/statistics. Existing command handlers and
+desktop positions are preserved. Actions start collapsed; choosing a tower or
+discovery closes the tray and leaves a placement hint. Inspecting another island
+opens recruitment. Safe-area-aware, scrollable side panels keep the battlefield
+available in landscape; camera framing respects the collapsed tray.
+
+Pinch zoom anchors to the moving finger midpoint using current camera transforms,
+continues as one-finger pan after lifting a finger, and suppresses placement after
+gestures. Cancellation/outside releases and window blur clear gesture state.
+Wheel zoom now anchors to the cursor. Rotation restores the focused island or
+overview. New menu labels are localized in English, German and Spanish.
+
+Handoff: authored files formatted. No automated lint, type checks, tests, builds,
+browser checks or device verification run (per project instructions). Manually
+playtest landscape pan/pinch, pinch-to-one-finger transition, tower placement,
+two-tap discovery placement, menu navigation, recruitment, 16-seat scrolling,
+safe areas and portrait/landscape rotation. No server changes or deployment.
+
+### 2026-11-20 — Android build with compact mobile controls
+
+User authorized the Android build. Frontend TypeScript compilation, Vite production
+build, Capacitor sync and Gradle assembleDebug/bundleRelease (including release
+vital lint) completed successfully. Outputs: installable debug APK at
+android/app/build/outputs/apk/debug/app-debug.apk and unsigned release bundle at
+android/app/build/outputs/bundle/release/app-release.aab. The initial sandbox run
+could not access the shared Gradle cache lock; the authorized elevated retry passed.
+No device installation/playtest, unit tests, database publish or deployment performed.
+
+### 2026-11-20 — emulator pinch investigation
+
+User reports panning without zoom despite two emulator touch markers over the
+battlefield. Code inspection found Phaser's touch-move path skips fingers over
+DOM overlays and the scene's previous pan handler could accept an untracked
+pointer. These weaknesses are confirmed from source; they do not yet establish
+the cause of the user's exact emulator symptom.
+
+Map down/move/up now use browser Pointer Events and pointer capture directly,
+with stable per-finger IDs, Phaser scale-coordinate conversion, tracked-pointer
+guards and cancellation/blur/resize cleanup. Phaser still renders and handles
+keyboard/wheel input. Snapshot-driven island/draft reframing no longer overrides
+manual navigation; explicit island/world navigation and rotation still refit.
+
+Handoff: formatted only. User explicitly chose manual playtesting and declined
+automated gesture checks/rebuild for this fix. Existing APK predates these changes.
+Rebuild when authorized, then verify two-finger zoom, midpoint pan, transition to
+one finger, HUD crossing, cancelled gestures, mouse taps and tower/tile placement.
+The emulator symptom remains unverified; no claim of a confirmed runtime fix.
+
+### 2026-11-20 — Android pinch-fix rebuild
+
+User authorized rebuilding after the native pointer-capture change. Frontend
+TypeScript compilation, production web build, Capacitor sync, debug APK and
+unsigned release AAB builds passed, including Android release vital lint. The
+artifacts at android/app/build/outputs now include the pinch-control follow-up.
+No installation or gesture verification performed; emulator playtesting remains
+with the user. No deployment or database changes.

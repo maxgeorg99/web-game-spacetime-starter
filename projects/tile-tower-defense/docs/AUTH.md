@@ -73,9 +73,9 @@ five-minute transaction deadline). Revision checks prevent late requests restori
 a signed-out account. Sign-out reports storage deletion failures rather than claiming
 the saved session was removed. It signs out of the game, not Google/Discord.
 
-Before device testing, deploy the prepared web build containing `auth/android.html`
-and its JS/CSS assets plus the Vercel response headers. **Production deployment still
-requires explicit authorization.** Install the rebuilt APK, then verify Google and
+The web build containing `auth/android.html` and its JS/CSS assets plus Vercel response
+headers was deployed with user authorization on 2026-11-20. Install the rebuilt APK,
+then verify Google and
 Discord, browser Back/cancel, cold return, app restart, expiry/refresh, sign-out and
 existing browser sign-in. Real provider login and Android Keystore/process-death
 behavior have not yet been exercised on a device. Once Play signing is configured,
@@ -104,3 +104,18 @@ Approved verification: intercepted responses only in a dedicated Chrome test ses
 ## In-game captain profile images
 
 `world_enter` copies the provider picture from verified account claims into the seat's optional `picture` field, refreshing it on rejoin. World navigation shows that photo to all players, preserving the faction border; guests, COMs, older saves and unavailable images use the existing captain art. Provider URLs use the same allowlist as menu portraits. No reducer/table signatures changed. Deployment requires the frontend and world module; existing worlds need a save-preserving module update and player re-entry to populate photos. All three TypeScript targets and 34 targeted auth/world tests passed. Browser avatar rendering and server integration were not exercised.
+
+### Android deployment and photo follow-up (2026-11-20)
+
+Production deployment `dpl_BXGqdUUbq6VAwPWuLJxS8HwuyrNi` is READY and aliased to
+`https://tiled-tower-defense.vercel.app`. The Android callback returns HTTP 200 with
+no-store, no-referrer and the configured CSP. Separate asset-fetch verification was
+interrupted and was not claimed complete. No database publish or Play upload occurred.
+
+User reported a missing Google photo in the Android lobby and match, then confirmed
+it loaded successfully. Read-only coordinator inspection found the Google picture URL;
+its HTTP response was a valid 96px JPEG. Emulator WebView inspection showed that the
+lobby had received that URL but displayed its fallback after an image request with
+status 0. The precise network failure was not captured; a transient image-load failure
+is plausible but unconfirmed. No avatar code was changed. Persistent failure caching
+in the lobby/world display remains a possible improvement if the issue recurs.

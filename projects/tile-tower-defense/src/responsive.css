@@ -383,3 +383,214 @@
   height: 14px;
   vertical-align: middle;
 }
+
+/* Compact HUD: resources, phase/action and menu only. Secondary UI lives in the menu. */
+.mobile-menu-section,
+.mobile-menu-label {
+  display: none;
+}
+.compact-layout {
+  --edge-top: max(8px, env(safe-area-inset-top));
+  --edge-right: max(8px, env(safe-area-inset-right));
+  --edge-bottom: max(8px, env(safe-area-inset-bottom));
+  --edge-left: max(8px, env(safe-area-inset-left));
+}
+.compact-layout .hud {
+  top: var(--edge-top);
+  left: var(--edge-left);
+  right: var(--edge-right);
+  gap: 8px;
+  flex-wrap: nowrap;
+  align-items: center;
+  z-index: 10;
+}
+.compact-layout button,
+.compact-layout summary,
+.compact-layout select {
+  min-height: 44px;
+}
+.compact-layout .resource-hud {
+  height: 44px;
+  padding: 4px 10px;
+  flex-shrink: 0;
+}
+.compact-layout .keep-icon,
+.compact-layout #resources small,
+.compact-layout .wave-number {
+  display: none;
+}
+.compact-layout #resources {
+  gap: 10px;
+}
+.compact-layout #resources b {
+  font-size: 16px;
+}
+.compact-layout #resources .stat-icon {
+  width: 22px;
+  height: 22px;
+}
+.compact-layout .wave-hud {
+  width: auto;
+  min-width: 0;
+  gap: 6px;
+  align-items: center;
+}
+.compact-layout #start {
+  min-width: 0;
+  min-height: 44px;
+  height: auto;
+  max-width: 240px;
+  font-size: 12px;
+  padding: 6px 10px;
+}
+.compact-layout .settings > summary {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+}
+.compact-layout .settings .floating-panel {
+  position: fixed;
+  top: calc(var(--edge-top) + 52px);
+  right: var(--edge-right);
+  width: min(340px, calc(100vw - var(--edge-left) - var(--edge-right)));
+  max-height: calc(100dvh - var(--edge-top) - var(--edge-bottom) - 60px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 12px;
+}
+.compact-layout .mobile-menu-section {
+  display: grid;
+  gap: 8px;
+  border-bottom: 1px solid #ccd2c2;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+.compact-layout .mobile-menu-section:not(:has(> :not(h3):not([hidden]))) {
+  display: none;
+}
+.compact-layout .mobile-menu-section h3 {
+  font-size: 12px;
+  color: #697861;
+}
+.compact-layout .mobile-menu-label {
+  display: inline;
+}
+.compact-layout .mobile-menu-section > .icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+.compact-layout .settings #wave-preview,
+.compact-layout .settings .world-navigation,
+.compact-layout .settings .world-controls {
+  position: static;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  margin: 0;
+}
+.compact-layout .settings .world-controls {
+  display: flex;
+}
+.compact-layout .settings .world-controls button {
+  width: auto;
+  flex: 1;
+}
+.compact-layout .settings .world-navigation {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: visible;
+}
+.compact-layout .settings .world-navigation button {
+  justify-content: start;
+  width: 100%;
+  padding: 6px;
+}
+.compact-layout .settings .world-navigation button > span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.compact-layout .settings .wave-unit small {
+  display: block;
+}
+.compact-layout .bottom-hud {
+  left: auto;
+  right: var(--edge-right);
+  bottom: var(--edge-bottom);
+  width: min(340px, calc(100vw - var(--edge-left) - var(--edge-right)));
+  max-height: calc(100dvh - var(--edge-top) - var(--edge-bottom) - 60px);
+  transform: none;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.compact-layout #dock-toggle {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0 0 6px auto;
+}
+.compact-layout.dock-collapsed .bottom-hud {
+  width: auto;
+}
+.compact-layout.dock-collapsed .bottom-hud > :not(#dock-toggle) {
+  display: none;
+}
+.compact-layout .play-hint {
+  display: none;
+}
+.compact-layout .selection-panel {
+  top: calc(var(--edge-top) + 52px);
+  bottom: var(--edge-bottom);
+  left: auto;
+  right: var(--edge-right);
+  width: min(340px, calc(100vw - var(--edge-left) - var(--edge-right)));
+  max-height: none;
+  overflow: auto;
+}
+.compact-layout:has(.selection-panel:not([hidden])) .bottom-hud {
+  visibility: hidden;
+}
+.compact-layout #notice {
+  top: calc(var(--edge-top) + 52px);
+}
+@media (orientation: portrait) {
+  .compact-layout .hud {
+    flex-wrap: wrap;
+  }
+  .compact-layout .selection-panel {
+    top: auto;
+    max-height: 60dvh;
+  }
+}
+.compact-layout.dock-collapsed.placement-active .bottom-hud > .play-hint {
+  display: block;
+  max-width: 280px;
+  margin: 0;
+  padding: 6px 10px;
+  background: #faf8ece6;
+  border-radius: 8px;
+}
+.compact-layout .hud:has(.settings[open]) ~ .selection-panel {
+  visibility: hidden;
+}
+.compact-layout .close-button {
+  width: 44px;
+  height: 44px;
+}
+.compact-layout input,
+.compact-layout select {
+  font-size: 16px;
+}
+.compact-layout .bottom-hud:has(#send-tray:not([hidden])) {
+  width: min(340px, calc(100vw - var(--edge-left) - var(--edge-right)));
+}
+.compact-layout.dock-collapsed .bottom-hud:has(#send-tray:not([hidden])) {
+  width: auto;
+}

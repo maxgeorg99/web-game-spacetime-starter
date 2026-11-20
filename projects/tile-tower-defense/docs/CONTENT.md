@@ -182,3 +182,24 @@ Directory capacity reporting and coordinator result validation accept up to sixt
 The initial screen uses existing 128×128 blue airship art and 256×256 blue captain art. The transparent illustrated game wordmark is generated artwork at `public/art/branding/tiled-tower-defense-logo.png`, created with the built-in imagegen tool on 2026-11-18. Its text remains the game brand “Tiled Tower Defense”; the image has an accessible text alternative. Scenery is decorative SVG/CSS, with reduced-motion support for airship drift.
 
 Captain name is entered on a boarding pass and saved through existing Create/Join actions. Create world reveals a short naming form; successful creation returns focus to the opener and lists the provisioning world. Run history is a native dialog, preserving private report subscriptions. Session occupancy is presented as occupied captains / capacity, with existing stale-data indication. UI strings live in all three locale catalogs. Future authenticated profiles and progression are a separate milestone; current anonymous identity/save behavior is unchanged.
+
+## Compact mobile controls
+
+On phones, short landscape windows and touch tablets up to 1100px, the top bar
+shows resources, the current phase/action and the menu. The menu groups map
+navigation, wave preview, match setup, guide/statistics and existing sound/session
+settings. Actions opens the build/recruit or discovery tray; selecting a tower or
+discovery closes it for map placement. A short placement hint remains visible.
+Opponent inspection opens recruitment. Desktop controls retain their positions.
+
+Drag with one finger to pan; pinch with two fingers to zoom around their midpoint
+and move the map. Lifting one finger continues panning without selecting a tile.
+My island and World view are available in the menu. Side panels scroll within the
+safe viewport in landscape. Mobile layout and gestures await manual device playtesting.
+
+Map gestures now track native browser pointer IDs with pointer capture, so a
+finger that started on the battlefield continues moving the map across HUD edges.
+Touches beginning on controls remain UI interactions. Manual pan/zoom persists
+through replicated island expansion and phase changes; choosing an island/world
+view or rotating the device reframes the map. This follow-up awaits manual testing
+in a freshly rebuilt Android app.

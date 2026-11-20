@@ -14,7 +14,7 @@ Phaser and shared authoritative gameplay remain unchanged. Network access is req
 - Local version defaults: code `1`, name `0.1.0`. Override with
   `ANDROID_VERSION_CODE` and `ANDROID_VERSION_NAME`.
 - Native Google/Discord sign-in uses AppAuth and Android Keystore. The HTTPS callback
-  page must be deployed before native login works; see [Captain accounts](AUTH.md).
+  page is deployed; see [Captain accounts](AUTH.md).
   Browser sign-in is unchanged. Guest credentials are local to this installation;
   they do not import browser progress. Uninstall/clear data loses guest access.
 - Stock Capacitor launcher/splash assets remain placeholders.
@@ -87,7 +87,7 @@ Android publishing, add the native checks to its release gate and align the hook
 
 ## Next steps before Play internal testing
 
-1. Deploy the prepared HTTPS OAuth callback page, then playtest Google/Discord login,
+1. The HTTPS OAuth callback is deployed. Continue playtesting Google/Discord login,
    cancellation, process-death return, restart persistence, renewal and sign-out.
    The user confirmed the new HTTPS redirect is registered on the existing client.
    The current return uses an HTTPS relay into the app's private URI scheme with
@@ -108,6 +108,6 @@ Android publishing, add the native checks to its release gate and align the hook
 ## Handoff
 
 The shell, artifact pipeline and native account implementation are prepared. The
-hosted Android callback still awaits deployment authorization. No Play app has been
-created, no signing credentials have been added, and no production deployment has
-been performed. See the latest `ROADMAP.md` entry for actual verification results.
+hosted Android callback was deployed with user authorization on 2026-11-20. No Play
+app has been created and no signing credentials have been added. See the latest
+`ROADMAP.md` entry for actual verification results.

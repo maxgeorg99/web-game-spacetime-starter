@@ -150,8 +150,8 @@
   "upgrade.needGold": "Need {{gold}} gold",
   "island.yours": "Your keep",
   "upgrade.unknown": "Unknown skill.",
-  "layout.hideActions": "Hide actions ▾",
-  "layout.showActions": "Show actions ▴",
+  "layout.hideActions": "Close ▾",
+  "layout.showActions": "Actions ▴",
   "draft.common": "Common",
   "draft.uncommon": "Uncommon",
   "draft.rare": "Rare",
@@ -305,5 +305,8 @@
   "account.failed": "Sign-in failed. Please try again.",
   "account.cancelled": "Sign-in was closed or timed out. Please try again.",
   "account.expired": "Your sign-in expired. Sign in again to use your account.",
-  "account.refreshRetry": "Reconnecting your account. Your current game stays open."
+  "account.refreshRetry": "Reconnecting your account. Your current game stays open.",
+  "layout.navigation": "Map",
+  "layout.match": "Match setup",
+  "layout.reference": "Guide & statistics"
 }

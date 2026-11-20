@@ -1,3 +1,4 @@
+import { compactLayout } from './mobile-layout';
 import { campaignBiome } from '../shared/config/biomes';
 import { deathSheets, deathPresentation } from '../shared/config/death-art';
 import { pathFor } from '../shared/game/paths';
@@ -30,6 +31,7 @@ export class IslandScene extends Phaser.Scene {
   private touchPositions = new Map<number, Point>();
   private pinch?: { distance: number; zoom: number; anchor: Point };
   private focused = false;
+  private manualCamera = false;
   private framingSignature = '';
   private focusSlot: number | null = null;
   private database?: string;
@@ -96,19 +98,27 @@ export class IslandScene extends Phaser.Scene {
           .setDepth(1000),
       );
     }
-    this.input.addPointer(1);
     this.cursors = this.input.keyboard?.createCursorKeys();
-    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+    const canvas = this.game.canvas;
+    // Track browser pointer IDs directly. Phaser touch moves stop at DOM overlays,
+    // while pointer capture keeps both fingers attached to their starting canvas.
+    const pointerDown = (event: PointerEvent) => {
+      if (event.button !== 0 || this.touchPositions.size >= 2) {
+        return;
+      }
+      const pointer = this.canvasPointer(event);
       if (!this.store.ready) {
         return;
       }
+      canvas.setPointerCapture(event.pointerId);
       this.touchPositions.set(pointer.id, { x: pointer.x, y: pointer.y });
       if (this.touchPositions.size === 2) {
+        this.manualCamera = true;
         const [a, b] = [...this.touchPositions.values()];
         this.pinch = {
           distance: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)),
           zoom: this.cameras.main.zoom,
-          anchor: this.cameras.main.getWorldPoint((a.x + b.x) / 2, (a.y + b.y) / 2),
+          anchor: this.cameraPoint((a.x + b.x) / 2, (a.y + b.y) / 2),
         };
         this.dragged = true;
         return;
@@ -120,9 +130,14 @@ export class IslandScene extends Phaser.Scene {
         scrollY: this.cameras.main.scrollY,
       };
       this.dragged = false;
-    });
-    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-      if (this.touchPositions.has(pointer.id)) {
+    };
+    const pointerMove = (event: PointerEvent) => {
+      const pointer = this.canvasPointer(event);
+      const tracked = this.touchPositions.has(pointer.id);
+      if (!tracked && (event.pointerType !== 'mouse' || event.buttons !== 0)) {
+        return;
+      }
+      if (tracked) {
         this.touchPositions.set(pointer.id, { x: pointer.x, y: pointer.y });
       }
       if (this.pinch && this.touchPositions.size === 2) {
@@ -131,24 +146,25 @@ export class IslandScene extends Phaser.Scene {
         camera.setZoom(
           Phaser.Math.Clamp(
             (this.pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y)) / this.pinch.distance,
-            (this.store.world?.seats.length ?? 4) > 4 ? 0.02 : 0.18,
+            (this.store.world?.seats.length ?? 4) > 4 ? 0.02 : 0.1,
             2.2,
           ),
         );
-        const current = camera.getWorldPoint((a.x + b.x) / 2, (a.y + b.y) / 2);
+        const current = this.cameraPoint((a.x + b.x) / 2, (a.y + b.y) / 2);
         camera.setScroll(
           camera.scrollX + this.pinch.anchor.x - current.x,
           camera.scrollY + this.pinch.anchor.y - current.y,
         );
         return;
       }
-      if (pointer.isDown && this.dragStart) {
+      if (tracked && this.dragStart) {
         const dx = pointer.x - this.dragStart.x,
           dy = pointer.y - this.dragStart.y;
         if (Math.hypot(dx, dy) > 5) {
           this.dragged = true;
         }
         if (this.dragged) {
+          this.manualCamera = true;
           this.cameras.main.setScroll(
             this.dragStart.scrollX - dx / this.cameras.main.zoom,
             this.dragStart.scrollY - dy / this.cameras.main.zoom,
@@ -156,20 +172,31 @@ export class IslandScene extends Phaser.Scene {
           return;
         }
       }
-      const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      const point = this.cameraPoint(pointer.x, pointer.y);
       this.ownView?.setHover(this.ownView.unproject(point.x, point.y));
-    });
-    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
-      this.touchPositions.delete(pointer.id);
-      this.pinch = undefined;
-      if (!this.store.ready) {
+    };
+    const pointerUp = (event: PointerEvent) => {
+      const pointer = this.canvasPointer(event);
+      if (!this.touchPositions.has(pointer.id)) {
         return;
       }
-      this.dragStart = undefined;
+      this.releasePointer(pointer.id);
+      if (canvas.hasPointerCapture(event.pointerId)) {
+        canvas.releasePointerCapture(event.pointerId);
+      }
+      if (
+        !this.store.ready ||
+        pointer.x < 0 ||
+        pointer.y < 0 ||
+        pointer.x > this.scale.width ||
+        pointer.y > this.scale.height
+      ) {
+        return;
+      }
       if (this.dragged) {
         return;
       }
-      const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      const point = this.cameraPoint(pointer.x, pointer.y);
       for (let slot = 0; slot < this.views.length; slot++) {
         if (this.store.world?.round && !this.store.world.seats[slot]?.owner) {
           continue;
@@ -189,23 +216,55 @@ export class IslandScene extends Phaser.Scene {
           return;
         }
       }
-    });
-    this.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => {
-      this.touchPositions.delete(pointer.id);
+    };
+    const pointerCancel = (event: PointerEvent) => {
+      if (!this.touchPositions.has(event.pointerId)) {
+        return;
+      }
+      this.dragged = true;
+      this.releasePointer(event.pointerId);
+    };
+    const cancelGesture = () => {
+      for (const id of this.touchPositions.keys()) {
+        if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
+      }
+      this.touchPositions.clear();
       this.pinch = undefined;
       this.dragStart = undefined;
       this.dragged = true;
+    };
+    canvas.addEventListener('pointerdown', pointerDown);
+    canvas.addEventListener('pointermove', pointerMove);
+    canvas.addEventListener('pointerup', pointerUp);
+    canvas.addEventListener('pointercancel', pointerCancel);
+    canvas.addEventListener('lostpointercapture', pointerCancel);
+    window.addEventListener('blur', cancelGesture);
+    this.scale.on('resize', cancelGesture);
+    this.events.once('shutdown', () => {
+      cancelGesture();
+      canvas.removeEventListener('pointerdown', pointerDown);
+      canvas.removeEventListener('pointermove', pointerMove);
+      canvas.removeEventListener('pointerup', pointerUp);
+      canvas.removeEventListener('pointercancel', pointerCancel);
+      canvas.removeEventListener('lostpointercapture', pointerCancel);
+      window.removeEventListener('blur', cancelGesture);
+      this.scale.off('resize', cancelGesture);
     });
     this.input.on(
       'wheel',
-      (_pointer: Phaser.Input.Pointer, _objects: unknown, _dx: number, dy: number) => {
+      (pointer: Phaser.Input.Pointer, _objects: unknown, _dx: number, dy: number) => {
+        this.manualCamera = true;
+        const anchor = this.cameraPoint(pointer.x, pointer.y);
         this.cameras.main.setZoom(
           Phaser.Math.Clamp(
             this.cameras.main.zoom * Math.exp(-dy * 0.001),
-            (this.store.world?.seats.length ?? 4) > 4 ? 0.02 : 0.18,
+            (this.store.world?.seats.length ?? 4) > 4 ? 0.02 : 0.1,
             2.2,
           ),
         );
+        const current = this.cameraPoint(pointer.x, pointer.y);
+        this.cameras.main.scrollX += anchor.x - current.x;
+        this.cameras.main.scrollY += anchor.y - current.y;
       },
     );
     this.scale.on('resize', this.resize, this);
@@ -216,6 +275,38 @@ export class IslandScene extends Phaser.Scene {
     });
     this.render();
   }
+  private canvasPointer(event: PointerEvent) {
+    return {
+      id: event.pointerId,
+      x: this.scale.transformX(event.pageX),
+      y: this.scale.transformY(event.pageY),
+    };
+  }
+
+  // Read current zoom/scroll directly: Phaser's inverse matrix updates at render time.
+  private cameraPoint(x: number, y: number): Point {
+    const camera = this.cameras.main;
+    return {
+      x: camera.scrollX + camera.width / 2 + (x - camera.width / 2) / camera.zoom,
+      y: camera.scrollY + camera.height / 2 + (y - camera.height / 2) / camera.zoom,
+    };
+  }
+
+  private releasePointer(id: number) {
+    this.touchPositions.delete(id);
+    this.pinch = undefined;
+    const remaining = this.touchPositions.values().next().value;
+    this.dragStart = remaining
+      ? {
+          ...remaining,
+          scrollX: this.cameras.main.scrollX,
+          scrollY: this.cameras.main.scrollY,
+        }
+      : undefined;
+    // Keep the gesture consumed until every finger lifts; never build after a pinch.
+    if (remaining) this.dragged = true;
+  }
+
   /** Quiet distant battles while the camera visits another island. */
   soundGain(slot: number, point: Point): number {
     const view = this.views[slot];
@@ -248,6 +339,7 @@ export class IslandScene extends Phaser.Scene {
     if (!island || !this.cameras.main) {
       return;
     }
+    this.manualCamera = false;
     this.focusSlot = slot;
     const bounds = this.views[slot]?.bounds();
     if (bounds) {
@@ -264,6 +356,7 @@ export class IslandScene extends Phaser.Scene {
       this.focusIsland(0);
       return;
     }
+    this.manualCamera = false;
     this.focusSlot = null;
     const bounds = this.views
       .filter(
@@ -286,7 +379,7 @@ export class IslandScene extends Phaser.Scene {
   private frame(x: number, y: number, width: number, height: number, maxZoom: number) {
     const screenWidth = this.scale.width,
       screenHeight = this.scale.height;
-    const compact = screenWidth <= 700 || screenHeight <= 550;
+    const compact = compactLayout.matches;
     const left = 20;
     let right = screenWidth - 20,
       top = 90,
@@ -297,16 +390,15 @@ export class IslandScene extends Phaser.Scene {
         return element?.getClientRects().length ? element.getBoundingClientRect() : undefined;
       };
       const hud = bounds('.hud'),
-        wave = bounds('#wave-preview'),
         dock = bounds('.bottom-hud');
       top = (hud?.bottom ?? 50) + 12;
       bottom = screenHeight - 16;
-      if (screenWidth >= 551 && screenHeight <= 550) {
-        right = (dock?.left ?? screenWidth - 320) - 12;
+      if (screenWidth > screenHeight) {
+        if (!document.body.classList.contains('dock-collapsed')) {
+          right = (dock?.left ?? screenWidth) - 12;
+        }
       } else {
-        top = Math.max(top, (wave?.bottom ?? 100) + 12);
         bottom = (dock?.top ?? screenHeight - 180) - 12;
-        right -= 44;
       }
     }
     const availableWidth = Math.max(120, right - left);
@@ -395,10 +487,13 @@ export class IslandScene extends Phaser.Scene {
     );
     if (framing !== this.framingSignature) {
       this.framingSignature = framing;
-      if (this.focusSlot !== null) {
-        this.focusIsland(this.focusSlot);
-      } else {
-        this.overview();
+      // Authoritative drafting updates must not undo the player's pan or pinch.
+      if (!this.manualCamera && this.touchPositions.size === 0) {
+        if (this.focusSlot !== null) {
+          this.focusIsland(this.focusSlot);
+        } else {
+          this.overview();
+        }
       }
     }
     this.renderFlights();
@@ -494,6 +589,13 @@ export class IslandScene extends Phaser.Scene {
     ) {
       return;
     }
+    if (
+      this.cursors.left.isDown ||
+      this.cursors.right.isDown ||
+      this.cursors.up.isDown ||
+      this.cursors.down.isDown
+    )
+      this.manualCamera = true;
     const speed = (delta * 0.8) / this.cameras.main.zoom;
     if (this.cursors.left.isDown) {
       this.cameras.main.scrollX -= speed;

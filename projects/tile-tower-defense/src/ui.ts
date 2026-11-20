@@ -1,3 +1,4 @@
+import { MobileLayout, compactLayout } from './mobile-layout';
 import { t, th, escapeHtml } from './i18n';
 import { wavesFor, unitDef } from './i18n/content';
 import { WorldUI } from './world-ui';
@@ -22,6 +23,7 @@ const button = (id: string) => element(id) as HTMLButtonElement;
 
 /** DOM controls issue commands; every displayed number comes from the current snapshot. */
 export class UI {
+  private mobile = new MobileLayout();
   private selected?: Point;
   private draftKind?: string;
   private buildKind?: string;
@@ -37,15 +39,9 @@ export class UI {
     this.worldUI = new WorldUI(store, scene, () => {
       this.tab = 'send';
       this.buildKind = undefined;
+      this.mobile.setActions(true);
       this.closeSelection();
     });
-    button('dock-toggle').onclick = () => {
-      const collapsed = document.body.classList.toggle('dock-collapsed');
-      button('dock-toggle').setAttribute('aria-expanded', String(!collapsed));
-      button('dock-toggle').textContent = t(
-        collapsed ? 'layout.showActions' : 'layout.hideActions',
-      );
-    };
     button('tab-send').onclick = () => {
       this.tab = 'send';
       this.buildKind = undefined;
@@ -65,6 +61,7 @@ export class UI {
       const target = this.clickedButton(event);
       if (target?.dataset.build) {
         this.buildKind = target.dataset.build;
+        if (compactLayout.matches) this.mobile.setActions(false);
         this.closeSelection();
       }
     };
@@ -89,6 +86,7 @@ export class UI {
         this.selected = undefined;
         this.scene.clearSelection();
         this.draftKind = target.dataset.tile;
+        if (compactLayout.matches) this.mobile.setActions(false);
         this.render(true);
       }
     };
@@ -179,6 +177,7 @@ export class UI {
       this.tab = 'build';
     }
     const state = this.store.state;
+    document.body.classList.toggle('placement-active', !!(this.buildKind || this.draftKind));
     element('connection').textContent = this.store.status;
     element('notice').textContent = this.store.error;
     element('resources').innerHTML = `

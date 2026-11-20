@@ -150,8 +150,8 @@
   "upgrade.needGold": "Requiere {{gold}} de oro",
   "island.yours": "Tu fortaleza",
   "upgrade.unknown": "Habilidad desconocida.",
-  "layout.hideActions": "Ocultar acciones ▾",
-  "layout.showActions": "Mostrar acciones ▴",
+  "layout.hideActions": "Cerrar ▾",
+  "layout.showActions": "Acciones ▴",
   "draft.common": "Común",
   "draft.uncommon": "Poco común",
   "draft.rare": "Rara",
@@ -305,5 +305,8 @@
   "account.failed": "No se pudo iniciar sesión. Inténtalo de nuevo.",
   "account.cancelled": "Se cerró la ventana o se agotó el tiempo. Inténtalo de nuevo.",
   "account.expired": "Tu sesión ha caducado. Vuelve a iniciar sesión.",
-  "account.refreshRetry": "Reconectando tu cuenta. Tu partida actual permanece abierta."
+  "account.refreshRetry": "Reconectando tu cuenta. Tu partida actual permanece abierta.",
+  "layout.navigation": "Mapa",
+  "layout.match": "Configurar partida",
+  "layout.reference": "Guía y estadísticas"
 }

@@ -150,8 +150,8 @@
   "upgrade.needGold": "Benötigt {{gold}} Gold",
   "island.yours": "Deine Burg",
   "upgrade.unknown": "Unbekannte Fähigkeit.",
-  "layout.hideActions": "Aktionen ausblenden ▾",
-  "layout.showActions": "Aktionen einblenden ▴",
+  "layout.hideActions": "Schließen ▾",
+  "layout.showActions": "Aktionen ▴",
   "draft.common": "Gewöhnlich",
   "draft.uncommon": "Ungewöhnlich",
   "draft.rare": "Selten",
@@ -305,5 +305,8 @@
   "account.failed": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
   "account.cancelled": "Anmeldung geschlossen oder abgelaufen. Bitte erneut versuchen.",
   "account.expired": "Deine Anmeldung ist abgelaufen. Melde dich erneut an.",
-  "account.refreshRetry": "Dein Konto wird erneut verbunden. Dein aktuelles Spiel bleibt geöffnet."
+  "account.refreshRetry": "Dein Konto wird erneut verbunden. Dein aktuelles Spiel bleibt geöffnet.",
+  "layout.navigation": "Karte",
+  "layout.match": "Spieleinstellungen",
+  "layout.reference": "Handbuch & Statistik"
 }
